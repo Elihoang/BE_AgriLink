@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Share", "AgriLink_DH.Share\AgriLink_DH.Share.csproj", "{956DE395-E042-4977-B297-F813A476FC4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Core", "AgriLink_DH.Core\AgriLink_DH.Core.csproj", "{0CD01B74-D98E-4AF4-AC76-A232C6865AAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Domain", "AgriLink_DH.Domain\AgriLink_DH.Domain.csproj", "{BA66198D-EB44-4B4E-9CD1-76CE33520E62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Api", "AgriLink_DH.Api\AgriLink_DH.Api.csproj", "{9F94D9C8-D1C5-4B12-9D0B-8322FE41BC07}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{956DE395-E042-4977-B297-F813A476FC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{956DE395-E042-4977-B297-F813A476FC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{956DE395-E042-4977-B297-F813A476FC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{956DE395-E042-4977-B297-F813A476FC4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CD01B74-D98E-4AF4-AC76-A232C6865AAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CD01B74-D98E-4AF4-AC76-A232C6865AAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CD01B74-D98E-4AF4-AC76-A232C6865AAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CD01B74-D98E-4AF4-AC76-A232C6865AAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA66198D-EB44-4B4E-9CD1-76CE33520E62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA66198D-EB44-4B4E-9CD1-76CE33520E62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA66198D-EB44-4B4E-9CD1-76CE33520E62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA66198D-EB44-4B4E-9CD1-76CE33520E62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F94D9C8-D1C5-4B12-9D0B-8322FE41BC07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F94D9C8-D1C5-4B12-9D0B-8322FE41BC07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F94D9C8-D1C5-4B12-9D0B-8322FE41BC07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F94D9C8-D1C5-4B12-9D0B-8322FE41BC07}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
