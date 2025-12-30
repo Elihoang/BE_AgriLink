@@ -1,8 +1,22 @@
 namespace AgriLink_DH.Domain.Common;
 
+/// <summary>
+/// Điều kiện thời tiết
+/// </summary>
 public enum WeatherCondition
 {
-    NANG,       // Nắng
-    MUA,        // Mưa
-    AM_U        // Âm u
+    /// <summary>
+    /// Nắng
+    /// </summary>
+    Sunny,
+    
+    /// <summary>
+    /// Mưa
+    /// </summary>
+    Rainy,
+    
+    /// <summary>
+    /// Âm u / U ám
+    /// </summary>
+    Cloudy
 }

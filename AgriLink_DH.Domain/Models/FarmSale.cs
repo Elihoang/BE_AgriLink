@@ -43,4 +43,11 @@ public class FarmSale
     // Navigation Properties
     [ForeignKey(nameof(SeasonId))]
     public virtual CropSeason CropSeason { get; set; } = null!;
+
+    // Soft Delete
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }

@@ -1,0 +1,9 @@
+
+farm{
+  "farmId": "cfa826cb-59b7-4eec-b791-84a951d7767e",
+  "productId": "00000000-0000-0000-0000-000000000001",
+  "name": "Thu cà",
+  "startDate": "2025-01-10T00:00:00Z",
+  "endDate": null,
+  "note": "Thu hoạch đợt 1"
+}

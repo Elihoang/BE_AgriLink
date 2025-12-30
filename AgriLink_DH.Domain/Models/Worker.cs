@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgriLink_DH.Domain.Models;
 
@@ -14,10 +15,6 @@ public class Worker
     [Column("id")]
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("farm_id")]
-    [Required]
-    public Guid FarmId { get; set; }
-
     [Column("full_name")]
     [Required]
     [MaxLength(100)]
@@ -28,16 +25,18 @@ public class Worker
     public string? Phone { get; set; }
 
     [Column("worker_type")]
-    [MaxLength(20)]
-    public WorkerType WorkerType { get; set; } = WorkerType.SEASONAL;
+    public WorkerType WorkerType { get; set; } = WorkerType.Seasonal;
+
+    [Column("default_daily_wage")]
+    [Precision(15, 2)]
+    public decimal? DefaultDailyWage { get; set; } // Lương ngày mặc định
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true; // False nếu đã nghỉ việc
 
     // Navigation Properties
-    [ForeignKey(nameof(FarmId))]
-    public virtual Farm Farm { get; set; } = null!;
+    // No Farm Navigation property needed here as it belongs to User
 
-    public virtual ICollection<WorkSessionDetail> WorkSessionDetails { get; set; } = new List<WorkSessionDetail>();
+    public virtual ICollection<WorkAssignment> WorkAssignments { get; set; } = new List<WorkAssignment>();
     public virtual ICollection<WorkerAdvance> WorkerAdvances { get; set; } = new List<WorkerAdvance>();
 }

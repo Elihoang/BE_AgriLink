@@ -35,7 +35,7 @@ public class CropSeason
 
     [Column("status")]
     [MaxLength(20)]
-    public SeasonStatus Status { get; set; } = SeasonStatus.ACTIVE;
+    public SeasonStatus Status { get; set; } = SeasonStatus.Active;
 
     [Column("note")]
     public string? Note { get; set; }
@@ -47,9 +47,16 @@ public class CropSeason
     [ForeignKey(nameof(ProductId))]
     public virtual Product Product { get; set; } = null!;
 
-    public virtual ICollection<WorkSession> WorkSessions { get; set; } = new List<WorkSession>();
+    public virtual ICollection<DailyWorkLog> DailyWorkLogs { get; set; } = new List<DailyWorkLog>();
     public virtual ICollection<WorkerAdvance> WorkerAdvances { get; set; } = new List<WorkerAdvance>();
     public virtual ICollection<MaterialUsage> MaterialUsages { get; set; } = new List<MaterialUsage>();
     public virtual ICollection<HarvestSession> HarvestSessions { get; set; } = new List<HarvestSession>();
     public virtual ICollection<FarmSale> FarmSales { get; set; } = new List<FarmSale>();
+
+    // Soft Delete
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }

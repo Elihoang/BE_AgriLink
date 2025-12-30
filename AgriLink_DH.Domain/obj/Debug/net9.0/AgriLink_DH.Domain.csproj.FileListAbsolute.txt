@@ -10,3 +10,4 @@ C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.dll
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\refint\AgriLink_DH.Domain.dll
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.pdb
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\ref\AgriLink_DH.Domain.dll
+C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.sourcelink.json

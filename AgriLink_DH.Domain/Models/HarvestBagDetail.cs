@@ -36,4 +36,11 @@ public class HarvestBagDetail
     // Navigation Properties
     [ForeignKey(nameof(SessionId))]
     public virtual HarvestSession HarvestSession { get; set; } = null!;
+
+    // Soft Delete
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }

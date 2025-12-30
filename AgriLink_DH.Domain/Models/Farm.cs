@@ -39,4 +39,11 @@ public class Farm
     public virtual ICollection<TaskType> TaskTypes { get; set; } = new List<TaskType>();
     public virtual ICollection<Worker> Workers { get; set; } = new List<Worker>();
     public virtual ICollection<WeatherLog> WeatherLogs { get; set; } = new List<WeatherLog>();
+
+    // Soft Delete
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }

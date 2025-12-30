@@ -15,3 +15,4 @@ C:\HocTap\AgriLink_DH\AgriLink_DH.Core\obj\Debug\net9.0\AgriLink_DH.Core.dll
 C:\HocTap\AgriLink_DH\AgriLink_DH.Core\obj\Debug\net9.0\refint\AgriLink_DH.Core.dll
 C:\HocTap\AgriLink_DH\AgriLink_DH.Core\obj\Debug\net9.0\AgriLink_DH.Core.pdb
 C:\HocTap\AgriLink_DH\AgriLink_DH.Core\obj\Debug\net9.0\ref\AgriLink_DH.Core.dll
+C:\HocTap\AgriLink_DH\AgriLink_DH.Core\obj\Debug\net9.0\AgriLink_DH.Core.sourcelink.json

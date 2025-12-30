@@ -14,6 +14,8 @@ public class ApplicationDbContext : DbContext
     }
 
     #region DbSets - Nhóm Hệ thống & Cấu hình
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserLoginLog> UserLoginLogs { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Farm> Farms { get; set; }
     public DbSet<TaskType> TaskTypes { get; set; }
@@ -22,8 +24,8 @@ public class ApplicationDbContext : DbContext
     #region DbSets - Nhóm Sản xuất & Chi phí
     public DbSet<CropSeason> CropSeasons { get; set; }
     public DbSet<Worker> Workers { get; set; }
-    public DbSet<WorkSession> WorkSessions { get; set; }
-    public DbSet<WorkSessionDetail> WorkSessionDetails { get; set; }
+    public DbSet<DailyWorkLog> DailyWorkLogs { get; set; }
+    public DbSet<WorkAssignment> WorkAssignments { get; set; }
     public DbSet<WorkerAdvance> WorkerAdvances { get; set; }
     public DbSet<MaterialUsage> MaterialUsages { get; set; }
     #endregion
@@ -33,6 +35,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<HarvestBagDetail> HarvestBagDetails { get; set; }
     public DbSet<FarmSale> FarmSales { get; set; }
     public DbSet<WeatherLog> WeatherLogs { get; set; }
+    public DbSet<PlantPosition> PlantPositions { get; set; } // Grid layout tracking từng cây
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,6 +45,19 @@ public class ApplicationDbContext : DbContext
         // ========================================
         // UNIQUE CONSTRAINTS & INDEXES
         // ========================================
+
+        // User: Unique username and email
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        // UserLoginLog: Index on user_id + login_time for login history queries
+        modelBuilder.Entity<UserLoginLog>()
+            .HasIndex(ul => new { ul.UserId, ul.LoginTime });
 
         // Product: Unique code
         modelBuilder.Entity<Product>()
@@ -56,13 +72,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CropSeason>()
             .HasIndex(cs => new { cs.FarmId, cs.ProductId });
 
-        // Worker: Index on farm_id + is_active
-        modelBuilder.Entity<Worker>()
-            .HasIndex(w => new { w.FarmId, w.IsActive });
-
-        // WorkSession: Index on season_id + work_date
-        modelBuilder.Entity<WorkSession>()
-            .HasIndex(ws => new { ws.SeasonId, ws.WorkDate });
+        // DailyWorkLog: Index on season_id + work_date
+        modelBuilder.Entity<DailyWorkLog>()
+            .HasIndex(d => new { d.SeasonId, d.WorkDate });
 
         // HarvestSession: Index on season_id + harvest_date
         modelBuilder.Entity<HarvestSession>()
@@ -72,15 +84,20 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<FarmSale>()
             .HasIndex(fs => new { fs.SeasonId, fs.SaleDate });
 
+        // PlantPosition: UNIQUE constraint on season_id + row + col (mỗi vị trí chỉ 1 cây)
+        modelBuilder.Entity<PlantPosition>()
+            .HasIndex(pp => new { pp.SeasonId, pp.RowNumber, pp.ColumnNumber })
+            .IsUnique();
+
         // ========================================
         // CASCADE DELETE CONFIGURATIONS
         // ========================================
 
-        // WorkSessionDetail: Cascade delete when WorkSession is deleted
-        modelBuilder.Entity<WorkSessionDetail>()
-            .HasOne(wsd => wsd.WorkSession)
-            .WithMany(ws => ws.WorkSessionDetails)
-            .HasForeignKey(wsd => wsd.SessionId)
+        // WorkAssignment: Cascade delete when DailyWorkLog is deleted
+        modelBuilder.Entity<WorkAssignment>()
+            .HasOne(wa => wa.DailyWorkLog)
+            .WithMany(d => d.WorkAssignments)
+            .HasForeignKey(wa => wa.LogId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // HarvestBagDetail: Cascade delete when HarvestSession is deleted
@@ -94,6 +111,17 @@ public class ApplicationDbContext : DbContext
         // ENUM TO STRING CONVERSIONS (PostgreSQL)
         // ========================================
 
+        // User: Role enum
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasConversion<string>();
+
+        // UserLoginLog: ActionType enum
+        modelBuilder.Entity<UserLoginLog>()
+            .Property(ul => ul.ActionType)
+            .HasConversion<string>();
+
+        // SeasonStatus enum
         modelBuilder.Entity<CropSeason>()
             .Property(cs => cs.Status)
             .HasConversion<string>();
@@ -102,8 +130,8 @@ public class ApplicationDbContext : DbContext
             .Property(w => w.WorkerType)
             .HasConversion<string>();
 
-        modelBuilder.Entity<WorkSessionDetail>()
-            .Property(wsd => wsd.PaymentMethod)
+        modelBuilder.Entity<WorkAssignment>()
+            .Property(wa => wa.PaymentMethod)
             .HasConversion<string>();
 
         modelBuilder.Entity<WeatherLog>()

@@ -13,4 +13,8 @@
       <Folder Include="Settings\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\AgriLink_DH.Domain\AgriLink_DH.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

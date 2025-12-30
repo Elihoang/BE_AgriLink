@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AgriLink_DH.Domain.Models;
 
-/// <summary>
-/// Phiếu Cân Thu Hoạch - Header (Tổng kết sản lượng 1 ngày hái)
-/// </summary>
 [Table("harvest_sessions")]
 public class HarvestSession
 {
@@ -37,4 +34,11 @@ public class HarvestSession
     public virtual CropSeason CropSeason { get; set; } = null!;
 
     public virtual ICollection<HarvestBagDetail> HarvestBagDetails { get; set; } = new List<HarvestBagDetail>();
+
+    // Soft Delete
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
+    [Column("deleted_at")]
+    public DateTime? DeletedAt { get; set; }
 }
