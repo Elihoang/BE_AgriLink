@@ -16,9 +16,20 @@ public class PlantPosition
     [Column("id")]
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    /// <summary>
+    /// Vị trí cây thuộc rẫy nào - REQUIRED
+    /// Rẫy có sơ đồ cố định, cây ở vị trí này suốt đời
+    /// </summary>
     [Required]
+    [Column("farm_id")]
+    public Guid FarmId { get; set; }
+
+    /// <summary>
+    /// Vụ mùa hiện tại đang sử dụng vị trí này - OPTIONAL
+    /// Null = vị trí trống hoặc cây chưa gắn vào vụ nào
+    /// </summary>
     [Column("season_id")]
-    public Guid SeasonId { get; set; }
+    public Guid? SeasonId { get; set; }
 
     /// <summary>
     /// Số hàng (row) - VD: hàng 1, 2, 3...
@@ -66,8 +77,11 @@ public class PlantPosition
     public string? Note { get; set; }
 
     // Navigation properties
+    [ForeignKey(nameof(FarmId))]
+    public virtual Farm Farm { get; set; } = null!;
+
     [ForeignKey(nameof(SeasonId))]
-    public virtual CropSeason CropSeason { get; set; } = null!;
+    public virtual CropSeason? CropSeason { get; set; }
 
     [ForeignKey(nameof(ProductId))]
     public virtual Product Product { get; set; } = null!;

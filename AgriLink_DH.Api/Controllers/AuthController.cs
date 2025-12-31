@@ -1,3 +1,4 @@
+using AgriLink_DH.Core.Helpers;
 using AgriLink_DH.Core.Services;
 using AgriLink_DH.Share.Common;
 using AgriLink_DH.Share.DTOs.Auth;
@@ -24,7 +25,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<object>>> Register([FromBody] RegisterDto registerDto)
     {
         // Get IP address and User-Agent
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var ipAddress = IpAddressHelper.GetClientIpAddress(HttpContext);
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
         var (success, message, user, token) = await _authService.RegisterAsync(registerDto, ipAddress, userAgent);
@@ -47,7 +48,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginDto loginDto)
     {
         // Get IP address and User-Agent for login tracking
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var ipAddress = IpAddressHelper.GetClientIpAddress(HttpContext);
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
         var (success, message, user, token) = await _authService.LoginAsync(loginDto, ipAddress, userAgent);
@@ -94,7 +95,7 @@ public class AuthController : ControllerBase
         }
 
         // Get IP and User-Agent
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var ipAddress = IpAddressHelper.GetClientIpAddress(HttpContext);
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
         var success = await _authService.LogoutAsync(userId, ipAddress, userAgent);

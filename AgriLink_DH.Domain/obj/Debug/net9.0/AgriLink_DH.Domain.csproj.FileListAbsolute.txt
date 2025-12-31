@@ -11,3 +11,16 @@ C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\refint\AgriLink_DH.Dom
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.pdb
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\ref\AgriLink_DH.Domain.dll
 C:\HocTap\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.sourcelink.json
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\bin\Debug\net9.0\AgriLink_DH.Domain.deps.json
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\bin\Debug\net9.0\AgriLink_DH.Domain.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\bin\Debug\net9.0\AgriLink_DH.Domain.pdb
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.csproj.AssemblyReference.cache
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.AssemblyInfoInputs.cache
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.AssemblyInfo.cs
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.csproj.CoreCompileInputs.cache
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.sourcelink.json
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\refint\AgriLink_DH.Domain.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\AgriLink_DH.Domain.pdb
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Domain\obj\Debug\net9.0\ref\AgriLink_DH.Domain.dll

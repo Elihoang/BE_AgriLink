@@ -24,7 +24,7 @@ public class WeatherLog
 
     [Column("condition")]
     [MaxLength(50)]
-    public WeatherCondition Condition { get; set; } // 'NANG', 'MUA', 'AM_U'
+    public WeatherCondition Condition { get; set; } 
 
     [Column("rainfall_mm")]
     [Precision(5, 2)]

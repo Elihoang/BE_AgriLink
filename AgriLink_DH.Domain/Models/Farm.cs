@@ -29,7 +29,21 @@ public class Farm
 
     [Column("address_gps")]
     [MaxLength(50)]
-    public string? AddressGps { get; set; } // "12.3456, 108.4567" (Lấy weather API)
+    public string? AddressGps { get; set; } // "12.3456, 108.4567" (Backward compatibility)
+
+    /// <summary>
+    /// Vĩ độ (Latitude) - Người dùng chọn trên map
+    /// </summary>
+    [Column("latitude")]
+    [Precision(10, 7)]
+    public decimal? Latitude { get; set; } // VD: 12.6667000 (Đắk Lắk)
+
+    /// <summary>
+    /// Kinh độ (Longitude) - Người dùng chọn trên map
+    /// </summary>
+    [Column("longitude")]
+    [Precision(10, 7)]
+    public decimal? Longitude { get; set; } // VD: 108.0500000 (Đắk Lắk)
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -11,24 +11,62 @@ public class PlantPositionRepository : BaseRepository<PlantPosition>, IPlantPosi
     {
     }
 
+    // Override to eager load navigation properties
+    public override async Task<PlantPosition?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(p => p.Product)
+            .Include(p => p.Farm)
+            .Include(p => p.CropSeason)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
+    // === Query by Farm (Primary) ===
+    public async Task<IEnumerable<PlantPosition>> GetByFarmIdAsync(Guid farmId)
+    {
+        return await _dbSet
+            .Include(p => p.Product)
+            .Include(p => p.Farm)
+            .Include(p => p.CropSeason)
+            .Where(p => p.FarmId == farmId)
+            .OrderBy(p => p.RowNumber)
+            .ThenBy(p => p.ColumnNumber)
+            .ToListAsync();
+    }
+
+    public async Task<PlantPosition?> GetByPositionAsync(Guid farmId, int row, int col)
+    {
+        return await _dbSet
+            .Include(p => p.Product)
+            .Include(p => p.Farm)
+            .Include(p => p.CropSeason)
+            .FirstOrDefaultAsync(p => p.FarmId == farmId 
+                && p.RowNumber == row 
+                && p.ColumnNumber == col);
+    }
+
+    public async Task<bool> PositionExistsAsync(Guid farmId, int row, int col)
+    {
+        return await _dbSet
+            .AnyAsync(p => p.FarmId == farmId 
+                && p.RowNumber == row 
+                && p.ColumnNumber == col);
+    }
+
+    // === Query by Season (Secondary) ===
     public async Task<IEnumerable<PlantPosition>> GetBySeasonIdAsync(Guid seasonId)
     {
         return await _dbSet
-            .Include(p => p.Product) // Include Product info
+            .Include(p => p.Product)
+            .Include(p => p.Farm)
+            .Include(p => p.CropSeason)
             .Where(p => p.SeasonId == seasonId)
             .OrderBy(p => p.RowNumber)
             .ThenBy(p => p.ColumnNumber)
             .ToListAsync();
     }
 
-    public async Task<PlantPosition?> GetByPositionAsync(Guid seasonId, int row, int col)
-    {
-        return await _dbSet
-            .Include(p => p.Product)
-            .FirstOrDefaultAsync(p => p.SeasonId == seasonId 
-                && p.RowNumber == row 
-                && p.ColumnNumber == col);
-    }
+
 
     public async Task<IEnumerable<PlantPosition>> GetByProductIdAsync(Guid seasonId, Guid productId)
     {
@@ -50,11 +88,5 @@ public class PlantPositionRepository : BaseRepository<PlantPosition>, IPlantPosi
             .ToDictionaryAsync(x => x.ProductName, x => x.Count);
     }
 
-    public async Task<bool> PositionExistsAsync(Guid seasonId, int row, int col)
-    {
-        return await _dbSet
-            .AnyAsync(p => p.SeasonId == seasonId 
-                && p.RowNumber == row 
-                && p.ColumnNumber == col);
-    }
+
 }

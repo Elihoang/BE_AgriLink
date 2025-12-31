@@ -62,6 +62,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<UserService>();
         services.AddScoped<PlantPositionService>();
         
+        // Weather Service - Gọi OpenWeather API
+        services.AddHttpClient<WeatherService>();
+        services.AddScoped<WeatherService>();
+        
         return services;
     }
 }

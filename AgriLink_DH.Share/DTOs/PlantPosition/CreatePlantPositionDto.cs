@@ -5,7 +5,13 @@ namespace AgriLink_DH.Share.DTOs.PlantPosition;
 public class CreatePlantPositionDto
 {
     [Required]
-    public Guid SeasonId { get; set; }
+    public Guid FarmId { get; set; }
+
+    /// <summary>
+    /// Vụ mùa đang sử dụng vị trí này (optional)
+    /// Null = cây chưa gắn vào vụ nào
+    /// </summary>
+    public Guid? SeasonId { get; set; }
 
     [Required]
     [Range(1, 100)]

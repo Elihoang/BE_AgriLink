@@ -12,6 +12,7 @@ public class PlantPositionService
 {
     private readonly IPlantPositionRepository _plantPositionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
+    private readonly IFarmRepository _farmRepository;
     private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,13 +22,39 @@ public class PlantPositionService
     public PlantPositionService(
         IPlantPositionRepository plantPositionRepository,
         ICropSeasonRepository cropSeasonRepository,
+        IFarmRepository farmRepository,
         RedisService redisService,
         IUnitOfWork unitOfWork)
     {
         _plantPositionRepository = plantPositionRepository;
         _cropSeasonRepository = cropSeasonRepository;
+        _farmRepository = farmRepository;
         _redisService = redisService;
         _unitOfWork = unitOfWork;
+    }
+
+    /// <summary>
+    /// Lấy tất cả vị trí cây của 1 rẫy - CÓ CACHE
+    /// </summary>
+    public async Task<IEnumerable<PlantPositionDto>> GetByFarmAsync(Guid farmId)
+    {
+        var cacheKey = $"plant_positions:farm:{farmId}";
+
+        // Try get from cache first
+        var cached = await _redisService.GetAsync<List<PlantPositionDto>>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        // Cache miss - get from DB
+        var positions = await _plantPositionRepository.GetByFarmIdAsync(farmId);
+        var dtos = positions.Select(MapToDto).ToList();
+
+        // Store in cache
+        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
+
+        return dtos;
     }
 
     /// <summary>
@@ -67,17 +94,26 @@ public class PlantPositionService
     /// </summary>
     public async Task<PlantPositionDto> AddPlantAsync(CreatePlantPositionDto dto)
     {
-        // Validate season exists
-        var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
+        // Validate farm exists (REQUIRED)
+        var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
+        if (farm == null)
+            throw new InvalidOperationException($"Không tìm thấy rẫy với ID: {dto.FarmId}");
 
-        // Check position exists
-        if (await _plantPositionRepository.PositionExistsAsync(dto.SeasonId, dto.RowNumber, dto.ColumnNumber))
-            throw new InvalidOperationException($"Vị trí hàng {dto.RowNumber}, cột {dto.ColumnNumber} đã có cây");
+        // Validate season if provided (OPTIONAL)
+        if (dto.SeasonId.HasValue)
+        {
+            var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId.Value);
+            if (season == null)
+                throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
+        }
+
+        // Check position exists in farm
+        if (await _plantPositionRepository.PositionExistsAsync(dto.FarmId, dto.RowNumber, dto.ColumnNumber))
+            throw new InvalidOperationException($"Vị trí hàng {dto.RowNumber}, cột {dto.ColumnNumber} đã có cây trong rẫy này");
 
         var position = new PlantPosition
         {
+            FarmId = dto.FarmId,
             SeasonId = dto.SeasonId,
             RowNumber = dto.RowNumber,
             ColumnNumber = dto.ColumnNumber,
@@ -94,8 +130,11 @@ public class PlantPositionService
         // Load Product for DTO
         var savedPosition = await _plantPositionRepository.GetByIdAsync(position.Id);
 
-        // Invalidate cache
-        await InvalidateCacheAsync(dto.SeasonId);
+        // Invalidate cache if season assigned
+        if (dto.SeasonId.HasValue)
+        {
+            await InvalidateCacheAsync(dto.SeasonId.Value);
+        }
 
         return MapToDto(savedPosition!);
     }
@@ -108,10 +147,10 @@ public class PlantPositionService
 
         position.ProductId = dto.ProductId;
         
-        // Parse HealthStatus string to enum
-        if (!string.IsNullOrEmpty(dto.HealthStatus) && Enum.TryParse<PlantHealthStatus>(dto.HealthStatus, true, out var healthStatus))
+        // Update health status if provided
+        if (dto.HealthStatus.HasValue)
         {
-            position.HealthStatus = healthStatus;
+            position.HealthStatus = dto.HealthStatus.Value;
         }
         
         position.EstimatedYield = dto.EstimatedYield;
@@ -120,8 +159,11 @@ public class PlantPositionService
         _plantPositionRepository.Update(position);
         await _unitOfWork.SaveChangesAsync();
 
-        // Invalidate cache
-        await InvalidateCacheAsync(position.SeasonId);
+        // Invalidate cache if season assigned
+        if (position.SeasonId.HasValue)
+        {
+            await InvalidateCacheAsync(position.SeasonId.Value);
+        }
 
         return MapToDto(position);
     }
@@ -140,34 +182,38 @@ public class PlantPositionService
         _plantPositionRepository.Remove(position);
         await _unitOfWork.SaveChangesAsync();
 
-        // Invalidate cache
-        await InvalidateCacheAsync(seasonId);
+        // Invalidate cache if season assigned
+        if (seasonId.HasValue)
+        {
+            await InvalidateCacheAsync(seasonId.Value);
+        }
 
         return true;
     }
 
     /// <summary>
     /// Bulk create - tạo nhiều cây cùng lúc
-    /// VD: Tạo 50 cây cà phê một lần
+    /// VD: Tạo 50 cây cà phê một lần trong 1 rẫy
     /// </summary>
-    public async Task<int> BulkCreatePlantsAsync(Guid seasonId, List<CreatePlantPositionDto> dtos)
+    public async Task<int> BulkCreatePlantsAsync(Guid farmId, List<CreatePlantPositionDto> dtos)
     {
-        // Validate season
-        var season = await _cropSeasonRepository.GetByIdAsync(seasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {seasonId}");
+        // Validate farm
+        var farm = await _farmRepository.GetByIdAsync(farmId);
+        if (farm == null)
+            throw new InvalidOperationException($"Không tìm thấy rẫy với ID: {farmId}");
 
         var positions = new List<PlantPosition>();
 
         foreach (var dto in dtos)
         {
-            // Check duplicate position
-            if (await _plantPositionRepository.PositionExistsAsync(seasonId, dto.RowNumber, dto.ColumnNumber))
+            // Check duplicate position in this farm
+            if (await _plantPositionRepository.PositionExistsAsync(farmId, dto.RowNumber, dto.ColumnNumber))
                 continue; // Skip duplicate
 
             positions.Add(new PlantPosition
             {
-                SeasonId = seasonId,
+                FarmId = farmId,
+                SeasonId = dto.SeasonId, // Optional
                 RowNumber = dto.RowNumber,
                 ColumnNumber = dto.ColumnNumber,
                 ProductId = dto.ProductId,
@@ -185,8 +231,15 @@ public class PlantPositionService
 
         await _unitOfWork.SaveChangesAsync();
 
-        // Invalidate cache
-        await InvalidateCacheAsync(seasonId);
+        // Invalidate farm cache
+        await _redisService.DeleteAsync($"plant_positions:farm:{farmId}");
+
+        // Invalidate season cache if any position has season
+        var seasonIds = positions.Where(p => p.SeasonId.HasValue).Select(p => p.SeasonId!.Value).Distinct();
+        foreach (var seasonId in seasonIds)
+        {
+            await InvalidateCacheAsync(seasonId);
+        }
 
         return positions.Count;
     }
@@ -205,13 +258,16 @@ public class PlantPositionService
         return new PlantPositionDto
         {
             Id = position.Id,
+            FarmId = position.FarmId,
+            FarmName = position.Farm?.Name ?? string.Empty,
             SeasonId = position.SeasonId,
+            SeasonName = position.CropSeason?.Name,
             RowNumber = position.RowNumber,
             ColumnNumber = position.ColumnNumber,
             ProductId = position.ProductId,
             ProductName = position.Product?.Name ?? string.Empty,
             PlantDate = position.PlantDate,
-            HealthStatus = position.HealthStatus.ToString(),
+            HealthStatus = position.HealthStatus, // ASP.NET Core sẽ tự serialize enum thành string trong JSON
             EstimatedYield = position.EstimatedYield,
             Note = position.Note
         };
