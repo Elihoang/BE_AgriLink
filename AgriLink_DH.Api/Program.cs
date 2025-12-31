@@ -2,15 +2,66 @@ using System.Text;
 using AgriLink_DH.Api.Extensions;
 using AgriLink_DH.Core.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using StackExchange.Redis;
+using Serilog;
+using Serilog.Events;
 
 // Enable legacy timestamp behavior for Npgsql to handle DateTime kinds flexibly
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ========================================
+//  Serilog Configuration - LOG TẤT CẢ BẠO GỒM ERRORS
+// ========================================
+Log.Logger = new LoggerConfiguration()
+    // Global minimum level
+    .MinimumLevel.Debug()
+
+    // Reduce noisy logs
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+
+    // Enrich
+    .Enrich.FromLogContext()
+    .Enrich.WithThreadId()
+
+    // ===== CONSOLE (color by level) =====
+    .WriteTo.Console(
+        outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] [{Section}] {Message:lj}{NewLine}{Exception}"
+    )
+
+    // ===== FILE: ALL LOGS =====
+    .WriteTo.File(
+        path: "Logs/all/agrilink-.log",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate:
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] [{Section}] {SourceContext}{NewLine}    {Message:lj}{NewLine}{Exception}"
+    )
+
+    // ===== FILE: ERRORS ONLY =====
+    .WriteTo.File(
+        path: "Logs/errors/error-.log",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: LogEventLevel.Error,
+        outputTemplate:
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] [{Section}] {SourceContext}{NewLine}    {Message:lj}{NewLine}{Exception}{NewLine}---"
+    )
+
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+Log.Information("[STARTUP] Starting AgriLink API");
+Log.Information("[LOGGING] Level: Debug (All logs including errors)");
+Log.Information("[LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log");
+Log.Information("[LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log");
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -115,6 +166,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Configure Forwarded Headers for Reverse Proxy support
+// Để lấy đúng IP từ X-Forwarded-For, X-Real-IP headers
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    // Cho phép tất cả proxy (development). Trong production nên giới hạn KnownProxies/KnownNetworks
+    KnownNetworks = { },
+    KnownProxies = { }
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -135,9 +196,22 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
-app.UseAuthentication(); // Add authentication middleware
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    Log.Information("✅ AgriLink API started successfully");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "❌ Application terminated unexpectedly");
+}
+finally
+{
+    Log.Information("👋 Shutting down AgriLink API...");
+    Log.CloseAndFlush();
+}

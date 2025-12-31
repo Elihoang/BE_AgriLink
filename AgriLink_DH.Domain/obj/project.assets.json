@@ -544,11 +544,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\HocTap\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
+      "projectUniqueName": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
       "projectName": "AgriLink_DH.Domain",
-      "projectPath": "C:\\HocTap\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
+      "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
       "packagesPath": "C:\\Users\\duyho\\.nuget\\packages\\",
-      "outputPath": "C:\\HocTap\\AgriLink_DH\\AgriLink_DH.Domain\\obj\\",
+      "outputPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

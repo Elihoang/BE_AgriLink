@@ -152,6 +152,16 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<decimal?>("Latitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("numeric(10,7)")
+                        .HasColumnName("latitude");
+
+                    b.Property<decimal?>("Longitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("numeric(10,7)")
+                        .HasColumnName("longitude");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -387,6 +397,10 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("estimated_yield");
 
+                    b.Property<Guid>("FarmId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farm_id");
+
                     b.Property<int>("HealthStatus")
                         .HasColumnType("integer")
                         .HasColumnName("health_status");
@@ -407,11 +421,13 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("row_number");
 
-                    b.Property<Guid>("SeasonId")
+                    b.Property<Guid?>("SeasonId")
                         .HasColumnType("uuid")
                         .HasColumnName("season_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FarmId");
 
                     b.HasIndex("ProductId");
 
@@ -869,6 +885,12 @@ namespace AgriLink_DH.Api.Migrations
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.PlantPosition", b =>
                 {
+                    b.HasOne("AgriLink_DH.Domain.Models.Farm", "Farm")
+                        .WithMany()
+                        .HasForeignKey("FarmId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("AgriLink_DH.Domain.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -877,11 +899,11 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasOne("AgriLink_DH.Domain.Models.CropSeason", "CropSeason")
                         .WithMany()
-                        .HasForeignKey("SeasonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SeasonId");
 
                     b.Navigation("CropSeason");
+
+                    b.Navigation("Farm");
 
                     b.Navigation("Product");
                 });

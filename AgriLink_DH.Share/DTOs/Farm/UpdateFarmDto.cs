@@ -12,4 +12,14 @@ public class UpdateFarmDto
 
     [MaxLength(50)]
     public string? AddressGps { get; set; }
+
+    /// <summary>
+    /// Vĩ độ - Người dùng chọn trên bản đồ
+    /// </summary>
+    public decimal? Latitude { get; set; }
+
+    /// <summary>
+    /// Kinh độ - Người dùng chọn trên bản đồ
+    /// </summary>
+    public decimal? Longitude { get; set; }
 }
