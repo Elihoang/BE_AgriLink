@@ -26,6 +26,10 @@ public class Product
     [MaxLength(20)]
     public string? Code { get; set; } // "CF_ROBUSTA", "PEPPER" (Dùng để map logic code)
 
+    [Column("image_url")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; } // URL hình ảnh sản phẩm
+
     // Navigation Properties
     public virtual ICollection<CropSeason> CropSeasons { get; set; } = new List<CropSeason>();
 }

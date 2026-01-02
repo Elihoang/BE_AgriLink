@@ -12,4 +12,5 @@ public class WorkerDto
     public string WorkerTypeLabel { get; set; } = string.Empty;
     public decimal? DefaultDailyWage { get; set; }
     public bool IsActive { get; set; }
+    public string? ImageUrl { get; set; }
 }

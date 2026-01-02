@@ -10,7 +10,7 @@ public class CreateFarmDto
 
     public decimal? AreaSize { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(255)]
     public string? AddressGps { get; set; }
 
     /// <summary>
@@ -22,4 +22,10 @@ public class CreateFarmDto
     /// Kinh độ - Người dùng chọn trên bản đồ
     /// </summary>
     public decimal? Longitude { get; set; }
+    
+    [MaxLength(500)]
+    public string? GoogleMapsUrl { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 }

@@ -16,4 +16,7 @@ public class CreateProductDto
 
     [MaxLength(20, ErrorMessage = "Mã sản phẩm không được quá 20 ký tự")]
     public string? Code { get; set; }
+
+    [MaxLength(500, ErrorMessage = "URL hình ảnh không được quá 500 ký tự")]
+    public string? ImageUrl { get; set; }
 }

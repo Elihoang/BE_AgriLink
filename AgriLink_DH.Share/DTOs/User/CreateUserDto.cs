@@ -27,4 +27,7 @@ public class CreateUserDto
     public string? PhoneNumber { get; set; }
 
     public UserRole Role { get; set; } = UserRole.User;
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 }

@@ -24,4 +24,11 @@ public class FarmRepository : BaseRepository<Farm>, IFarmRepository
         return await _dbSet
             .AnyAsync(f => f.Name == name && f.OwnerUserId == userId, cancellationToken);
     }
+
+    public async Task<Farm?> GetFarmWithDetailsByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(f => f.Owner)
+            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+    }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AgriLink_DH.Domain.Common;
 
 namespace AgriLink_DH.Share.DTOs.WeatherLog;
 
@@ -12,6 +13,8 @@ public class CreateWeatherLogDto
     public decimal? Temperature { get; set; }
 
     public decimal? Rainfall { get; set; }
+
+    public WeatherCondition Condition { get; set; } = WeatherCondition.Sunny;
 
     public string? Note { get; set; }
 }

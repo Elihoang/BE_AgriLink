@@ -57,6 +57,27 @@ public class FarmsController : ControllerBase
         }
     }
 
+    [HttpGet("my-farms-with-seasons")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<FarmWithSeasonDto>>>> GetMyFarmsWithSeasons()
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<IEnumerable<FarmWithSeasonDto>>.ErrorResponse("Chưa đăng nhập", 401));
+            }
+
+            var farms = await _farmService.GetFarmsWithActiveSeasonsAsync(Guid.Parse(userId));
+            return Ok(ApiResponse<IEnumerable<FarmWithSeasonDto>>.SuccessResponse(farms, "Lấy danh sách vườn kèm vụ mùa thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách vườn kèm vụ mùa của user");
+            return StatusCode(500, ApiResponse<IEnumerable<FarmWithSeasonDto>>.ErrorResponse("Lỗi khi lấy danh sách vườn", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<FarmDto>>> GetFarmById(Guid id)
     {

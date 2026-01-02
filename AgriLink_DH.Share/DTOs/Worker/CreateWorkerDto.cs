@@ -16,4 +16,7 @@ public class CreateWorkerDto
     public decimal? DefaultDailyWage { get; set; }
 
     public WorkerType WorkerType { get; set; } = WorkerType.Seasonal;
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 }

@@ -9,6 +9,7 @@ public class CropSeasonDto
     public string FarmName { get; set; } = string.Empty;
     public Guid ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
+    public string? ProductImageUrl { get; set; }  // Thêm image URL
     public string Name { get; set; } = string.Empty;
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }

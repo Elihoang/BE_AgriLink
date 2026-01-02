@@ -44,6 +44,25 @@ public class CropSeasonService
         return seasons.Select(MapToDto);
     }
 
+    /// <summary>
+    /// Lấy tất cả seasons của các farms thuộc user
+    /// </summary>
+    public async Task<IEnumerable<CropSeasonDto>> GetSeasonsByUserIdAsync(Guid userId)
+    {
+        // Lấy tất cả farms của user
+        var userFarms = await _farmRepository.GetFarmsByUserIdAsync(userId);
+        var userSeasons = new List<CropSeasonDto>();
+
+        // Lấy seasons của từng farm (đã include Product và Farm)
+        foreach (var farm in userFarms)
+        {
+            var farmSeasons = await _cropSeasonRepository.GetSeasonsByFarmIdAsync(farm.Id);
+            userSeasons.AddRange(farmSeasons.Select(MapToDto));
+        }
+
+        return userSeasons.OrderByDescending(s => s.StartDate);
+    }
+
     public async Task<CropSeasonDto?> GetSeasonByIdAsync(Guid id)
     {
         var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(id);
@@ -140,6 +159,7 @@ public class CropSeasonService
             FarmName = season.Farm?.Name ?? string.Empty,
             ProductId = season.ProductId,
             ProductName = season.Product?.Name ?? string.Empty,
+            ProductImageUrl = season.Product?.ImageUrl,  // Map product image
             Name = season.Name,
             StartDate = season.StartDate,
             EndDate = season.EndDate,

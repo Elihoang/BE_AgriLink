@@ -65,6 +65,30 @@ public class CropSeasonsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Lấy tất cả seasons của farms thuộc user hiện tại
+    /// </summary>
+    [HttpGet("my-seasons")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<CropSeasonDto>>>> GetMySeasons()
+    {
+        try
+        {
+            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Unauthorized(ApiResponse<IEnumerable<CropSeasonDto>>.ErrorResponse("Không xác định được người dùng", 401));
+            }
+
+            var seasons = await _cropSeasonService.GetSeasonsByUserIdAsync(userId);
+            return Ok(ApiResponse<IEnumerable<CropSeasonDto>>.SuccessResponse(seasons, "Lấy danh sách vụ mùa của bạn thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách vụ mùa của người dùng");
+            return StatusCode(500, ApiResponse<IEnumerable<CropSeasonDto>>.ErrorResponse("Lỗi khi lấy danh sách vụ mùa", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<CropSeasonDto>>> GetSeasonById(Guid id)
     {

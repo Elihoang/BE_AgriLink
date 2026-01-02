@@ -28,8 +28,8 @@ public class Farm
     public decimal? AreaSize { get; set; } // Diện tích (Hecta). VD: 2.5
 
     [Column("address_gps")]
-    [MaxLength(50)]
-    public string? AddressGps { get; set; } // "12.3456, 108.4567" (Backward compatibility)
+    [MaxLength(255)]
+    public string? AddressGps { get; set; } 
 
     /// <summary>
     /// Vĩ độ (Latitude) - Người dùng chọn trên map
@@ -45,10 +45,21 @@ public class Farm
     [Precision(10, 7)]
     public decimal? Longitude { get; set; } // VD: 108.0500000 (Đắk Lắk)
 
+    [Column("google_maps_url")]
+    [MaxLength(500)]
+    public string? GoogleMapsUrl { get; set; } // Link gốc Google Maps
+
+    [Column("image_url")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; } // URL hình ảnh trang trại
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation Properties
+    [ForeignKey("OwnerUserId")]
+    public virtual User? Owner { get; set; }
+
     public virtual ICollection<CropSeason> CropSeasons { get; set; } = new List<CropSeason>();
     public virtual ICollection<TaskType> TaskTypes { get; set; } = new List<TaskType>();
     public virtual ICollection<Worker> Workers { get; set; } = new List<Worker>();

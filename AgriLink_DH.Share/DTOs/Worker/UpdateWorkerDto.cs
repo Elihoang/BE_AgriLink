@@ -16,4 +16,7 @@ public class UpdateWorkerDto
 
     public WorkerType WorkerType { get; set; }
     public bool IsActive { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 }

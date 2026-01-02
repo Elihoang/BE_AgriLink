@@ -15,4 +15,7 @@ public class UpdateUserDto
     [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
     [MaxLength(20)]
     public string? PhoneNumber { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
 }

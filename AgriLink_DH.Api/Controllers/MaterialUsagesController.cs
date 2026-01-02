@@ -37,6 +37,21 @@ public class MaterialUsagesController : ControllerBase
         }
     }
 
+    [HttpGet("by-farm/{farmId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<MaterialUsageDto>>>> GetByFarm(Guid farmId)
+    {
+        try
+        {
+            var usages = await _materialUsageService.GetByFarmAsync(farmId);
+            return Ok(ApiResponse<IEnumerable<MaterialUsageDto>>.SuccessResponse(usages, "Lấy danh sách vật tư của trang trại thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách vật tư của trang trại {FarmId}", farmId);
+            return StatusCode(500, ApiResponse<IEnumerable<MaterialUsageDto>>.ErrorResponse("Lỗi khi lấy danh sách vật tư", 500));
+        }
+    }
+
     [HttpGet("total-cost/{seasonId:guid}")]
     public async Task<ActionResult<ApiResponse<decimal>>> GetTotalCost(Guid seasonId)
     {

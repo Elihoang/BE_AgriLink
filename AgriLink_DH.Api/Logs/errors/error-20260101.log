@@ -1,0 +1,10 @@
+2026-01-01 09:49:53.292 [ERR] [] AgriLink_DH.Api.Controllers.RedisDebugController
+    Lỗi khi lấy server info
+StackExchange.Redis.RedisCommandException: This operation is not available unless admin mode is enabled: INFO
+   at StackExchange.Redis.ConnectionMultiplexer.CheckMessage(Message message) in /_/src/StackExchange.Redis/ConnectionMultiplexer.cs:line 345
+   at StackExchange.Redis.RedisBase.ExecuteSync[T](Message message, ResultProcessor`1 processor, ServerEndPoint server, T defaultValue) in /_/src/StackExchange.Redis/RedisBase.cs:line 61
+   at StackExchange.Redis.RedisServer.ExecuteSync[T](Message message, ResultProcessor`1 processor, ServerEndPoint server, T defaultValue) in /_/src/StackExchange.Redis/RedisServer.cs:line 712
+   at StackExchange.Redis.RedisServer.Info(RedisValue section, CommandFlags flags) in /_/src/StackExchange.Redis/RedisServer.cs:line 315
+   at AgriLink_DH.Api.Controllers.RedisDebugController.GetServerInfo() in C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\Controllers\RedisDebugController.cs:line 169
+
+---

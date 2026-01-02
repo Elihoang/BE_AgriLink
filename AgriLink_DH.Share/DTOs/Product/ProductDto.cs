@@ -9,4 +9,5 @@ public class ProductDto
     public string Name { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public string? Code { get; set; }
+    public string? ImageUrl { get; set; }
 }

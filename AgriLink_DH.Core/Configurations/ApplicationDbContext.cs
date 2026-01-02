@@ -68,6 +68,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Farm>()
             .HasIndex(f => f.OwnerUserId);
 
+        // Explicitly configure Foreign Key relationship
+        modelBuilder.Entity<Farm>()
+            .HasOne(f => f.Owner)
+            .WithMany() // One-way relationship (User doesn't have Farms collection)
+            .HasForeignKey(f => f.OwnerUserId)
+            .IsRequired(); // Since OwnerUserId is [Required]
+
         // CropSeason: Index on farm_id + product_id for faster queries
         modelBuilder.Entity<CropSeason>()
             .HasIndex(cs => new { cs.FarmId, cs.ProductId });

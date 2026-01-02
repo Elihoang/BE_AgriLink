@@ -20,6 +20,15 @@ public class MaterialUsageRepository : BaseRepository<MaterialUsage>, IMaterialU
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<MaterialUsage>> GetByFarmIdAsync(Guid farmId)
+    {
+        return await _dbSet
+            .Include(m => m.CropSeason)
+            .Where(m => m.CropSeason.FarmId == farmId && !m.IsDeleted)
+            .OrderByDescending(m => m.UsageDate)
+            .ToListAsync();
+    }
+
     public async Task<decimal> GetTotalCostBySeasonAsync(Guid seasonId)
     {
         return await _dbSet

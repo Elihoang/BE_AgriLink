@@ -1,6 +1,7 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
+using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Share.DTOs.WeatherLog;
 
 namespace AgriLink_DH.Core.Services;
@@ -33,6 +34,12 @@ public class WeatherLogService
         return logs.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<WeatherLogDto>> GetByUserIdAsync(Guid userId)
+    {
+        var logs = await _weatherLogRepository.GetByUserIdAsync(userId);
+        return logs.Select(MapToDto);
+    }
+
     public async Task<WeatherLogDto> CreateLogAsync(CreateWeatherLogDto dto)
     {
         var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
@@ -43,7 +50,7 @@ public class WeatherLogService
         {
             FarmId = dto.FarmId,
             LogDate = dto.LogDate.ToUniversalTime(),
-            Condition = AgriLink_DH.Domain.Common.WeatherCondition.Sunny,
+            Condition = dto.Condition,
             RainfallMm = dto.Rainfall,
             Note = dto.Note
         };
@@ -75,9 +82,23 @@ public class WeatherLogService
             FarmId = log.FarmId,
             FarmName = log.Farm?.Name ?? string.Empty,
             LogDate = log.LogDate,
+            Condition = log.Condition.ToString(),
+            ConditionLabel = GetConditionLabel(log.Condition),
             Temperature = null,
             Rainfall = log.RainfallMm,
             Note = log.Note
+        };
+    }
+
+    private static string GetConditionLabel(WeatherCondition condition)
+    {
+        return condition switch
+        {
+            WeatherCondition.Sunny => "Nắng",
+            WeatherCondition.Rainy => "Mưa",
+            WeatherCondition.Cloudy => "Nhiều mây",
+            WeatherCondition.Storm => "Giông bão",
+            _ => "Không xác định"
         };
     }
 }
