@@ -34,6 +34,10 @@ public class Worker
     [Column("is_active")]
     public bool IsActive { get; set; } = true; // False nếu đã nghỉ việc
 
+    [Column("image_url")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; } // URL hình ảnh nhân công
+
     // Navigation Properties
     // No Farm Navigation property needed here as it belongs to User
 

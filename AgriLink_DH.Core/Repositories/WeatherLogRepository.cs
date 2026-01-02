@@ -28,4 +28,13 @@ public class WeatherLogRepository : BaseRepository<WeatherLog>, IWeatherLogRepos
             .OrderBy(w => w.LogDate)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<WeatherLog>> GetByUserIdAsync(Guid userId)
+    {
+        return await _dbSet
+            .Include(w => w.Farm)
+            .Where(w => w.Farm.OwnerUserId == userId)
+            .OrderByDescending(w => w.LogDate)
+            .ToListAsync();
+    }
 }

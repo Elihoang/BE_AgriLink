@@ -27,6 +27,12 @@ public class MaterialUsageService
         return usages.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<MaterialUsageDto>> GetByFarmAsync(Guid farmId)
+    {
+        var usages = await _materialUsageRepository.GetByFarmIdAsync(farmId);
+        return usages.Select(MapToDto);
+    }
+
     public async Task<decimal> GetTotalCostAsync(Guid seasonId)
     {
         return await _materialUsageRepository.GetTotalCostBySeasonAsync(seasonId);

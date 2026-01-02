@@ -54,7 +54,8 @@ public class ProductService
             Id = Guid.NewGuid(),
             Name = dto.Name,
             Unit = dto.Unit,
-            Code = dto.Code
+            Code = dto.Code,
+            ImageUrl = dto.ImageUrl
         };
 
         await _productRepository.AddAsync(product, cancellationToken);
@@ -84,6 +85,7 @@ public class ProductService
         product.Name = dto.Name;
         product.Unit = dto.Unit;
         product.Code = dto.Code;
+        product.ImageUrl = dto.ImageUrl;
 
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -113,7 +115,8 @@ public class ProductService
             Id = product.Id,
             Name = product.Name,
             Unit = product.Unit,
-            Code = product.Code
+            Code = product.Code,
+            ImageUrl = product.ImageUrl
         };
     }
 }

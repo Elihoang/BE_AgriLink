@@ -1,3 +1,4 @@
+using AgriLink_DH.Api.Extensions;
 using AgriLink_DH.Core.Services;
 using AgriLink_DH.Share.Common;
 using AgriLink_DH.Share.DTOs.WeatherLog;
@@ -33,6 +34,22 @@ public class WeatherLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Lỗi khi lấy nhật ký thời tiết");
+            return StatusCode(500, ApiResponse<IEnumerable<WeatherLogDto>>.ErrorResponse("Lỗi khi lấy nhật ký thời tiết", 500));
+        }
+    }
+
+    [HttpGet("my-logs")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<WeatherLogDto>>>> GetMyLogs()
+    {
+        try
+        {
+            var userId = User.GetUserId();
+            var logs = await _weatherLogService.GetByUserIdAsync(userId);
+            return Ok(ApiResponse<IEnumerable<WeatherLogDto>>.SuccessResponse(logs, "Lấy nhật ký thời tiết của tôi thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy nhật ký thời tiết của tôi");
             return StatusCode(500, ApiResponse<IEnumerable<WeatherLogDto>>.ErrorResponse("Lỗi khi lấy nhật ký thời tiết", 500));
         }
     }

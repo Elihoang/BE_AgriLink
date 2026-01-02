@@ -103,4 +103,12 @@ public class JwtHelper
 
         return principal;
     }
+
+    /// <summary>
+    /// Validate token and get claims principal (alias for GetPrincipalFromExpiredToken)
+    /// </summary>
+    public ClaimsPrincipal? ValidateToken(string token)
+    {
+        return GetPrincipalFromExpiredToken(token);
+    }
 }

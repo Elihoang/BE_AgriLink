@@ -27,4 +27,27 @@ public class WorkAssignmentRepository : BaseRepository<WorkAssignment>, IWorkAss
             .OrderBy(wa => wa.DailyWorkLog.WorkDate)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Worker>> GetWorkersBySeasonIdAsync(Guid seasonId)
+    {
+        return await _dbSet
+            .Include(wa => wa.DailyWorkLog)
+            .Include(wa => wa.Worker)
+            .Where(wa => wa.DailyWorkLog.SeasonId == seasonId)
+            .Select(wa => wa.Worker)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Worker>> GetWorkersByFarmIdAsync(Guid farmId)
+    {
+        return await _dbSet
+            .Include(wa => wa.DailyWorkLog)
+            .ThenInclude(dwl => dwl.CropSeason)
+            .Include(wa => wa.Worker)
+            .Where(wa => wa.DailyWorkLog.CropSeason.FarmId == farmId)
+            .Select(wa => wa.Worker)
+            .Distinct()
+            .ToListAsync();
+    }
 }

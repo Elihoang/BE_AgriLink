@@ -10,16 +10,31 @@ public class WorkerService
 {
     private readonly IWorkerRepository _workerRepository;
     private readonly IFarmRepository _farmRepository;
+    private readonly IWorkAssignmentRepository _workAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public WorkerService(
         IWorkerRepository workerRepository,
         IFarmRepository farmRepository,
+        IWorkAssignmentRepository workAssignmentRepository,
         IUnitOfWork unitOfWork)
     {
         _workerRepository = workerRepository;
         _farmRepository = farmRepository;
+        _workAssignmentRepository = workAssignmentRepository;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<IEnumerable<WorkerDto>> GetWorkersBySeasonIdAsync(Guid seasonId)
+    {
+        var workers = await _workAssignmentRepository.GetWorkersBySeasonIdAsync(seasonId);
+        return workers.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<WorkerDto>> GetWorkersByFarmIdAsync(Guid farmId)
+    {
+        var workers = await _workAssignmentRepository.GetWorkersByFarmIdAsync(farmId);
+        return workers.Select(MapToDto);
     }
 
     public async Task<IEnumerable<WorkerDto>> GetAllAsync()
@@ -42,6 +57,7 @@ public class WorkerService
             Phone = dto.Phone,
             DefaultDailyWage = dto.DefaultDailyWage,
             WorkerType = dto.WorkerType,
+            ImageUrl = dto.ImageUrl,
             IsActive = true
         };
 
@@ -61,6 +77,7 @@ public class WorkerService
         worker.Phone = dto.Phone;
         worker.DefaultDailyWage = dto.DefaultDailyWage;
         worker.WorkerType = dto.WorkerType;
+        worker.ImageUrl = dto.ImageUrl;
         worker.IsActive = dto.IsActive;
 
         _workerRepository.Update(worker);
@@ -91,7 +108,8 @@ public class WorkerService
             WorkerType = worker.WorkerType,
             WorkerTypeLabel = worker.WorkerType.ToVietnamese(),
             DefaultDailyWage = worker.DefaultDailyWage,
-            IsActive = worker.IsActive
+            IsActive = worker.IsActive,
+            ImageUrl = worker.ImageUrl
         };
     }
 }

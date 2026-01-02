@@ -18,5 +18,10 @@ public enum WeatherCondition
     /// <summary>
     /// Âm u / U ám
     /// </summary>
-    Cloudy
+    Cloudy,
+    
+    /// <summary>
+    /// Giông bão
+    /// </summary>
+    Storm
 }

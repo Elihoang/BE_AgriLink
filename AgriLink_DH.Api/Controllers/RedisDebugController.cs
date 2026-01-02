@@ -185,4 +185,55 @@ public class RedisDebugController : ControllerBase
             return StatusCode(500, ApiResponse<object>.ErrorResponse(ex.Message, 500));
         }
     }
+
+    /// <summary>
+    /// 🔑 Lấy tất cả Refresh Tokens đang lưu trong Redis
+    /// </summary>
+    [HttpGet("refresh-tokens")]
+    public async Task<ActionResult<ApiResponse<object>>> GetAllRefreshTokens()
+    {
+        try
+        {
+            var server = _redis.GetServer(_redis.GetEndPoints().First());
+            var db = _redis.GetDatabase();
+            
+            // Scan tất cả keys có pattern "refresh_token:*" (với underscore)
+            var refreshTokenKeys = server.Keys(pattern: "refresh_token:*")
+                .Select(k => k.ToString())
+                .ToList();
+
+            var refreshTokens = new List<object>();
+
+            foreach (var key in refreshTokenKeys)
+            {
+                // Get refresh token value
+                var tokenValue = await db.StringGetAsync(key);
+                
+                // Get TTL
+                var ttl = await db.KeyTimeToLiveAsync(key);
+                
+                // Extract userId from key (format: "refresh_token:userId")
+                var userId = key.Replace("refresh_token:", "");
+
+                refreshTokens.Add(new
+                {
+                    UserId = userId,
+                    RefreshToken = tokenValue.ToString(),
+                    TTL = ttl.HasValue ? $"{(int)ttl.Value.TotalSeconds} seconds" : "No expiry",
+                    ExpiresAt = ttl.HasValue ? DateTime.UtcNow.Add(ttl.Value) : (DateTime?)null
+                });
+            }
+
+            return Ok(ApiResponse<object>.SuccessResponse(new
+            {
+                TotalTokens = refreshTokens.Count,
+                Tokens = refreshTokens
+            }, $"Tìm thấy {refreshTokens.Count} refresh tokens"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy refresh tokens");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(ex.Message, 500));
+        }
+    }
 }

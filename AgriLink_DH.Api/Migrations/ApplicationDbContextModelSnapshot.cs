@@ -131,8 +131,8 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AddressGps")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("address_gps");
 
                     b.Property<decimal?>("AreaSize")
@@ -147,6 +147,16 @@ namespace AgriLink_DH.Api.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("deleted_at");
+
+                    b.Property<string>("GoogleMapsUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("google_maps_url");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -449,6 +459,11 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("code");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -547,6 +562,11 @@ namespace AgriLink_DH.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("full_name");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
@@ -741,6 +761,11 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("full_name");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -837,6 +862,17 @@ namespace AgriLink_DH.Api.Migrations
                     b.Navigation("CropSeason");
 
                     b.Navigation("TaskType");
+                });
+
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.Farm", b =>
+                {
+                    b.HasOne("AgriLink_DH.Domain.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.FarmSale", b =>

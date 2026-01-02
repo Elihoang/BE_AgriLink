@@ -6,4 +6,6 @@ public interface IWorkAssignmentRepository : IRepository<WorkAssignment>
 {
     Task<IEnumerable<WorkAssignment>> GetByLogIdAsync(Guid logId);
     Task<IEnumerable<WorkAssignment>> GetByWorkerIdAsync(Guid workerId, DateTime fromDate, DateTime toDate);
+    Task<IEnumerable<Worker>> GetWorkersBySeasonIdAsync(Guid seasonId);
+    Task<IEnumerable<Worker>> GetWorkersByFarmIdAsync(Guid farmId);
 }

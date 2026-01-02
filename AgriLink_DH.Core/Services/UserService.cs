@@ -63,6 +63,7 @@ public class UserService
             FullName = dto.FullName,
             PhoneNumber = dto.PhoneNumber,
             Role = dto.Role,
+            ImageUrl = dto.ImageUrl,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -93,6 +94,7 @@ public class UserService
 
         user.FullName = dto.FullName;
         user.PhoneNumber = dto.PhoneNumber;
+        user.ImageUrl = dto.ImageUrl;
 
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
@@ -170,6 +172,7 @@ public class UserService
             Role = user.Role,
             RoleLabel = user.Role.ToString(),
             IsActive = user.IsActive,
+            ImageUrl = user.ImageUrl,
             CreatedAt = user.CreatedAt
         };
     }

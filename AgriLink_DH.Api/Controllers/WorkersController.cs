@@ -36,6 +36,36 @@ public class WorkersController : ControllerBase
         }
     }
 
+    [HttpGet("by-season/{seasonId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<WorkerDto>>>> GetWorkersBySeason(Guid seasonId)
+    {
+        try
+        {
+            var workers = await _workerService.GetWorkersBySeasonIdAsync(seasonId);
+            return Ok(ApiResponse<IEnumerable<WorkerDto>>.SuccessResponse(workers, "Lấy danh sách nhân công theo vụ mùa thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách nhân công theo vụ mùa {SeasonId}", seasonId);
+            return StatusCode(500, ApiResponse<IEnumerable<WorkerDto>>.ErrorResponse("Lỗi khi lấy danh sách nhân công theo vụ mùa", 500));
+        }
+    }
+
+    [HttpGet("by-farm/{farmId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<WorkerDto>>>> GetWorkersByFarm(Guid farmId)
+    {
+        try
+        {
+            var workers = await _workerService.GetWorkersByFarmIdAsync(farmId);
+            return Ok(ApiResponse<IEnumerable<WorkerDto>>.SuccessResponse(workers, "Lấy danh sách nhân công theo trang trại thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách nhân công theo trang trại {FarmId}", farmId);
+            return StatusCode(500, ApiResponse<IEnumerable<WorkerDto>>.ErrorResponse("Lỗi khi lấy danh sách nhân công theo trang trại", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<WorkerDto>>> GetWorkerById(Guid id)
     {

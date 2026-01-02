@@ -39,6 +39,10 @@ public class User
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
 
+    [Column("image_url")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; } // URL hình ảnh người dùng/avatar
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -43,13 +43,13 @@ public class AuthService
         // Check if username exists
         if (await _userRepository.ExistsByUsernameAsync(registerDto.Username))
         {
-            return (false, "Username already exists", null, null);
+            return (false, "Tên đăng nhập đã tồn tại", null, null);
         }
 
         // Check if email exists
         if (await _userRepository.ExistsByEmailAsync(registerDto.Email))
         {
-            return (false, "Email already exists", null, null);
+            return (false, "Email đã được sử dụng", null, null);
         }
 
         // Hash password
@@ -86,7 +86,7 @@ public class AuthService
         // Map to response DTO
         var userResponse = MapToUserResponseDto(user);
 
-        return (true, "Registration successful", userResponse, tokens);
+        return (true, "Đăng ký thành công", userResponse, tokens);
     }
 
     public async Task<(bool Success, string Message, UserResponseDto? User, TokenDto? Token)> LoginAsync(
@@ -100,7 +100,7 @@ public class AuthService
         if (user == null)
         {
             // Log failed login attempt if we have userId
-            return (false, "Invalid username/email or password", null, null);
+            return (false, "Tên đăng nhập/Email hoặc mật khẩu không đúng", null, null);
         }
 
         // Check if user is active
@@ -108,7 +108,7 @@ public class AuthService
         {
             // Log failed login - account inactive
             await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Login, false);
-            return (false, "Account is inactive", null, null);
+            return (false, "Tài khoản đã bị khóa", null, null);
         }
 
         // Verify password
@@ -116,7 +116,7 @@ public class AuthService
         {
             // Log failed login - wrong password
             await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Login, false);
-            return (false, "Invalid username/email or password", null, null);
+            return (false, "Tên đăng nhập/Email hoặc mật khẩu không đúng", null, null);
         }
 
         // Generate tokens
@@ -134,21 +134,58 @@ public class AuthService
         // Map to response DTO
         var userResponse = MapToUserResponseDto(user);
 
-        return (true, "Login successful", userResponse, tokens);
+        return (true, "Đăng nhập thành công", userResponse, tokens);
     }
 
-    public Task<(bool Success, string Message, TokenDto? Token)> RefreshTokenAsync(string refreshToken)
+    public async Task<(bool Success, string Message, TokenDto? Token)> RefreshTokenAsync(string refreshToken)
     {
-        // Note: We need to get userId from the old access token
-        // In a real scenario, the client should send both tokens
-        // For now, we'll assume the refresh token validation
-        
-        // This is a simplified version - in production you should:
-        // 1. Extract userId from the expired access token
-        // 2. Verify the refresh token from Redis matches
-        // 3. Generate new token pair
-        
-        return Task.FromResult<(bool Success, string Message, TokenDto? Token)>((false, "Invalid refresh token", null));
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return (false, "Cần có Refresh token", null);
+        }
+
+        try
+        {
+            var allUsers = await _userRepository.GetAllAsync();
+            
+            User? matchedUser = null;
+            foreach (var user in allUsers)
+            {
+                var storedRefreshToken = await _redisService.GetRefreshTokenAsync(user.Id.ToString());
+                if (!string.IsNullOrEmpty(storedRefreshToken) && storedRefreshToken == refreshToken)
+                {
+                    matchedUser = user;
+                    break;
+                }
+            }
+
+            if (matchedUser == null)
+            {
+                return (false, "Refresh token không hợp lệ hoặc đã hết hạn", null);
+            }
+
+            // Check if user is still active
+            if (!matchedUser.IsActive)
+            {
+                return (false, "Tài khoản đã bị khóa", null);
+            }
+
+            // Generate new token pair
+            var newTokens = _jwtHelper.GenerateTokenPair(matchedUser);
+
+            // Update refresh token in Redis
+            var refreshTokenExpiration = TimeSpan.FromDays(
+                Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
+            );
+            await _redisService.SetRefreshTokenAsync(matchedUser.Id.ToString(), newTokens.RefreshToken, refreshTokenExpiration);
+
+            return (true, "Làm mới token thành công", newTokens);
+        }
+        catch (Exception)
+        {
+            // Log error but don't expose details
+            return (false, "Làm mới token thất bại", null);
+        }
     }
 
     public async Task<bool> LogoutAsync(string userId, string? ipAddress = null, string? deviceInfo = null)

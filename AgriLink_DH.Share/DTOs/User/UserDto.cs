@@ -12,5 +12,6 @@ public class UserDto
     public UserRole Role { get; set; }
     public string RoleLabel { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 }
