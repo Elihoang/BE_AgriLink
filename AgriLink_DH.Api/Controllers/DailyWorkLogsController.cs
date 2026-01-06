@@ -36,6 +36,21 @@ public class DailyWorkLogsController : ControllerBase
         }
     }
 
+    [HttpGet("task-type/{taskTypeId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetLogsByTaskType(Guid taskTypeId)
+    {
+        try
+        {
+            var logs = await _dailyWorkLogService.GetLogsByTaskTypeAsync(taskTypeId);
+            return Ok(ApiResponse<IEnumerable<DailyWorkLogDto>>.SuccessResponse(logs, "Lấy danh sách nhật ký theo loại công việc thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách nhật ký theo TaskType {TaskTypeId}", taskTypeId);
+            return StatusCode(500, ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Lỗi khi lấy danh sách nhật ký", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<DailyWorkLogDto>>> GetLogById(Guid id)
     {

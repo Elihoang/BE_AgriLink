@@ -16,4 +16,9 @@ public class CropSeasonDto
     public SeasonStatus Status { get; set; }
     public string StatusText { get; set; } = string.Empty;
     public string? Note { get; set; }
+    
+    // Growth Stage
+    public string? CurrentStage { get; set; }
+    public DateTime? StageChangedAt { get; set; }
+    public string? StageNotes { get; set; }
 }

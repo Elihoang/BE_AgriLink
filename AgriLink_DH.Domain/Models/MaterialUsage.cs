@@ -48,6 +48,12 @@ public class MaterialUsage
     [ForeignKey(nameof(SeasonId))]
     public virtual CropSeason CropSeason { get; set; } = null!;
 
+    [Column("material_id")]
+    public Guid? MaterialId { get; set; }
+
+    [ForeignKey(nameof(MaterialId))]
+    public virtual Material? Material { get; set; }
+
     // Soft Delete
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;

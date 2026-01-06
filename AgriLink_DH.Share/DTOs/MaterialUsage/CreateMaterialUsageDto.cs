@@ -9,9 +9,10 @@ public class CreateMaterialUsageDto
 
     public DateTime UsageDate { get; set; } = DateTime.UtcNow;
 
-    [Required]
+    public Guid? MaterialId { get; set; } // Link to Inventory
+    
     [MaxLength(150)]
-    public string MaterialName { get; set; } = string.Empty;
+    public string? MaterialName { get; set; } // Snapshot or Free text
 
     [Required]
     [Range(0.01, double.MaxValue)]

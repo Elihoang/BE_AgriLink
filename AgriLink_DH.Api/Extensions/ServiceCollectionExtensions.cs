@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWeatherLogRepository, Core.Repositories.WeatherLogRepository>();
         services.AddScoped<IUserLoginLogRepository, Core.Repositories.UserLoginLogRepository>();
         services.AddScoped<IPlantPositionRepository, Core.Repositories.PlantPositionRepository>();
-
+        services.AddScoped<IMaterialRepository, Core.Repositories.MaterialRepository>();
         
         return services;
     }
@@ -61,6 +61,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WeatherLogService>();
         services.AddScoped<UserService>();
         services.AddScoped<PlantPositionService>();
+        services.AddScoped<MaterialService>();
         
         // Weather Service - Gọi OpenWeather API
         services.AddHttpClient<WeatherService>();

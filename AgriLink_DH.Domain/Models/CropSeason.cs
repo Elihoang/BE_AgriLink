@@ -37,6 +37,17 @@ public class CropSeason
     [MaxLength(20)]
     public SeasonStatus Status { get; set; } = SeasonStatus.Active;
 
+    // Growth Stage Tracking
+    [Column("current_stage")]
+    [MaxLength(100)]
+    public string? CurrentStage { get; set; } // "Ra bông", "Đậu trái", etc.
+    
+    [Column("stage_changed_at")]
+    public DateTime? StageChangedAt { get; set; }
+    
+    [Column("stage_notes")]
+    public string? StageNotes { get; set; }
+
     [Column("note")]
     public string? Note { get; set; }
 
