@@ -6,6 +6,7 @@ public class MaterialUsageDto
     public Guid SeasonId { get; set; }
     public string SeasonName { get; set; } = string.Empty;
     public DateTime UsageDate { get; set; }
+    public Guid? MaterialId { get; set; }
     public string? MaterialName { get; set; }
     public decimal Quantity { get; set; }
     public string? Unit { get; set; }

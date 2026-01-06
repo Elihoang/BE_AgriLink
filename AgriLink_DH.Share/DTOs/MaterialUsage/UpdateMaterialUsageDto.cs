@@ -5,10 +5,11 @@ namespace AgriLink_DH.Share.DTOs.MaterialUsage;
 public class UpdateMaterialUsageDto
 {
     public DateTime UsageDate { get; set; }
+    
+    public Guid? MaterialId { get; set; }
 
-    [Required]
     [MaxLength(150)]
-    public string MaterialName { get; set; } = string.Empty;
+    public string? MaterialName { get; set; }
 
     [Required]
     [Range(0.01, double.MaxValue)]

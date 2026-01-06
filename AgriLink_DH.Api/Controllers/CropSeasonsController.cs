@@ -166,4 +166,26 @@ public class CropSeasonsController : ControllerBase
             return StatusCode(500, ApiResponse<bool>.ErrorResponse("Lỗi khi xóa vụ mùa", 500));
         }
     }
+
+    /// <summary>
+    /// Cập nhật giai đoạn sinh trưởng của vụ mùa
+    /// </summary>
+    [HttpPatch("{id:guid}/stage")]
+    public async Task<ActionResult<ApiResponse<CropSeasonDto>>> UpdateStage(Guid id, [FromBody] UpdateStageDto dto)
+    {
+        try
+        {
+            var season = await _cropSeasonService.UpdateStageAsync(id, dto);
+            return Ok(ApiResponse<CropSeasonDto>.SuccessResponse(season, "Cập nhật giai đoạn thành công"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ApiResponse<CropSeasonDto>.NotFoundResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi cập nhật giai đoạn vụ mùa {Id}", id);
+            return StatusCode(500, ApiResponse<CropSeasonDto>.ErrorResponse("Lỗi khi cập nhật giai đoạn", 500));
+        }
+    }
 }

@@ -35,6 +35,12 @@ public class DailyWorkLogService
         return logs.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<DailyWorkLogDto>> GetLogsByTaskTypeAsync(Guid taskTypeId)
+    {
+        var logs = await _dailyWorkLogRepository.GetByTaskTypeIdAsync(taskTypeId);
+        return logs.Select(MapToDto);
+    }
+
     public async Task<DailyWorkLogDto?> GetLogByIdAsync(Guid id)
     {
         var log = await _dailyWorkLogRepository.GetWithAssignmentsAsync(id);
@@ -166,11 +172,13 @@ public class DailyWorkLogService
         {
             Id = log.Id,
             SeasonId = log.SeasonId,
+            SeasonName = log.CropSeason?.Name,
             WorkDate = log.WorkDate,
             TaskTypeId = log.TaskTypeId,
             TaskTypeName = log.TaskType?.Name ?? string.Empty,
             Note = log.Note,
-            TotalCost = log.TotalCost
+            TotalCost = log.TotalCost,
+            WorkAssignments = log.WorkAssignments?.Select(MapAssignmentToDto).ToList()
         };
     }
     public async Task<bool> SoftDeleteDailyWorkLogAsync(Guid id)

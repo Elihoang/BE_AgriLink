@@ -150,6 +150,27 @@ public class CropSeasonService
         return true;
     }
 
+    /// <summary>
+    /// Cập nhật giai đoạn sinh trưởng của vụ mùa
+    /// </summary>
+    public async Task<CropSeasonDto> UpdateStageAsync(Guid id, UpdateStageDto dto)
+    {
+        var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(id);
+        if (season == null)
+        {
+            throw new KeyNotFoundException($"Không tìm thấy vụ mùa với ID: {id}");
+        }
+
+        season.CurrentStage = dto.Stage;
+        season.StageChangedAt = DateTime.UtcNow;
+        season.StageNotes = dto.StageNotes;
+
+        _cropSeasonRepository.Update(season);
+        await _unitOfWork.SaveChangesAsync();
+
+        return MapToDto(season);
+    }
+
     private static CropSeasonDto MapToDto(CropSeason season)
     {
         return new CropSeasonDto
@@ -165,7 +186,11 @@ public class CropSeasonService
             EndDate = season.EndDate,
             Status = season.Status,
             StatusText = season.Status.ToVietnamese(),
-            Note = season.Note
+            Note = season.Note,
+            // Stage tracking
+            CurrentStage = season.CurrentStage,
+            StageChangedAt = season.StageChangedAt,
+            StageNotes = season.StageNotes
         };
     }
 }

@@ -29,6 +29,11 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("CurrentStage")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("current_stage");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("deleted_at");
@@ -58,6 +63,14 @@ namespace AgriLink_DH.Api.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid")
                         .HasColumnName("product_id");
+
+                    b.Property<DateTime?>("StageChangedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("stage_changed_at");
+
+                    b.Property<string>("StageNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("stage_notes");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp without time zone")
@@ -332,6 +345,52 @@ namespace AgriLink_DH.Api.Migrations
                     b.ToTable("harvest_sessions");
                 });
 
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.Material", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CostPerUnit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("QuantityInStock")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Material");
+                });
+
             modelBuilder.Entity("AgriLink_DH.Domain.Models.MaterialUsage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -346,6 +405,10 @@ namespace AgriLink_DH.Api.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<Guid?>("MaterialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("material_id");
 
                     b.Property<string>("MaterialName")
                         .HasMaxLength(150)
@@ -385,6 +448,8 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnName("usage_date");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MaterialId");
 
                     b.HasIndex("SeasonId");
 
@@ -908,8 +973,23 @@ namespace AgriLink_DH.Api.Migrations
                     b.Navigation("CropSeason");
                 });
 
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.Material", b =>
+                {
+                    b.HasOne("AgriLink_DH.Domain.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("AgriLink_DH.Domain.Models.MaterialUsage", b =>
                 {
+                    b.HasOne("AgriLink_DH.Domain.Models.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId");
+
                     b.HasOne("AgriLink_DH.Domain.Models.CropSeason", "CropSeason")
                         .WithMany("MaterialUsages")
                         .HasForeignKey("SeasonId")
@@ -917,6 +997,8 @@ namespace AgriLink_DH.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("CropSeason");
+
+                    b.Navigation("Material");
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.PlantPosition", b =>

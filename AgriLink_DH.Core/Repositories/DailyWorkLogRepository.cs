@@ -22,6 +22,19 @@ public class DailyWorkLogRepository : BaseRepository<DailyWorkLog>, IDailyWorkLo
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<DailyWorkLog>> GetByTaskTypeIdAsync(Guid taskTypeId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+                .ThenInclude(s => s.Product)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.TaskTypeId == taskTypeId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<DailyWorkLog>> GetByDateRangeAsync(Guid seasonId, DateTime fromDate, DateTime toDate)
     {
         return await _dbSet

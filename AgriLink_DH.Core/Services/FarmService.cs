@@ -195,7 +195,9 @@ public class FarmService
                 EndDate = s.EndDate,
                 Status = s.Status,
                 StatusText = s.Status.ToString(),
-                Note = s.Note
+                Note = s.Note,
+                CurrentStage = s.CurrentStage,
+                ProductImageUrl = s.Product?.ImageUrl
             }).ToList()
         };
     }

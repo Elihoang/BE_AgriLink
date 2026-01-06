@@ -179,5 +179,10 @@ public class ApplicationDbContext : DbContext
                 Code = "DURIAN"
             }
         );
+
+        // Material: Index on owner_user_id + name (Unique per user)
+        modelBuilder.Entity<Material>()
+            .HasIndex(m => new { m.OwnerUserId, m.Name })
+            .IsUnique();
     }
 }
