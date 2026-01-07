@@ -36,6 +36,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<FarmSale> FarmSales { get; set; }
     public DbSet<WeatherLog> WeatherLogs { get; set; }
     public DbSet<PlantPosition> PlantPositions { get; set; } // Grid layout tracking từng cây
+    public DbSet<Material> Materials { get; set; } // Quản lý kho vật tư
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -143,6 +144,11 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<WeatherLog>()
             .Property(wl => wl.Condition)
+            .HasConversion<string>();
+
+        // MaterialType enum
+        modelBuilder.Entity<Material>()
+            .Property(m => m.MaterialType)
             .HasConversion<string>();
 
         // ========================================

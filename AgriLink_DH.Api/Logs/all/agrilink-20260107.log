@@ -1,0 +1,1333 @@
+2026-01-07 07:56:29.462 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 07:56:29.499 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 07:56:29.499 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 07:56:29.500 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 07:56:29.802 [INF] [] 
+    ✅ AgriLink API started successfully
+2026-01-07 07:56:29.829 [INF] [] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+    User profile is available. Using 'C:\Users\duyho\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-01-07 07:56:40.433 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/auth/refresh - null null
+2026-01-07 07:56:40.433 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/auth/refresh - null null
+2026-01-07 07:56:40.479 [WRN] [] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
+    Failed to determine the https port for redirect.
+2026-01-07 07:56:40.481 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:40.481 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:40.488 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/auth/refresh - 204 null null 56.5339ms
+2026-01-07 07:56:40.488 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/auth/refresh - 204 null null 56.534ms
+2026-01-07 07:56:40.501 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/auth/refresh - application/json 63
+2026-01-07 07:56:40.501 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/auth/refresh - application/json 63
+2026-01-07 07:56:40.508 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:40.508 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:40.535 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api)'
+2026-01-07 07:56:40.535 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api)'
+2026-01-07 07:56:40.559 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "RefreshToken", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Auth.TokenDto]]] RefreshToken(AgriLink_DH.Share.DTOs.Auth.RefreshTokenDto) on controller AgriLink_DH.Api.Controllers.AuthController (AgriLink_DH.Api).
+2026-01-07 07:56:40.559 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "RefreshToken", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Auth.TokenDto]]] RefreshToken(AgriLink_DH.Share.DTOs.Auth.RefreshTokenDto) on controller AgriLink_DH.Api.Controllers.AuthController (AgriLink_DH.Api).
+2026-01-07 07:56:45.162 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (294ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT u.id, u.created_at, u.email, u.full_name, u.image_url, u.is_active, u.password_hash, u.phone_number, u.role, u.updated_at, u.username
+FROM users AS u
+2026-01-07 07:56:45.577 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Auth.TokenDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 07:56:45.585 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (486ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT u.id, u.created_at, u.email, u.full_name, u.image_url, u.is_active, u.password_hash, u.phone_number, u.role, u.updated_at, u.username
+FROM users AS u
+2026-01-07 07:56:45.600 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api) in 5037.1962ms
+2026-01-07 07:56:45.602 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api)'
+2026-01-07 07:56:45.607 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/auth/refresh - 200 null application/json; charset=utf-8 5106.1947ms
+2026-01-07 07:56:45.772 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing BadRequestObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Auth.TokenDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 07:56:45.773 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api) in 5211.2807ms
+2026-01-07 07:56:45.775 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.AuthController.RefreshToken (AgriLink_DH.Api)'
+2026-01-07 07:56:45.776 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/auth/refresh - 400 null application/json; charset=utf-8 5274.5141ms
+2026-01-07 07:56:51.632 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/products - null null
+2026-01-07 07:56:51.634 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:51.637 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api)'
+2026-01-07 07:56:51.644 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetAllProducts", controller = "Products"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Product.ProductDto]]]] GetAllProducts() on controller AgriLink_DH.Api.Controllers.ProductsController (AgriLink_DH.Api).
+2026-01-07 07:56:52.033 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (284ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT p.id, p.code, p.image_url, p.name, p.unit
+FROM products AS p
+ORDER BY p.name
+2026-01-07 07:56:52.036 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Product.ProductDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:56:52.048 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api) in 401.5918ms
+2026-01-07 07:56:52.049 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api)'
+2026-01-07 07:56:52.051 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/products - 200 null application/json; charset=utf-8 418.9008ms
+2026-01-07 07:56:54.040 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - null null
+2026-01-07 07:56:54.042 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:56:54.048 [INF] [] Microsoft.AspNetCore.Authorization.DefaultAuthorizationService
+    Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-01-07 07:56:54.053 [INF] [] Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler
+    AuthenticationScheme: Bearer was challenged.
+2026-01-07 07:56:54.054 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - 401 0 null 14.172ms
+2026-01-07 07:57:04.611 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/auth/login - null null
+2026-01-07 07:57:04.613 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:04.614 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/auth/login - 204 null null 2.9583ms
+2026-01-07 07:57:04.617 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/auth/login - application/json 64
+2026-01-07 07:57:04.619 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:04.620 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api)'
+2026-01-07 07:57:04.624 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Object]]] Login(AgriLink_DH.Share.DTOs.Auth.LoginDto) on controller AgriLink_DH.Api.Controllers.AuthController (AgriLink_DH.Api).
+2026-01-07 07:57:05.145 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (478ms) [Parameters=[@__usernameOrEmail_0='?', @__usernameOrEmail_0_1='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT u.id, u.created_at, u.email, u.full_name, u.image_url, u.is_active, u.password_hash, u.phone_number, u.role, u.updated_at, u.username
+FROM users AS u
+WHERE u.username = @__usernameOrEmail_0 OR u.email = @__usernameOrEmail_0_1
+LIMIT 1
+2026-01-07 07:57:05.901 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (285ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?', @p3='?', @p4='?' (DbType = Boolean), @p5='?' (DbType = DateTime), @p6='?', @p7='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO user_login_logs (id, action_type, device_info, ip_address, is_success, login_time, metadata, user_id)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+2026-01-07 07:57:05.909 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:05.920 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api) in 1294.3316ms
+2026-01-07 07:57:05.921 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api)'
+2026-01-07 07:57:05.922 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/auth/login - 200 null application/json; charset=utf-8 1304.8064ms
+2026-01-07 07:57:08.300 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:08.300 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:08.302 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.303 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.304 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - 204 null null 3.9801ms
+2026-01-07 07:57:08.304 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - 204 null null 4.1793ms
+2026-01-07 07:57:08.307 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:08.310 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.341 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:08.344 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarms", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]]] GetMyFarms() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:08.788 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (434ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:08.818 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:08.826 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api) in 480.2667ms
+2026-01-07 07:57:08.827 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:08.828 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:08.829 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.830 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - 200 null application/json; charset=utf-8 523.5148ms
+2026-01-07 07:57:08.833 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:08.834 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarms", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]]] GetMyFarms() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:08.861 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/tasktypes/by-farm/165237f7-a2f5-424a-ba67-1192e913bf3c - null null
+2026-01-07 07:57:08.863 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.864 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/tasktypes/by-farm/165237f7-a2f5-424a-ba67-1192e913bf3c - 204 null null 3.3946ms
+2026-01-07 07:57:08.867 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/tasktypes/by-farm/165237f7-a2f5-424a-ba67-1192e913bf3c - null null
+2026-01-07 07:57:08.869 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:08.870 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:08.874 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetTaskTypesByFarm", controller = "TaskTypes"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.TaskType.TaskTypeDto]]]] GetTaskTypesByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.TaskTypesController (AgriLink_DH.Api).
+2026-01-07 07:57:09.107 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (268ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:09.109 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:09.111 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api) in 275.5256ms
+2026-01-07 07:57:09.112 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:09.113 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - 200 null application/json; charset=utf-8 286.1146ms
+2026-01-07 07:57:09.188 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/cropseasons/my-seasons - null null
+2026-01-07 07:57:09.189 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:09.190 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:09.191 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:09.192 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/cropseasons/my-seasons - 204 null null 4.3942ms
+2026-01-07 07:57:09.193 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:09.196 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarms", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]]] GetMyFarms() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:09.197 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/cropseasons/my-seasons - null null
+2026-01-07 07:57:09.200 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:09.201 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.CropSeasonsController.GetMySeasons (AgriLink_DH.Api)'
+2026-01-07 07:57:09.205 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMySeasons", controller = "CropSeasons"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.CropSeason.CropSeasonDto]]]] GetMySeasons() on controller AgriLink_DH.Api.Controllers.CropSeasonsController (AgriLink_DH.Api).
+2026-01-07 07:57:09.332 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (449ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT t.id, t.default_price, t.default_unit, t.farm_id, t.name
+FROM task_types AS t
+WHERE t.farm_id = @__farmId_0
+ORDER BY t.name
+2026-01-07 07:57:09.335 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.TaskType.TaskTypeDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:09.337 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api) in 461.6587ms
+2026-01-07 07:57:09.338 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:09.339 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/tasktypes/by-farm/165237f7-a2f5-424a-ba67-1192e913bf3c - 200 null application/json; charset=utf-8 471.9809ms
+2026-01-07 07:57:09.469 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (267ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:09.471 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:09.473 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api) in 274.9833ms
+2026-01-07 07:57:09.474 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:09.475 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - 200 null application/json; charset=utf-8 285.9591ms
+2026-01-07 07:57:13.058 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (560ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:13.618 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (512ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:13.890 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (269ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:14.444 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (518ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:14.867 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (419ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:15.136 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (266ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:15.138 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.CropSeason.CropSeasonDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:15.153 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.CropSeasonsController.GetMySeasons (AgriLink_DH.Api) in 5947.0664ms
+2026-01-07 07:57:15.155 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.CropSeasonsController.GetMySeasons (AgriLink_DH.Api)'
+2026-01-07 07:57:15.156 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/cropseasons/my-seasons - 200 null application/json; charset=utf-8 5958.8734ms
+2026-01-07 07:57:19.283 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:19.283 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:19.285 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.287 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.287 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - 204 null null 4.1363ms
+2026-01-07 07:57:19.288 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms - 204 null null 4.4934ms
+2026-01-07 07:57:19.292 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:19.294 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.296 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:19.297 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarms", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]]] GetMyFarms() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:19.802 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms-with-seasons - null null
+2026-01-07 07:57:19.803 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.804 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms-with-seasons - 204 null null 2.4229ms
+2026-01-07 07:57:19.807 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - null null
+2026-01-07 07:57:19.808 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.810 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api)'
+2026-01-07 07:57:19.814 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarmsWithSeasons", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmWithSeasonDto]]]] GetMyFarmsWithSeasons() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:19.818 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (518ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:19.821 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:19.822 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api) in 523.7723ms
+2026-01-07 07:57:19.823 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - null null
+2026-01-07 07:57:19.823 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:19.825 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:19.826 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - 200 null application/json; charset=utf-8 533.6998ms
+2026-01-07 07:57:19.827 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:19.830 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarms", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]]] GetMyFarms() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:20.098 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (265ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:20.100 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:20.102 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api) in 270.7873ms
+2026-01-07 07:57:20.103 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarms (AgriLink_DH.Api)'
+2026-01-07 07:57:20.104 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms - 200 null application/json; charset=utf-8 281.1423ms
+2026-01-07 07:57:20.206 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (387ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 07:57:20.762 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (541ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 07:57:21.033 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (267ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 07:57:21.752 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (452ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 07:57:22.284 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (528ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 07:57:22.553 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (266ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 07:57:22.818 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmWithSeasonDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:22.824 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api) in 3008.1386ms
+2026-01-07 07:57:22.825 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api)'
+2026-01-07 07:57:22.826 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - 200 null application/json; charset=utf-8 3019.5652ms
+2026-01-07 07:57:29.080 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.081 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/cropseasons/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.084 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.087 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/cropseasons/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 5.9829ms
+2026-01-07 07:57:29.081 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/tasktypes/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.082 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/workers/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.088 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.090 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/cropseasons/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.093 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.095 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.096 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 15.9429ms
+2026-01-07 07:57:29.098 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.098 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/tasktypes/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 17.0903ms
+2026-01-07 07:57:29.099 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/workers/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 17.3879ms
+2026-01-07 07:57:29.102 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.104 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.CropSeasonsController.GetSeasonsByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.106 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/workers/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.108 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/tasktypes/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.110 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.112 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.113 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetSeasonsByFarm", controller = "CropSeasons"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.CropSeason.CropSeasonDto]]]] GetSeasonsByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.CropSeasonsController (AgriLink_DH.Api).
+2026-01-07 07:57:29.113 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.114 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetFarmById (AgriLink_DH.Api)'
+2026-01-07 07:57:29.115 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.WorkersController.GetWorkersByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.117 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.119 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetTaskTypesByFarm", controller = "TaskTypes"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.TaskType.TaskTypeDto]]]] GetTaskTypesByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.TaskTypesController (AgriLink_DH.Api).
+2026-01-07 07:57:29.120 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetFarmById", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Farm.FarmDto]]] GetFarmById(System.Guid) on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 07:57:29.121 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetWorkersByFarm", controller = "Workers"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Worker.WorkerDto]]]] GetWorkersByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.WorkersController (AgriLink_DH.Api).
+2026-01-07 07:57:29.401 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (266ms) [Parameters=[@__id_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id, u.id, u.created_at, u.email, u.full_name, u.image_url, u.is_active, u.password_hash, u.phone_number, u.role, u.updated_at, u.username
+FROM farms AS f
+INNER JOIN users AS u ON f.owner_user_id = u.id
+WHERE f.id = @__id_0
+LIMIT 1
+2026-01-07 07:57:29.404 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Farm.FarmDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 07:57:29.406 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetFarmById (AgriLink_DH.Api) in 283.633ms
+2026-01-07 07:57:29.407 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetFarmById (AgriLink_DH.Api)'
+2026-01-07 07:57:29.409 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 306.5269ms
+2026-01-07 07:57:29.440 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.442 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.442 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.443 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.445 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.447 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.447 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 6.817ms
+2026-01-07 07:57:29.448 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 5.5424ms
+2026-01-07 07:57:29.449 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 6.0526ms
+2026-01-07 07:57:29.451 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.453 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.456 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.458 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.459 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.461 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.461 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 204 null null 10.4675ms
+2026-01-07 07:57:29.463 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.463 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.468 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetByFarm", controller = "MaterialUsages"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.MaterialUsage.MaterialUsageDto]]]] GetByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.MaterialUsagesController (AgriLink_DH.Api).
+2026-01-07 07:57:29.469 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetWeatherByFarm", controller = "Weather"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Weather.WeatherForecastDto]]] GetWeatherByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.WeatherController (AgriLink_DH.Api).
+2026-01-07 07:57:29.477 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (359ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.farm_id = @__farmId_0
+ORDER BY c.start_date DESC
+2026-01-07 07:57:29.480 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.CropSeason.CropSeasonDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:29.481 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.CropSeasonsController.GetSeasonsByFarm (AgriLink_DH.Api) in 364.9473ms
+2026-01-07 07:57:29.482 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.CropSeasonsController.GetSeasonsByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.483 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/cropseasons/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 392.8597ms
+2026-01-07 07:57:29.666 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (544ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT t.id, t.default_price, t.default_unit, t.farm_id, t.name
+FROM task_types AS t
+WHERE t.farm_id = @__farmId_0
+ORDER BY t.name
+2026-01-07 07:57:29.676 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.TaskType.TaskTypeDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:29.679 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api) in 557.4972ms
+2026-01-07 07:57:29.680 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.TaskTypesController.GetTaskTypesByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.682 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/tasktypes/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 573.6427ms
+2026-01-07 07:57:29.781 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (291ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.deleted_at, m.is_deleted, m.material_id, m.material_name, m.note, m.quantity, m.season_id, m.total_cost, m.unit, m.unit_price, m.usage_date, c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status
+FROM material_usages AS m
+INNER JOIN crop_seasons AS c ON m.season_id = c.id
+WHERE c.farm_id = @__farmId_0 AND NOT (m.is_deleted)
+ORDER BY m.usage_date DESC
+2026-01-07 07:57:29.800 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.MaterialUsage.MaterialUsageDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:29.809 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api) in 338.7795ms
+2026-01-07 07:57:29.810 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.811 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 357.584ms
+2026-01-07 07:57:29.813 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:29.814 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:29.815 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:29.816 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetByFarm", controller = "MaterialUsages"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.MaterialUsage.MaterialUsageDto]]]] GetByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.MaterialUsagesController (AgriLink_DH.Api).
+2026-01-07 07:57:29.862 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (368ms) [Parameters=[@__p_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.id = @__p_0
+LIMIT 1
+2026-01-07 07:57:29.865 [INF] [] AgriLink_DH.Core.Services.WeatherService
+    Using map-selected coordinates for farm "cfa826cb-59b7-4eec-b791-84a951d7767e": 13.8220710, 107.9749590
+2026-01-07 07:57:29.867 [INF] [] AgriLink_DH.Core.Services.WeatherService
+    Calling OpenWeather API: https://api.openweathermap.org/data/2.5/weather?lat=13.8220710&lon=107.9749590&appid=***&units=metric&lang=vi
+2026-01-07 07:57:29.872 [INF] [] System.Net.Http.HttpClient.Default.LogicalHandler
+    Start processing HTTP request GET https://api.openweathermap.org/data/2.5/weather?*
+2026-01-07 07:57:29.875 [INF] [] System.Net.Http.HttpClient.Default.ClientHandler
+    Sending HTTP request GET https://api.openweathermap.org/data/2.5/weather?*
+2026-01-07 07:57:30.220 [INF] [] System.Net.Http.HttpClient.Default.ClientHandler
+    Received HTTP response headers after 342.2088ms - 200
+2026-01-07 07:57:30.222 [INF] [] System.Net.Http.HttpClient.Default.LogicalHandler
+    End processing HTTP request after 350.9743ms - 200
+2026-01-07 07:57:30.244 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Weather.WeatherForecastDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 07:57:30.247 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api) in 775.8665ms
+2026-01-07 07:57:30.248 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - null null
+2026-01-07 07:57:30.248 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:30.250 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 07:57:30.251 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 795.5741ms
+2026-01-07 07:57:30.252 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:30.255 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetWeatherByFarm", controller = "Weather"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Weather.WeatherForecastDto]]] GetWeatherByFarm(System.Guid) on controller AgriLink_DH.Api.Controllers.WeatherController (AgriLink_DH.Api).
+2026-01-07 07:57:30.351 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (532ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.deleted_at, m.is_deleted, m.material_id, m.material_name, m.note, m.quantity, m.season_id, m.total_cost, m.unit, m.unit_price, m.usage_date, c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status
+FROM material_usages AS m
+INNER JOIN crop_seasons AS c ON m.season_id = c.id
+WHERE c.farm_id = @__farmId_0 AND NOT (m.is_deleted)
+ORDER BY m.usage_date DESC
+2026-01-07 07:57:30.354 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.MaterialUsage.MaterialUsageDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:30.355 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api) in 537.8045ms
+2026-01-07 07:57:30.356 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialUsagesController.GetByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:30.357 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/MaterialUsages/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 544.2312ms
+2026-01-07 07:57:30.525 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (266ms) [Parameters=[@__p_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.id = @__p_0
+LIMIT 1
+2026-01-07 07:57:30.527 [INF] [] AgriLink_DH.Core.Services.WeatherService
+    Using map-selected coordinates for farm "cfa826cb-59b7-4eec-b791-84a951d7767e": 13.8220710, 107.9749590
+2026-01-07 07:57:30.529 [INF] [] AgriLink_DH.Core.Services.WeatherService
+    Calling OpenWeather API: https://api.openweathermap.org/data/2.5/weather?lat=13.8220710&lon=107.9749590&appid=***&units=metric&lang=vi
+2026-01-07 07:57:30.530 [INF] [] System.Net.Http.HttpClient.Default.LogicalHandler
+    Start processing HTTP request GET https://api.openweathermap.org/data/2.5/weather?*
+2026-01-07 07:57:30.531 [INF] [] System.Net.Http.HttpClient.Default.ClientHandler
+    Sending HTTP request GET https://api.openweathermap.org/data/2.5/weather?*
+2026-01-07 07:57:30.608 [INF] [] System.Net.Http.HttpClient.Default.ClientHandler
+    Received HTTP response headers after 76.326ms - 200
+2026-01-07 07:57:30.610 [INF] [] System.Net.Http.HttpClient.Default.LogicalHandler
+    End processing HTTP request after 80.0951ms - 200
+2026-01-07 07:57:30.611 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Weather.WeatherForecastDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 07:57:30.612 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api) in 355.5067ms
+2026-01-07 07:57:30.614 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.WeatherController.GetWeatherByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:30.615 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/weather/farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 366.6022ms
+2026-01-07 07:57:31.005 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (282ms) [Parameters=[@__farmId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT DISTINCT w0.id, w0.default_daily_wage, w0."FarmId", w0.full_name, w0.image_url, w0.is_active, w0.phone, w0.worker_type
+FROM work_assignments AS w
+INNER JOIN daily_work_logs AS d ON w.log_id = d.id
+INNER JOIN crop_seasons AS c ON d.season_id = c.id
+INNER JOIN workers AS w0 ON w.worker_id = w0.id
+WHERE c.farm_id = @__farmId_0
+2026-01-07 07:57:31.023 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Worker.WorkerDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 07:57:31.030 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.WorkersController.GetWorkersByFarm (AgriLink_DH.Api) in 1906.7086ms
+2026-01-07 07:57:31.032 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.WorkersController.GetWorkersByFarm (AgriLink_DH.Api)'
+2026-01-07 07:57:31.034 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/workers/by-farm/cfa826cb-59b7-4eec-b791-84a951d7767e - 200 null application/json; charset=utf-8 1927.7587ms
+2026-01-07 08:07:07.545 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:07:07.584 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:07:07.585 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:07:07.585 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:07:07.797 [INF] [] 
+    ✅ AgriLink API started successfully
+2026-01-07 08:07:07.818 [INF] [] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+    User profile is available. Using 'C:\Users\duyho\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-01-07 08:07:20.317 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/products - null null
+2026-01-07 08:07:20.350 [WRN] [] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
+    Failed to determine the https port for redirect.
+2026-01-07 08:07:20.352 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:07:20.357 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/products - 204 null null 41.4609ms
+2026-01-07 08:07:20.369 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/products - null null
+2026-01-07 08:07:20.374 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:07:20.431 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api)'
+2026-01-07 08:07:20.444 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetAllProducts", controller = "Products"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Product.ProductDto]]]] GetAllProducts() on controller AgriLink_DH.Api.Controllers.ProductsController (AgriLink_DH.Api).
+2026-01-07 08:07:24.630 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (309ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT p.id, p.code, p.image_url, p.name, p.unit
+FROM products AS p
+ORDER BY p.name
+2026-01-07 08:07:24.672 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Product.ProductDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:07:24.707 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api) in 4258.9694ms
+2026-01-07 08:07:24.709 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.ProductsController.GetAllProducts (AgriLink_DH.Api)'
+2026-01-07 08:07:24.716 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/products - 200 null application/json; charset=utf-8 4347.023ms
+2026-01-07 08:07:27.075 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms-with-seasons - null null
+2026-01-07 08:07:27.077 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:07:27.078 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/farms/my-farms-with-seasons - 204 null null 3.4575ms
+2026-01-07 08:07:27.081 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - null null
+2026-01-07 08:07:27.083 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:07:27.089 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api)'
+2026-01-07 08:07:27.094 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyFarmsWithSeasons", controller = "Farms"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Farm.FarmWithSeasonDto]]]] GetMyFarmsWithSeasons() on controller AgriLink_DH.Api.Controllers.FarmsController (AgriLink_DH.Api).
+2026-01-07 08:07:27.474 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (284ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM farms AS f
+WHERE f.owner_user_id = @__userId_0
+ORDER BY f.name
+2026-01-07 08:07:27.931 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (285ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 08:07:28.254 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (269ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 08:07:28.526 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (267ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 08:07:28.799 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (269ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 08:07:29.072 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (270ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT c.id, c.current_stage, c.deleted_at, c.end_date, c.farm_id, c.is_deleted, c.name, c.note, c.product_id, c.stage_changed_at, c.stage_notes, c.start_date, c.status, p.id, p.code, p.image_url, p.name, p.unit, f.id, f.address_gps, f.area_size, f.created_at, f.deleted_at, f.google_maps_url, f.image_url, f.is_deleted, f.latitude, f.longitude, f.name, f.owner_user_id
+FROM crop_seasons AS c
+INNER JOIN products AS p ON c.product_id = p.id
+INNER JOIN farms AS f ON c.farm_id = f.id
+WHERE c.status = 'Active'
+ORDER BY c.start_date DESC
+2026-01-07 08:07:29.076 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Farm.FarmWithSeasonDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:07:29.102 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api) in 2006.8238ms
+2026-01-07 08:07:29.103 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.FarmsController.GetMyFarmsWithSeasons (AgriLink_DH.Api)'
+2026-01-07 08:07:29.105 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/farms/my-farms-with-seasons - 200 null application/json; charset=utf-8 2024.12ms
+2026-01-07 08:25:58.427 [INF] [] 
+    👋 Shutting down AgriLink API...
+2026-01-07 08:26:21.416 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:26:21.446 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:26:21.448 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:26:21.448 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:26:37.294 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:26:37.326 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:26:37.326 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:26:37.327 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:26:40.669 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (286ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2026-01-07 08:26:44.926 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (271ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+2026-01-07 08:26:45.211 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (276ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+2026-01-07 08:26:45.491 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (278ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2026-01-07 08:26:46.080 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (290ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Material" DROP CONSTRAINT "FK_Material_users_OwnerUserId";
+2026-01-07 08:26:46.369 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (287ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE material_usages DROP CONSTRAINT "FK_material_usages_Material_material_id";
+2026-01-07 08:26:46.654 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (283ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Material" DROP CONSTRAINT "PK_Material";
+2026-01-07 08:26:47.370 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (714ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Material" RENAME TO materials;
+2026-01-07 08:26:48.022 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (650ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "Unit" TO unit;
+2026-01-07 08:26:48.307 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (283ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "Note" TO note;
+2026-01-07 08:26:48.592 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (284ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "Name" TO name;
+2026-01-07 08:26:48.869 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (275ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "Id" TO id;
+2026-01-07 08:26:49.141 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (270ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "UpdatedAt" TO updated_at;
+2026-01-07 08:26:49.419 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (275ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "QuantityInStock" TO quantity_in_stock;
+2026-01-07 08:26:49.699 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (279ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "OwnerUserId" TO owner_user_id;
+2026-01-07 08:26:50.084 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (384ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "ImageUrl" TO image_url;
+2026-01-07 08:26:50.387 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (301ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "CreatedAt" TO created_at;
+2026-01-07 08:26:50.661 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (272ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials RENAME COLUMN "CostPerUnit" TO cost_per_unit;
+2026-01-07 08:26:50.936 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (273ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER INDEX "IX_Material_OwnerUserId_Name" RENAME TO "IX_materials_owner_user_id_name";
+2026-01-07 08:26:51.202 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (265ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials ADD expiry_date timestamp without time zone;
+2026-01-07 08:26:51.486 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (281ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials ADD material_type integer NOT NULL DEFAULT 0;
+2026-01-07 08:26:51.765 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (277ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials ADD CONSTRAINT "PK_materials" PRIMARY KEY (id);
+2026-01-07 08:26:52.042 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (275ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE material_usages ADD CONSTRAINT "FK_material_usages_materials_material_id" FOREIGN KEY (material_id) REFERENCES materials (id);
+2026-01-07 08:26:52.334 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (290ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials ADD CONSTRAINT "FK_materials_users_owner_user_id" FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE;
+2026-01-07 08:26:52.618 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (282ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260107012622_AddMaterialTypeAndExpiryDateColumns', '9.0.11');
+2026-01-07 08:28:38.875 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:28:38.907 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:28:38.907 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:28:38.908 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:28:39.107 [INF] [] 
+    ✅ AgriLink API started successfully
+2026-01-07 08:28:39.135 [INF] [] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+    User profile is available. Using 'C:\Users\duyho\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-01-07 08:29:02.960 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/scalar/v1 - null null
+2026-01-07 08:29:02.991 [WRN] [] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
+    Failed to determine the https port for redirect.
+2026-01-07 08:29:03.007 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'HTTP: GET /scalar/{documentName?}'
+2026-01-07 08:29:03.106 [INF] [] Microsoft.AspNetCore.Http.Result.ContentResult
+    Write content with HTTP Response ContentType of text/html
+2026-01-07 08:29:03.108 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'HTTP: GET /scalar/{documentName?}'
+2026-01-07 08:29:03.110 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/scalar/v1 - 200 709 text/html 151.2985ms
+2026-01-07 08:29:03.126 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/scalar/scalar.js - null null
+2026-01-07 08:29:03.130 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/scalar/scalar.aspnetcore.js - null null
+2026-01-07 08:29:03.134 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'HTTP: GET /scalar/scalar.js'
+2026-01-07 08:29:03.136 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:29:03.140 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'HTTP: GET /scalar/scalar.aspnetcore.js'
+2026-01-07 08:29:03.145 [INF] [] Microsoft.AspNetCore.Http.Result.FileStreamResult
+    Sending file with download name ''.
+2026-01-07 08:29:03.145 [INF] [] Microsoft.AspNetCore.Http.Result.FileStreamResult
+    Sending file with download name ''.
+2026-01-07 08:29:03.153 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'HTTP: GET /scalar/scalar.aspnetcore.js'
+2026-01-07 08:29:03.154 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/scalar/scalar.aspnetcore.js - 200 1111 text/javascript 24.7662ms
+2026-01-07 08:29:03.180 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'HTTP: GET /scalar/scalar.js'
+2026-01-07 08:29:03.182 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/scalar/scalar.js - 200 939279 text/javascript 56.243ms
+2026-01-07 08:29:03.442 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/swagger/v1/swagger.json - null null
+2026-01-07 08:29:03.631 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 188.6352ms
+2026-01-07 08:29:04.444 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/scalar/favicon.svg - null null
+2026-01-07 08:29:04.448 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'HTTP: GET /scalar/favicon.svg'
+2026-01-07 08:29:04.449 [INF] [] Microsoft.AspNetCore.Http.Result.FileStreamResult
+    Sending file with download name ''.
+2026-01-07 08:29:04.452 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'HTTP: GET /scalar/favicon.svg'
+2026-01-07 08:29:04.453 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/scalar/favicon.svg - 200 533 image/svg+xml 9.0685ms
+2026-01-07 08:29:40.670 [INF] [] 
+    👋 Shutting down AgriLink API...
+2026-01-07 08:29:45.064 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:29:45.096 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:29:45.097 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:29:45.098 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:29:45.286 [INF] [] 
+    ✅ AgriLink API started successfully
+2026-01-07 08:29:45.306 [INF] [] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+    User profile is available. Using 'C:\Users\duyho\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-01-07 08:30:04.614 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/Materials/my-materials - null null
+2026-01-07 08:30:04.647 [WRN] [] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
+    Failed to determine the https port for redirect.
+2026-01-07 08:30:04.668 [INF] [] Microsoft.AspNetCore.Authorization.DefaultAuthorizationService
+    Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-01-07 08:30:04.671 [INF] [] Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler
+    AuthenticationScheme: Bearer was challenged.
+2026-01-07 08:30:04.675 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/Materials/my-materials - 401 0 null 62.6119ms
+2026-01-07 08:33:54.541 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:33:54.547 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:33:54.552 [INF] [] Microsoft.AspNetCore.Authorization.DefaultAuthorizationService
+    Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-01-07 08:33:54.553 [INF] [] Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler
+    AuthenticationScheme: Bearer was challenged.
+2026-01-07 08:33:54.556 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 401 0 null 15.1691ms
+2026-01-07 08:34:01.088 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/auth/login - null null
+2026-01-07 08:34:01.092 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:34:01.094 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/auth/login - 204 null null 5.6002ms
+2026-01-07 08:34:01.096 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/auth/login - application/json 64
+2026-01-07 08:34:01.099 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:34:01.102 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api)'
+2026-01-07 08:34:01.120 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Object]]] Login(AgriLink_DH.Share.DTOs.Auth.LoginDto) on controller AgriLink_DH.Api.Controllers.AuthController (AgriLink_DH.Api).
+2026-01-07 08:34:05.654 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (323ms) [Parameters=[@__usernameOrEmail_0='?', @__usernameOrEmail_0_1='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT u.id, u.created_at, u.email, u.full_name, u.image_url, u.is_active, u.password_hash, u.phone_number, u.role, u.updated_at, u.username
+FROM users AS u
+WHERE u.username = @__usernameOrEmail_0 OR u.email = @__usernameOrEmail_0_1
+LIMIT 1
+2026-01-07 08:34:06.717 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (362ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?', @p3='?', @p4='?' (DbType = Boolean), @p5='?' (DbType = DateTime), @p6='?', @p7='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO user_login_logs (id, action_type, device_info, ip_address, is_success, login_time, metadata, user_id)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+2026-01-07 08:34:06.729 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:34:06.755 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api) in 5631.4272ms
+2026-01-07 08:34:06.758 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.AuthController.Login (AgriLink_DH.Api)'
+2026-01-07 08:34:06.763 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/auth/login - 200 null application/json; charset=utf-8 5666.5672ms
+2026-01-07 08:34:09.272 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:34:09.274 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:34:09.275 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 2.8455ms
+2026-01-07 08:34:09.277 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:34:09.279 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:34:09.319 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:34:09.324 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:34:09.661 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (265ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:34:09.692 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:34:09.721 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 394.954ms
+2026-01-07 08:34:09.724 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:34:09.725 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 448.1004ms
+2026-01-07 08:37:44.421 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:37:44.423 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:37:44.424 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 2.6794ms
+2026-01-07 08:37:44.426 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:37:44.429 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:37:44.430 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:37:44.432 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:37:44.712 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (257ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:37:44.715 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:37:44.717 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 282.6466ms
+2026-01-07 08:37:44.718 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:37:44.719 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 292.997ms
+2026-01-07 08:39:23.857 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/Materials - application/json 248
+2026-01-07 08:39:23.860 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:39:23.861 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:39:23.864 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "CreateMaterial", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]] CreateMaterial(AgriLink_DH.Share.DTOs.Material.CreateMaterialDto) on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:39:25.909 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (274ms) [Parameters=[@__ToLower_0='?', @__userId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM materials AS m
+    WHERE lower(m.name) = @__ToLower_0 AND m.owner_user_id = @__userId_1)
+2026-01-07 08:39:26.277 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (342ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = DateTime), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?' (DbType = Guid), @p9='?' (DbType = Decimal), @p10='?', @p11='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO materials (id, cost_per_unit, created_at, expiry_date, image_url, material_type, name, note, owner_user_id, quantity_in_stock, unit, updated_at)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11);
+2026-01-07 08:39:26.280 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 08:39:26.282 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api) in 2416.4271ms
+2026-01-07 08:39:26.283 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:39:26.284 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/Materials - 200 null application/json; charset=utf-8 2426.8031ms
+2026-01-07 08:39:37.209 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/Materials - application/json 272
+2026-01-07 08:39:37.211 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:39:37.213 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:39:37.213 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "CreateMaterial", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]] CreateMaterial(AgriLink_DH.Share.DTOs.Material.CreateMaterialDto) on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:39:37.491 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (275ms) [Parameters=[@__ToLower_0='?', @__userId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM materials AS m
+    WHERE lower(m.name) = @__ToLower_0 AND m.owner_user_id = @__userId_1)
+2026-01-07 08:39:37.769 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (275ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = DateTime), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?' (DbType = Guid), @p9='?' (DbType = Decimal), @p10='?', @p11='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO materials (id, cost_per_unit, created_at, expiry_date, image_url, material_type, name, note, owner_user_id, quantity_in_stock, unit, updated_at)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11);
+2026-01-07 08:39:37.771 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 08:39:37.773 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api) in 557.9398ms
+2026-01-07 08:39:37.774 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:39:37.776 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/Materials - 200 null application/json; charset=utf-8 566.3239ms
+2026-01-07 08:40:03.316 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 POST http://localhost:5243/api/Materials - application/json 220
+2026-01-07 08:40:03.318 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:40:03.319 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:40:03.320 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "CreateMaterial", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]] CreateMaterial(AgriLink_DH.Share.DTOs.Material.CreateMaterialDto) on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:40:03.620 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (297ms) [Parameters=[@__ToLower_0='?', @__userId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM materials AS m
+    WHERE lower(m.name) = @__ToLower_0 AND m.owner_user_id = @__userId_1)
+2026-01-07 08:40:03.929 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (306ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = DateTime), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?' (DbType = Guid), @p9='?' (DbType = Decimal), @p10='?', @p11='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO materials (id, cost_per_unit, created_at, expiry_date, image_url, material_type, name, note, owner_user_id, quantity_in_stock, unit, updated_at)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11);
+2026-01-07 08:40:03.931 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-01-07 08:40:03.932 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api) in 611.0563ms
+2026-01-07 08:40:03.934 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.CreateMaterial (AgriLink_DH.Api)'
+2026-01-07 08:40:03.935 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 POST http://localhost:5243/api/Materials - 200 null application/json; charset=utf-8 619.0007ms
+2026-01-07 08:40:10.246 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:40:10.249 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:40:10.250 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 3.3266ms
+2026-01-07 08:40:10.252 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:40:10.254 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:40:10.256 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:40:10.257 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:40:10.555 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (295ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:40:10.557 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:40:10.559 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 300.0399ms
+2026-01-07 08:40:10.560 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:40:10.561 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 309.0736ms
+2026-01-07 08:46:09.316 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:46:09.318 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:46:09.319 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 3.1909ms
+2026-01-07 08:46:09.322 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:46:09.324 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:46:09.326 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:46:09.327 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:46:12.304 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (561ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:46:12.306 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:46:12.307 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 2977.298ms
+2026-01-07 08:46:12.309 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:46:12.310 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 2988.0886ms
+2026-01-07 08:49:33.816 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:49:33.818 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:49:33.819 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 3.1497ms
+2026-01-07 08:49:33.821 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:49:33.823 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:49:33.825 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:49:33.826 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:49:34.153 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (323ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:49:34.156 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:49:34.157 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 328.7233ms
+2026-01-07 08:49:34.158 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:49:34.159 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 338.2032ms
+2026-01-07 08:56:05.276 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:56:05.310 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:56:05.311 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:56:05.312 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:56:40.360 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:56:40.398 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:56:40.399 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:56:40.399 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:57:14.470 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:57:14.499 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:57:14.501 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:57:14.502 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:57:24.295 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (696ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2026-01-07 08:57:30.911 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (1,075ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+2026-01-07 08:57:31.551 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (633ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+2026-01-07 08:57:32.219 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (665ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2026-01-07 08:57:33.544 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (693ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE materials ALTER COLUMN material_type TYPE text;
+2026-01-07 08:57:34.150 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (604ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260107015641_AlterMaterialTypeToString', '9.0.11');
+2026-01-07 08:57:54.355 [INF] [] 
+    [STARTUP] Starting AgriLink API
+2026-01-07 08:57:54.386 [INF] [] 
+    [LOGGING] Level: Debug (All logs including errors)
+2026-01-07 08:57:54.388 [INF] [] 
+    [LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log
+2026-01-07 08:57:54.389 [INF] [] 
+    [LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log
+2026-01-07 08:57:54.526 [INF] [] 
+    ✅ AgriLink API started successfully
+2026-01-07 08:57:54.545 [INF] [] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+    User profile is available. Using 'C:\Users\duyho\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-01-07 08:58:29.288 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:58:29.336 [WRN] [] Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware
+    Failed to determine the https port for redirect.
+2026-01-07 08:58:29.338 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:58:29.345 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 OPTIONS http://localhost:5243/api/materials/my-materials - 204 null null 57.744ms
+2026-01-07 08:58:29.373 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request starting HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - null null
+2026-01-07 08:58:29.384 [INF] [] Microsoft.AspNetCore.Cors.Infrastructure.CorsService
+    CORS policy execution successful.
+2026-01-07 08:58:29.500 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executing endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:58:29.528 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Route matched with {action = "GetMyMaterials", controller = "Materials"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.ActionResult`1[AgriLink_DH.Share.Common.ApiResponse`1[System.Collections.Generic.IEnumerable`1[AgriLink_DH.Share.DTOs.Material.MaterialDto]]]] GetMyMaterials() on controller AgriLink_DH.Api.Controllers.MaterialsController (AgriLink_DH.Api).
+2026-01-07 08:58:33.230 [INF] [] Microsoft.EntityFrameworkCore.Database.Command
+    Executed DbCommand (298ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.cost_per_unit, m.created_at, m.expiry_date, m.image_url, m.material_type, m.name, m.note, m.owner_user_id, m.quantity_in_stock, m.unit, m.updated_at
+FROM materials AS m
+WHERE m.owner_user_id = @__userId_0
+ORDER BY m.created_at DESC
+2026-01-07 08:58:33.319 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor
+    Executing OkObjectResult, writing value of type 'AgriLink_DH.Share.Common.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[AgriLink_DH.Share.DTOs.Material.MaterialDto, AgriLink_DH.Share, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-01-07 08:58:33.388 [INF] [] Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker
+    Executed action AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api) in 3854.3663ms
+2026-01-07 08:58:33.391 [INF] [] Microsoft.AspNetCore.Routing.EndpointMiddleware
+    Executed endpoint 'AgriLink_DH.Api.Controllers.MaterialsController.GetMyMaterials (AgriLink_DH.Api)'
+2026-01-07 08:58:33.399 [INF] [] Microsoft.AspNetCore.Hosting.Diagnostics
+    Request finished HTTP/1.1 GET http://localhost:5243/api/materials/my-materials - 200 null application/json; charset=utf-8 4026.1162ms
