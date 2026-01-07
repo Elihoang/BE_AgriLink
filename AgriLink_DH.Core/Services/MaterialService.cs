@@ -39,6 +39,8 @@ public class MaterialService
             CostPerUnit = dto.CostPerUnit,
             Note = dto.Note,
             ImageUrl = dto.ImageUrl,
+            MaterialType = dto.MaterialType,
+            ExpiryDate = dto.ExpiryDate,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -71,6 +73,8 @@ public class MaterialService
         material.CostPerUnit = dto.CostPerUnit;
         material.Note = dto.Note;
         material.ImageUrl = dto.ImageUrl;
+        material.MaterialType = dto.MaterialType;
+        material.ExpiryDate = dto.ExpiryDate;
         material.UpdatedAt = DateTime.UtcNow;
 
         _materialRepository.Update(material);
@@ -104,6 +108,8 @@ public class MaterialService
             CostPerUnit = m.CostPerUnit,
             Note = m.Note,
             ImageUrl = m.ImageUrl,
+            MaterialType = m.MaterialType,
+            ExpiryDate = m.ExpiryDate,
             CreatedAt = m.CreatedAt
         };
     }

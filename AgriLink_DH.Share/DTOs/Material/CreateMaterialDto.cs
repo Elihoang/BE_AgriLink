@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AgriLink_DH.Domain.Common;
 
 namespace AgriLink_DH.Share.DTOs.Material;
 
@@ -16,4 +17,8 @@ public class CreateMaterialDto
 
     public string? Note { get; set; }
     public string? ImageUrl { get; set; }
+    
+    public MaterialType MaterialType { get; set; } = MaterialType.Other;
+    public DateTime? ExpiryDate { get; set; }
 }
+

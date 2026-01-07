@@ -1,0 +1,525 @@
+{
+  "description": "JSON mẫu để test tất cả các models trong AgriLink System",
+  "note": "Dữ liệu có quan hệ với nhau, cần add theo thứ tự: User -> Farm -> Product -> CropSeason -> các bảng con",
+  
+  "users": [
+    {
+      "username": "farmer_duyhoan",
+      "email": "duyhoan@agrilink.vn",
+      "passwordHash": "$2a$11$hashedpassword123456",
+      "fullName": "Nguyễn Duy Hoàn",
+      "phoneNumber": "0901234567",
+      "role": 0,
+      "isActive": true,
+      "imageUrl": "https://example.com/avatar/duyhoan.jpg",
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "username": "farmer_minhanh",
+      "email": "minhanh@agrilink.vn",
+      "passwordHash": "$2a$11$hashedpassword789012",
+      "fullName": "Trần Minh Anh",
+      "phoneNumber": "0909876543",
+      "role": 0,
+      "isActive": true,
+      "imageUrl": "https://example.com/avatar/minhanh.jpg",
+      "createdAt": "2025-01-01T00:00:00Z"
+    }
+  ],
+
+  "farms": [
+    {
+      "ownerUserId": "{{user_duyhoan_id}}",
+      "name": "Rẫy Đắk Mil 1",
+      "areaSize": 3.5,
+      "addressGps": "Đắk Mil, Krông Năng, Đắk Nông",
+      "latitude": 12.6667000,
+      "longitude": 108.0500000,
+      "googleMapsUrl": "https://maps.google.com/?q=12.6667,108.0500",
+      "imageUrl": "https://example.com/farms/dak-mil-1.jpg",
+      "createdAt": "2025-01-05T00:00:00Z",
+      "isDeleted": false
+    },
+    {
+      "ownerUserId": "{{user_minhanh_id}}",
+      "name": "Vườn Hồ Tiêu Lâm Đồng",
+      "areaSize": 2.0,
+      "addressGps": "Đà Lạt, Lâm Đồng",
+      "latitude": 11.9404000,
+      "longitude": 108.4583000,
+      "googleMapsUrl": "https://maps.google.com/?q=11.9404,108.4583",
+      "imageUrl": "https://example.com/farms/ho-tieu-dalat.jpg",
+      "createdAt": "2025-01-05T00:00:00Z",
+      "isDeleted": false
+    }
+  ],
+
+  "products": [
+    {
+      "name": "Cà phê Robusta",
+      "unit": "kg",
+      "code": "CF_ROBUSTA",
+      "imageUrl": "https://example.com/products/ca-phe-robusta.jpg"
+    },
+    {
+      "name": "Cà phê Arabica",
+      "unit": "kg",
+      "code": "CF_ARABICA",
+      "imageUrl": "https://example.com/products/ca-phe-arabica.jpg"
+    },
+    {
+      "name": "Hồ Tiêu",
+      "unit": "kg",
+      "code": "PEPPER",
+      "imageUrl": "https://example.com/products/ho-tieu.jpg"
+    },
+    {
+      "name": "Sầu Riêng Monthong",
+      "unit": "trái",
+      "code": "DURIAN_MONTHONG",
+      "imageUrl": "https://example.com/products/sau-rieng.jpg"
+    }
+  ],
+
+  "cropSeasons": [
+    {
+      "farmId": "f3e4131b-fe73-44eb-9e2c-cd71b3e9ea8b",
+      "productId": "211adf09-7144-4fdb-bda1-35fafd57f95b",
+      "name": "Vụ Cà Phê 2025",
+      "startDate": "2025-01-01T00:00:00Z",
+      "endDate": "2025-12-31T23:59:59Z",
+      "status": 0,
+      "note": "Vụ mùa chính, đầu tư tập trung",
+      "isDeleted": false
+    },
+    {
+      "farmId": "{{farm_ho_tieu_id}}",
+      "productId": "{{product_pepper_id}}",
+      "name": "Vụ Tiêu 2025",
+      "startDate": "2025-01-01T00:00:00Z",
+      "endDate": "2025-12-31T23:59:59Z",
+      "status": 0,
+      "note": "Năm đầu tiên trồng thử nghiệm",
+      "isDeleted": false
+    }
+  ],
+
+  "workers": [
+    {
+      "fullName": "Chú Bảy",
+      "phone": "0912345678",
+      "workerType": 0,
+      "defaultDailyWage": 350000,
+      "isActive": true,
+      "imageUrl": "https://example.com/workers/chu-bay.jpg"
+    },
+    {
+      "fullName": "Anh Tèo",
+      "phone": "0923456789",
+      "workerType": 1,
+      "defaultDailyWage": 300000,
+      "isActive": true,
+      "imageUrl": "https://example.com/workers/anh-teo.jpg"
+    },
+    {
+      "fullName": "Chị Năm",
+      "phone": "0934567890",
+      "workerType": 1,
+      "defaultDailyWage": 280000,
+      "isActive": true,
+      "imageUrl": null
+    }
+  ],
+
+  "taskTypes": [
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "name": "Làm cành",
+      "defaultUnit": "CONG",
+      "defaultPrice": 350000
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "name": "Hái khoán",
+      "defaultUnit": "KG",
+      "defaultPrice": 1200
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "name": "Bón phân",
+      "defaultUnit": "CONG",
+      "defaultPrice": 300000
+    },
+    {
+      "farmId": "{{farm_ho_tieu_id}}",
+      "name": "Xới đất",
+      "defaultUnit": "CONG",
+      "defaultPrice": 320000
+    }
+  ],
+
+  "plantPositions": [
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "seasonId": "{{season_ca_phe_id}}",
+      "rowNumber": 1,
+      "columnNumber": 1,
+      "productId": "{{product_robusta_id}}",
+      "plantDate": "2020-03-15T00:00:00Z",
+      "healthStatus": 0,
+      "estimatedYield": 15.5,
+      "note": "Cây khỏe mạnh, năng suất tốt"
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "seasonId": "{{season_ca_phe_id}}",
+      "rowNumber": 1,
+      "columnNumber": 2,
+      "productId": "{{product_robusta_id}}",
+      "plantDate": "2020-03-15T00:00:00Z",
+      "healthStatus": 1,
+      "estimatedYield": 8.0,
+      "note": "Cây có dấu hiệu vàng lá nhẹ"
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "seasonId": "{{season_ca_phe_id}}",
+      "rowNumber": 1,
+      "columnNumber": 3,
+      "productId": "{{product_robusta_id}}",
+      "plantDate": "2020-03-15T00:00:00Z",
+      "healthStatus": 0,
+      "estimatedYield": 14.0,
+      "note": null
+    }
+  ],
+
+  "dailyWorkLogs": [
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "workDate": "2025-01-05T00:00:00Z",
+      "taskTypeId": "{{task_lam_canh_id}}",
+      "note": "Làm cành vườn A, thời tiết tốt",
+      "totalCost": 1050000,
+      "isDeleted": false
+    },
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "workDate": "2025-01-04T00:00:00Z",
+      "taskTypeId": "{{task_bon_phan_id}}",
+      "note": "Bón phân NPK cho toàn vườn",
+      "totalCost": 600000,
+      "isDeleted": false
+    }
+  ],
+
+  "workAssignments": [
+    {
+      "logId": "{{daily_log_1_id}}",
+      "workerId": "{{worker_chu_bay_id}}",
+      "paymentMethod": 0,
+      "quantity": 1.0,
+      "unitPrice": 350000,
+      "totalAmount": 350000,
+      "note": "Làm cả ngày"
+    },
+    {
+      "logId": "{{daily_log_1_id}}",
+      "workerId": "{{worker_anh_teo_id}}",
+      "paymentMethod": 0,
+      "quantity": 1.0,
+      "unitPrice": 300000,
+      "totalAmount": 300000,
+      "note": "Làm cả ngày"
+    },
+    {
+      "logId": "{{daily_log_1_id}}",
+      "workerId": "{{worker_chi_nam_id}}",
+      "paymentMethod": 0,
+      "quantity": 1.0,
+      "unitPrice": 280000,
+      "totalAmount": 280000,
+      "note": "Làm cả ngày"
+    },
+    {
+      "logId": "{{daily_log_1_id}}",
+      "workerId": "{{worker_anh_teo_id}}",
+      "paymentMethod": 1,
+      "quantity": 100,
+      "unitPrice": 1200,
+      "totalAmount": 120000,
+      "note": "Hái thêm 100kg sau giờ"
+    }
+  ],
+
+  "workerAdvances": [
+    {
+      "workerId": "51f5527b-8c5d-4c49-9022-f3b7ed113528",
+      "seasonId": "a316aa72-f4a0-494c-acc6-42e8aa7fb829",
+      "amount": 500000,
+      "advanceDate": "2025-01-03T00:00:00Z",
+      "isDeducted": false,
+      "note": "Ứng tiền lo tết"
+    },
+    {
+      "workerId": "{{worker_anh_teo_id}}",
+      "seasonId": "{{season_ca_phe_id}}",
+      "amount": 300000,
+      "advanceDate": "2025-01-02T00:00:00Z",
+      "isDeducted": false,
+      "note": "Ứng tiền khẩn cấp"
+    }
+  ],
+
+  "materialUsages": [
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "usageDate": "2025-01-04T00:00:00Z",
+      "materialName": "NPK 16-16-8 Đầu Trâu",
+      "quantity": 10,
+      "unit": "Bao",
+      "unitPrice": 350000,
+      "totalCost": 3500000,
+      "note": "Bón lần 1 trong năm",
+      "isDeleted": false
+    },
+    {
+      "seasonId": "f3e4131b-fe73-44eb-9e2c-cd71b3e9ea8b",
+      "usageDate": "2025-01-03T00:00:00Z",
+      "materialName": "Thuốc trừ sâu Abamectin",
+      "quantity": 5,
+      "unit": "Chai",
+      "unitPrice": 120000,
+      "totalCost": 600000,
+      "note": "Phun phòng bệnh",
+      "isDeleted": false
+    },
+    {
+      "seasonId": "{{season_tieu_id}}",
+      "usageDate": "2025-01-04T00:00:00Z",
+      "materialName": "Phân hữu cơ vi sinh",
+      "quantity": 20,
+      "unit": "Bao",
+      "unitPrice": 180000,
+      "totalCost": 3600000,
+      "note": "Bón lót cho tiêu",
+      "isDeleted": false
+    }
+  ],
+
+  "harvestSessions": [
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "harvestDate": "2025-01-05T00:00:00Z",
+      "totalBags": 20,
+      "totalWeight": 1000.0,
+      "storageLocation": "KHO_NHA",
+      "isDeleted": false
+    },
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "harvestDate": "2025-01-04T00:00:00Z",
+      "totalBags": 15,
+      "totalWeight": 750.0,
+      "storageLocation": "DAI_LY_A",
+      "isDeleted": false
+    }
+  ],
+
+  "harvestBagDetails": [
+    {
+      "sessionId": "{{harvest_session_1_id}}",
+      "bagIndex": 1,
+      "grossWeight": 50.5,
+      "deduction": 0.5,
+      "netWeight": 50.0,
+      "isDeleted": false
+    },
+    {
+      "sessionId": "{{harvest_session_1_id}}",
+      "bagIndex": 2,
+      "grossWeight": 51.0,
+      "deduction": 0.5,
+      "netWeight": 50.5,
+      "isDeleted": false
+    },
+    {
+      "sessionId": "{{harvest_session_1_id}}",
+      "bagIndex": 3,
+      "grossWeight": 49.8,
+      "deduction": 0.5,
+      "netWeight": 49.3,
+      "isDeleted": false
+    }
+  ],
+
+  "farmSales": [
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "saleDate": "2025-01-05T00:00:00Z",
+      "buyerName": "Đại lý Tuấn",
+      "quantitySold": 1000,
+      "pricePerKg": 100000,
+      "totalRevenue": 100000000,
+      "note": "Tiền mặt, đã nhận đầy đủ",
+      "isDeleted": false
+    },
+    {
+      "seasonId": "{{season_ca_phe_id}}",
+      "saleDate": "2025-01-04T00:00:00Z",
+      "buyerName": "Thương lái B",
+      "quantitySold": 750,
+      "pricePerKg": 98000,
+      "totalRevenue": 73500000,
+      "note": "Chuyển khoản",
+      "isDeleted": false
+    }
+  ],
+
+  "weatherLogs": [
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "logDate": "2025-01-05T00:00:00Z",
+      "condition": 0,
+      "rainfallMm": 0,
+      "note": "Trời nắng đẹp, phù hợp thu hoạch"
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "logDate": "2025-01-04T00:00:00Z",
+      "condition": 2,
+      "rainfallMm": 25.5,
+      "note": "Mưa vừa buổi chiều"
+    },
+    {
+      "farmId": "{{farm_dak_mil_id}}",
+      "logDate": "2025-01-03T00:00:00Z",
+      "condition": 1,
+      "rainfallMm": null,
+      "note": "Nhiều mây, âm u"
+    },
+    {
+      "farmId": "{{farm_ho_tieu_id}}",
+      "logDate": "2025-01-05T00:00:00Z",
+      "condition": 0,
+      "rainfallMm": 0,
+      "note": "Thời tiết đẹp"
+    }
+  ],
+
+  "userLoginLogs": [
+    {
+      "userId": "{{user_duyhoan_id}}",
+      "ipAddress": "171.252.100.45",
+      "deviceInfo": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+      "loginTime": "2025-01-05T08:30:00Z",
+      "isSuccess": true,
+      "metadata": "{\"location\":\"Đắk Nông\",\"browser\":\"Chrome\",\"os\":\"Windows 10\"}",
+      "actionType": 0
+    },
+    {
+      "userId": "{{user_duyhoan_id}}",
+      "ipAddress": "171.252.100.45",
+      "deviceInfo": "Mozilla/5.0 (Linux; Android 12) Mobile Safari/537.36",
+      "loginTime": "2025-01-05T14:20:00Z",
+      "isSuccess": true,
+      "metadata": "{\"location\":\"Đắk Nông\",\"browser\":\"Mobile Safari\",\"os\":\"Android\"}",
+      "actionType": 0
+    },
+    {
+      "userId": "{{user_minhanh_id}}",
+      "ipAddress": "115.78.10.23",
+      "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0) Safari/604.1",
+      "loginTime": "2025-01-05T09:15:00Z",
+      "isSuccess": true,
+      "metadata": "{\"location\":\"Lâm Đồng\",\"browser\":\"Safari\",\"os\":\"iOS\"}",
+      "actionType": 0
+    },
+    {
+      "userId": "{{user_duyhoan_id}}",
+      "ipAddress": "42.115.234.56",
+      "deviceInfo": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      "loginTime": "2025-01-04T22:45:00Z",
+      "isSuccess": false,
+      "metadata": "{\"location\":\"Unknown\",\"reason\":\"Wrong password\"}",
+      "actionType": 0
+    }
+  ],
+
+  "enums": {
+    "UserRole": {
+      "User": 0,
+      "Admin": 1
+    },
+    "SeasonStatus": {
+      "Active": 0,
+      "Completed": 1,
+      "Cancelled": 2
+    },
+    "WorkerType": {
+      "Seasonal": 0,
+      "Permanent": 1,
+      "Contract": 2
+    },
+    "PaymentMethod": {
+      "Daily": 0,
+      "Product": 1,
+      "Piece": 2
+    },
+    "PlantHealthStatus": {
+      "Healthy": 0,
+      "Warning": 1,
+      "Sick": 2,
+      "Dead": 3,
+      "Replaced": 4
+    },
+    "WeatherCondition": {
+      "Sunny": 0,
+      "Cloudy": 1,
+      "Rainy": 2,
+      "Stormy": 3,
+      "Foggy": 4
+    },
+    "LoginActionType": {
+      "Login": 0,
+      "Logout": 1,
+      "Register": 2,
+      "RefreshToken": 3,
+      "PasswordReset": 4
+    }
+  },
+
+  "instructions": {
+    "order": [
+      "1. Tạo Users trước (cần userId cho Farm)",
+      "2. Tạo Farms (cần ownerId từ Users)",
+      "3. Tạo Products (dữ liệu độc lập)",
+      "4. Tạo CropSeasons (cần farmId và productId)",
+      "5. Tạo Workers (dữ liệu độc lập)",
+      "6. Tạo TaskTypes (cần farmId)",
+      "7. Tạo PlantPositions (cần farmId, seasonId, productId)",
+      "8. Tạo DailyWorkLogs (cần seasonId, taskTypeId)",
+      "9. Tạo WorkAssignments (cần logId, workerId)",
+      "10. Tạo WorkerAdvances (cần workerId, seasonId)",
+      "11. Tạo MaterialUsages (cần seasonId)",
+      "12. Tạo HarvestSessions (cần seasonId)",
+      "13. Tạo HarvestBagDetails (cần sessionId)",
+      "14. Tạo FarmSales (cần seasonId)",
+      "15. Tạo WeatherLogs (cần farmId)",
+      "16. Tạo UserLoginLogs (cần userId)"
+    ],
+    "placeholders": {
+      "note": "Các giá trị {{variable_name}} cần được thay thế bằng GUID thực tế từ database sau khi tạo",
+      "examples": {
+        "{{user_duyhoan_id}}": "GUID của user 'farmer_duyhoan' sau khi tạo",
+        "{{farm_dak_mil_id}}": "GUID của farm 'Rẫy Đắk Mil 1' sau khi tạo",
+        "{{product_robusta_id}}": "GUID của product 'Cà phê Robusta' sau khi tạo",
+        "{{season_ca_phe_id}}": "GUID của season 'Vụ Cà Phê 2025' sau khi tạo"
+      }
+    },
+    "testing": {
+      "recommendation": "Sử dụng Postman hoặc Thunder Client để test từng endpoint theo thứ tự trên",
+      "validation": "Kiểm tra Foreign Key constraints và Soft Delete logic"
+    }
+  }
+}
