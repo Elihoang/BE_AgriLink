@@ -33,6 +33,16 @@ public class MaterialUsageService
     public async Task<IEnumerable<MaterialUsageDto>> GetByFarmAsync(Guid farmId)
     {
         var usages = await _materialUsageRepository.GetByFarmIdAsync(farmId);
+        
+        // Debug Log to check Image loading issue
+        foreach (var u in usages)
+        {
+             if (u.MaterialId.HasValue)
+             {
+                 System.Console.WriteLine($"[DEBUG-USAGE] UsageId: {u.Id}, MaterialId: {u.MaterialId}, HasMaterialObj: {u.Material != null}, ImageUrl: {u.Material?.ImageUrl}");
+             }
+        }
+
         return usages.Select(MapToDto);
     }
 
@@ -97,6 +107,9 @@ public class MaterialUsageService
         await _unitOfWork.SaveChangesAsync();
 
         usage.CropSeason = season;
+        // If material exists, we should try to reload it or set it if we have it, 
+        // but for now MapToDto handles null safely. 
+        // Note: Create endpoint usually returns immediately, might not include Material relation unless re-fetched.
         return MapToDto(usage);
     }
 
@@ -209,7 +222,7 @@ public class MaterialUsageService
         return true;
     }
 
-    private static MaterialUsageDto MapToDto(MaterialUsage usage)
+    private MaterialUsageDto MapToDto(MaterialUsage usage)
     {
         return new MaterialUsageDto
         {
@@ -222,6 +235,7 @@ public class MaterialUsageService
             Unit = usage.Unit,
             UnitPrice = usage.UnitPrice,
             TotalCost = usage.TotalCost,
+            MaterialImageUrl = usage.Material?.ImageUrl,
             Note = usage.Note
         };
     }

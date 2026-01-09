@@ -51,4 +51,28 @@ public class DailyWorkLogRepository : BaseRepository<DailyWorkLog>, IDailyWorkLo
                 .ThenInclude(wa => wa.Worker)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetByFarmAndTaskTypeAsync(Guid farmId, Guid taskTypeId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.TaskTypeId == taskTypeId && d.CropSeason.FarmId == farmId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetBySeasonAndTaskTypeAsync(Guid seasonId, Guid taskTypeId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.TaskTypeId == taskTypeId && d.SeasonId == seasonId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
 }

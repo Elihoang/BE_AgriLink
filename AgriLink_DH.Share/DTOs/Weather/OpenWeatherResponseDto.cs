@@ -37,6 +37,9 @@ public class OpenWeatherResponseDto
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }
+
+    [JsonPropertyName("visibility")]
+    public int Visibility { get; set; }
 }
 
 public class Coord

@@ -15,6 +15,7 @@ public class MaterialUsageRepository : BaseRepository<MaterialUsage>, IMaterialU
     {
         return await _dbSet
             .Include(m => m.CropSeason)
+            .Include(m => m.Material)
             .Where(m => m.SeasonId == seasonId && !m.IsDeleted)
             .OrderByDescending(m => m.UsageDate)
             .ToListAsync();
@@ -24,6 +25,7 @@ public class MaterialUsageRepository : BaseRepository<MaterialUsage>, IMaterialU
     {
         return await _dbSet
             .Include(m => m.CropSeason)
+            .Include(m => m.Material)
             .Where(m => m.CropSeason.FarmId == farmId && !m.IsDeleted)
             .OrderByDescending(m => m.UsageDate)
             .ToListAsync();

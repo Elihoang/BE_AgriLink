@@ -41,6 +41,18 @@ public class DailyWorkLogService
         return logs.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<DailyWorkLogDto>> GetLogsByFarmAndTaskTypeAsync(Guid farmId, Guid taskTypeId)
+    {
+        var logs = await _dailyWorkLogRepository.GetByFarmAndTaskTypeAsync(farmId, taskTypeId);
+        return logs.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<DailyWorkLogDto>> GetLogsBySeasonAndTaskTypeAsync(Guid seasonId, Guid taskTypeId)
+    {
+        var logs = await _dailyWorkLogRepository.GetBySeasonAndTaskTypeAsync(seasonId, taskTypeId);
+        return logs.Select(MapToDto);
+    }
+
     public async Task<DailyWorkLogDto?> GetLogByIdAsync(Guid id)
     {
         var log = await _dailyWorkLogRepository.GetWithAssignmentsAsync(id);

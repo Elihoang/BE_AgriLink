@@ -3,6 +3,7 @@ using AgriLink_DH.Share.Common;
 using AgriLink_DH.Share.DTOs.WorkerAdvance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AgriLink_DH.Api.Controllers;
 
@@ -20,6 +21,22 @@ public class WorkerAdvancesController : ControllerBase
     {
         _workerAdvanceService = workerAdvanceService;
         _logger = logger;
+    }
+
+    [HttpGet("my")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<WorkerAdvanceDto>>>> GetMyAdvances()
+    {
+        try
+        {
+            var userId = GetUserId();
+            var advances = await _workerAdvanceService.GetAdvancesByUserIdAsync(userId);
+            return Ok(ApiResponse<IEnumerable<WorkerAdvanceDto>>.SuccessResponse(advances, "Lấy danh sách ứng lương thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách ứng lương của user");
+            return StatusCode(500, ApiResponse<IEnumerable<WorkerAdvanceDto>>.ErrorResponse("Lỗi khi lấy danh sách ứng lương", 500));
+        }
     }
 
     [HttpGet("by-worker/{workerId:guid}")]
@@ -168,7 +185,7 @@ public class WorkerAdvancesController : ControllerBase
         }
     }
 
-    [HttpPut("{id:guid}/mark-deducted")]
+    [HttpPatch("{id:guid}/mark-deducted")]
     public async Task<ActionResult<ApiResponse<bool>>> MarkAsDeducted(Guid id)
     {
         try
@@ -185,5 +202,12 @@ public class WorkerAdvancesController : ControllerBase
             _logger.LogError(ex, "Lỗi khi đánh dấu trừ lương {Id}", id);
             return StatusCode(500, ApiResponse<bool>.ErrorResponse("Lỗi khi đánh dấu trừ lương", 500));
         }
+    }
+
+    private Guid GetUserId()
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(id)) throw new UnauthorizedAccessException("User ID not found");
+        return Guid.Parse(id);
     }
 }

@@ -4,6 +4,7 @@ namespace AgriLink_DH.Domain.Interface.IRepositories;
 
 public interface IWorkerAdvanceRepository : IRepository<WorkerAdvance>
 {
+    Task<IEnumerable<WorkerAdvance>> GetByUserIdAsync(Guid userId);
     Task<IEnumerable<WorkerAdvance>> GetByWorkerIdAsync(Guid workerId);
     Task<IEnumerable<WorkerAdvance>> GetBySeasonIdAsync(Guid seasonId);
     Task<IEnumerable<WorkerAdvance>> GetByWorkerAndSeasonAsync(Guid workerId, Guid seasonId);

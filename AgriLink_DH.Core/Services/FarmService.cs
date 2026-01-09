@@ -182,6 +182,7 @@ public class FarmService
             GoogleMapsUrl = farm.GoogleMapsUrl,
             Latitude = farm.Latitude,
             Longitude = farm.Longitude,
+            ImageUrl = farm.ImageUrl,
             CreatedAt = farm.CreatedAt,
             CropSeasons = seasons.Select(s => new CropSeasonDto
             {

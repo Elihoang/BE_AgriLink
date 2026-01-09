@@ -51,6 +51,36 @@ public class DailyWorkLogsController : ControllerBase
         }
     }
 
+    [HttpGet("farm/{farmId:guid}/task-type/{taskTypeId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetLogsByFarmAndTaskType(Guid farmId, Guid taskTypeId)
+    {
+        try
+        {
+            var logs = await _dailyWorkLogService.GetLogsByFarmAndTaskTypeAsync(farmId, taskTypeId);
+            return Ok(ApiResponse<IEnumerable<DailyWorkLogDto>>.SuccessResponse(logs, "Lấy danh sách nhật ký theo trang trại và loại công việc thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách nhật ký theo Farm {FarmId} và Task {TaskTypeId}", farmId, taskTypeId);
+            return StatusCode(500, ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Lỗi server", 500));
+        }
+    }
+
+    [HttpGet("season/{seasonId:guid}/task-type/{taskTypeId:guid}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetLogsBySeasonAndTaskType(Guid seasonId, Guid taskTypeId)
+    {
+        try
+        {
+            var logs = await _dailyWorkLogService.GetLogsBySeasonAndTaskTypeAsync(seasonId, taskTypeId);
+            return Ok(ApiResponse<IEnumerable<DailyWorkLogDto>>.SuccessResponse(logs, "Lấy danh sách nhật ký theo vụ mùa và loại công việc thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách nhật ký theo Season {SeasonId} và Task {TaskTypeId}", seasonId, taskTypeId);
+            return StatusCode(500, ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Lỗi server", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<DailyWorkLogDto>>> GetLogById(Guid id)
     {
