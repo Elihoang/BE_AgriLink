@@ -16,6 +16,9 @@ jobs:
     name: Validate Pull Request
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      pull-requests: write
+      contents: read
     
     steps:
       - name: Checkout PR
