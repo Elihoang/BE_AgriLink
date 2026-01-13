@@ -21,6 +21,49 @@ public class DailyWorkLogsController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("my-logs")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetMyLogs()
+    {
+        try
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Chưa đăng nhập", 401));
+            }
+
+            var logs = await _dailyWorkLogService.GetLogsByUserIdAsync(Guid.Parse(userId));
+            return Ok(ApiResponse<IEnumerable<DailyWorkLogDto>>.SuccessResponse(logs, "Lấy danh sách công việc thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách công việc của user");
+            return StatusCode(500, ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Lỗi khi lấy danh sách công việc", 500));
+        }
+    }
+
+    [HttpGet("by-farm-and-date")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetLogsByFarmAndDateRange(
+        [FromQuery] Guid farmId,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
+    {
+        try
+        {
+            // Default to current month if no dates provided
+            var from = fromDate ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var to = toDate ?? from.AddMonths(1).AddDays(-1);
+
+            var logs = await _dailyWorkLogService.GetLogsByFarmAndDateRangeAsync(farmId, from, to);
+            return Ok(ApiResponse<IEnumerable<DailyWorkLogDto>>.SuccessResponse(logs, "Lấy danh sách công việc thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách công việc theo farm và ngày");
+            return StatusCode(500, ApiResponse<IEnumerable<DailyWorkLogDto>>.ErrorResponse("Lỗi khi lấy danh sách công việc", 500));
+        }
+    }
+
     [HttpGet("by-season/{seasonId:guid}")]
     public async Task<ActionResult<ApiResponse<IEnumerable<DailyWorkLogDto>>>> GetLogsBySeason(Guid seasonId)
     {
@@ -192,6 +235,45 @@ public class DailyWorkLogsController : ControllerBase
         {
             _logger.LogError(ex, "Lỗi khi thêm chấm công");
             return StatusCode(500, ApiResponse<WorkAssignmentDto>.ErrorResponse("Lỗi khi thêm chấm công", 500));
+        }
+    }
+
+    [HttpPost("assignments/batch")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<WorkAssignmentDto>>>> AddMultipleAssignments([FromBody] CreateMultipleAssignmentsDto dto)
+    {
+        try
+        {
+            var assignments = await _dailyWorkLogService.AddMultipleAssignmentsAsync(dto);
+            return Ok(ApiResponse<IEnumerable<WorkAssignmentDto>>.CreatedResponse(assignments, "Đã thêm danh sách chấm công"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<IEnumerable<WorkAssignmentDto>>.ErrorResponse(ex.Message, 400));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi thêm nhiều chấm công");
+            return StatusCode(500, ApiResponse<IEnumerable<WorkAssignmentDto>>.ErrorResponse("Lỗi khi thêm nhiều chấm công", 500));
+        }
+    }
+
+    [HttpPut("assignments/{id:guid}")]
+    public async Task<ActionResult<ApiResponse<WorkAssignmentDto>>> UpdateAssignment(Guid id, [FromBody] UpdateWorkAssignmentDto dto)
+    {
+        // Trigger Rebuild: Handling Update Request
+        try
+        {
+            var result = await _dailyWorkLogService.UpdateAssignmentAsync(id, dto);
+            return Ok(ApiResponse<WorkAssignmentDto>.SuccessResponse(result, "Cập nhật chấm công thành công"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ApiResponse<WorkAssignmentDto>.NotFoundResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi cập nhật chấm công {Id}", id);
+            return StatusCode(500, ApiResponse<WorkAssignmentDto>.ErrorResponse("Lỗi khi cập nhật chấm công", 500));
         }
     }
 

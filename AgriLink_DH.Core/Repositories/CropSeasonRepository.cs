@@ -39,4 +39,17 @@ public class CropSeasonRepository : BaseRepository<CropSeason>, ICropSeasonRepos
             .Include(cs => cs.Farm)
             .FirstOrDefaultAsync(cs => cs.Id == id, cancellationToken);
     }
+
+    /// <summary>
+    /// Optimized: Get all seasons for a user in ONE query (no N+1)
+    /// </summary>
+    public async Task<IEnumerable<CropSeason>> GetSeasonsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(cs => cs.Product)
+            .Include(cs => cs.Farm)
+            .Where(cs => cs.Farm.OwnerUserId == userId)
+            .OrderByDescending(cs => cs.StartDate)
+            .ToListAsync(cancellationToken);
+    }
 }

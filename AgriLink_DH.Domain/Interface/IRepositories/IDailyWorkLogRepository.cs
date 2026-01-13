@@ -10,4 +10,6 @@ public interface IDailyWorkLogRepository : IRepository<DailyWorkLog>
     Task<DailyWorkLog?> GetWithAssignmentsAsync(Guid id);
     Task<IEnumerable<DailyWorkLog>> GetByFarmAndTaskTypeAsync(Guid farmId, Guid taskTypeId);
     Task<IEnumerable<DailyWorkLog>> GetBySeasonAndTaskTypeAsync(Guid seasonId, Guid taskTypeId);
+    Task<IEnumerable<DailyWorkLog>> GetByUserIdAsync(Guid userId);
+    Task<IEnumerable<DailyWorkLog>> GetByFarmAndDateRangeAsync(Guid farmId, DateTime fromDate, DateTime toDate);
 }

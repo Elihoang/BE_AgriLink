@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: agrilink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agrilink_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agrilink-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: agrilink-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agrilink-network
+
+  # AgriLink API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agrilink-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-agrilink_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-your_secure_password}
+      - ConnectionStrings__RedisConnection=redis:6379
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY:-your_jwt_secret_key_change_this_in_production}
+      - JwtSettings__Issuer=${JWT_ISSUER:-AgriLink}
+      - JwtSettings__Audience=${JWT_AUDIENCE:-AgriLinkUsers}
+      - JwtSettings__ExpirationInMinutes=${JWT_EXPIRATION:-60}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agrilink-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  agrilink-network:
+    driver: bridge

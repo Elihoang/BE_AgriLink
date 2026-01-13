@@ -25,7 +25,19 @@ public class HarvestSessionRepository : BaseRepository<HarvestSession>, IHarvest
     {
         return await _dbSet
             .Include(h => h.CropSeason)
+                .ThenInclude(cs => cs.Farm)
             .Include(h => h.HarvestBagDetails)
             .FirstOrDefaultAsync(h => h.Id == id);
+    }
+
+    public async Task<IEnumerable<HarvestSession>> GetByUserIdAsync(Guid userId)
+    {
+        return await _dbSet
+            .Include(h => h.CropSeason)
+                .ThenInclude(cs => cs.Farm)
+            .Include(h => h.HarvestBagDetails)
+            .Where(h => h.CropSeason.Farm.OwnerUserId == userId)
+            .OrderByDescending(h => h.HarvestDate)
+            .ToListAsync();
     }
 }

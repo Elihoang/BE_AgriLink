@@ -7,4 +7,5 @@ public interface ICropSeasonRepository : IRepository<CropSeason>
     Task<IEnumerable<CropSeason>> GetSeasonsByFarmIdAsync(Guid farmId, CancellationToken cancellationToken = default);
     Task<IEnumerable<CropSeason>> GetActiveSeasonsAsync(CancellationToken cancellationToken = default);
     Task<CropSeason?> GetSeasonWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<CropSeason>> GetSeasonsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
 }

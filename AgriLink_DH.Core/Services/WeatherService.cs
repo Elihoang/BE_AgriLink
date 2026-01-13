@@ -19,14 +19,20 @@ public class WeatherService
         HttpClient httpClient,
         IConfiguration configuration,
         ILogger<WeatherService> logger,
-        IFarmRepository farmRepository)
+        IFarmRepository farmRepository,
+        RedisService redisService)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
         _farmRepository = farmRepository;
+        _redisService = redisService;
         _apiKey = _configuration["OpenWeather:ApiKey"] ?? throw new Exception("OpenWeather API Key not configured");
     }
+
+    private readonly RedisService _redisService;
+    private const string REDIS_KEY_PREFIX = "weather:farm:";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
 
     // --- OLD METHOD RESTORED for Farm Detail ---
     /// <summary>
@@ -34,6 +40,10 @@ public class WeatherService
     /// </summary>
     public async Task<WeatherForecastDto?> GetWeatherByFarmIdAsync(Guid farmId)
     {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:current";
+        var cached = await _redisService.GetAsync<WeatherForecastDto>(cacheKey);
+        if (cached != null) return cached;
+
         try
         {
             var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
@@ -42,7 +52,12 @@ public class WeatherService
             var weatherData = await GetCurrentWeatherRaw(latitude, longitude);
             if (weatherData == null) return null;
 
-            return MapToWeatherForecastDto(weatherData, farmName);
+            var result = MapToWeatherForecastDto(weatherData, farmName);
+            
+            if (result != null)
+                await _redisService.SetAsync(cacheKey, result, CacheDuration);
+
+            return result;
         }
         catch (Exception ex)
         {
@@ -57,6 +72,10 @@ public class WeatherService
     /// </summary>
     public async Task<WeatherForecastDetailDto?> GetForecastDetailAsync(Guid farmId)
     {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:forecast";
+        var cached = await _redisService.GetAsync<WeatherForecastDetailDto>(cacheKey);
+        if (cached != null) return cached;
+
         try
         {
             var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
@@ -147,6 +166,8 @@ public class WeatherService
 
             // 4. Generate Advice
             result.AgriculturalAdvice = GenerateSimpleAdvice(result);
+
+            await _redisService.SetAsync(cacheKey, result, CacheDuration);
 
             return result;
         }

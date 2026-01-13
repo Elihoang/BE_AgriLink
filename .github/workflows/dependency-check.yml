@@ -1,0 +1,67 @@
+name: 📦 Dependency Check & Update
+
+on:
+  schedule:
+    # Chạy mỗi thứ 2 lúc 9:00 AM (UTC+7 = 2:00 AM UTC)
+    - cron: '0 2 * * 1'
+  
+  workflow_dispatch:  # Manual trigger
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  # ==========================================
+  # Job 1: Dependency Security & Health Check
+  # ==========================================
+  dependency-check:
+    name: 🔒 Check Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: 🔄 Restore dependencies
+        run: dotnet restore AgriLink_DH.sln
+      
+      - name: 🔒 Security audit
+        run: |
+          echo "### 🔒 Security Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          dotnet list AgriLink_DH.sln package --vulnerable --include-transitive || echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: 📦 Outdated packages
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Outdated Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          dotnet list AgriLink_DH.sln package --outdated || echo "✅ All packages up to date!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: 🏥 Package health check
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏥 Package Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for deprecated packages
+          echo "#### Deprecated Packages" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          dotnet list package --deprecated 2>&1 || echo "✅ No deprecated packages found" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Package Statistics" >> $GITHUB_STEP_SUMMARY
+          TOTAL_PACKAGES=$(dotnet list AgriLink_DH.sln package | grep ">" | wc -l)
+          echo "- Total packages: **$TOTAL_PACKAGES**" >> $GITHUB_STEP_SUMMARY

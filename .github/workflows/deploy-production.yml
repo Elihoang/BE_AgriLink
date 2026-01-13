@@ -1,0 +1,139 @@
+name: CD - Deploy to Production
+
+# Workflow này DISABLED mặc định - chỉ deploy khi manually trigger
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOCKER_IMAGE_NAME: agrilink-api
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Restore dependencies
+        run: dotnet restore AgriLink_DH.sln
+      
+      - name: Build for production
+        run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
+      
+      - name: Publish API
+        run: dotnet publish AgriLink_DH.Api/AgriLink_DH.Api.csproj --configuration Release --output ./publish --no-build
+      
+      # ==========================================
+      # Option 1: Deploy to Docker Registry
+      # ==========================================
+      # Uncomment và setup DOCKER_USERNAME, DOCKER_PASSWORD trong GitHub secrets
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # - name: Build Docker image
+      #   run: |
+      #     docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest \
+      #                  -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+      #                  -f Dockerfile .
+      
+      # - name: Push Docker image
+      #   run: |
+      #     docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+      #     docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+      
+      # ==========================================
+      # Option 2: Deploy to Azure App Service
+      # ==========================================
+      # Uncomment và setup AZURE_WEBAPP_PUBLISH_PROFILE trong GitHub secrets
+      # - name: Deploy to Azure Web App
+      #   uses: azure/webapps-deploy@v3
+      #   with:
+      #     app-name: 'your-app-name'
+      #     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+      #     package: ./publish
+      
+      # ==========================================
+      # Option 3: Deploy to AWS Elastic Beanstalk
+      # ==========================================
+      # Uncomment và setup AWS credentials trong GitHub secrets
+      # - name: Generate deployment package
+      #   run: |
+      #     cd ./publish
+      #     zip -r ../deploy.zip .
+      
+      # - name: Deploy to AWS Elastic Beanstalk
+      #   uses: einaregilsson/beanstalk-deploy@v22
+      #   with:
+      #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     application_name: agrilink-api
+      #     environment_name: agrilink-api-env
+      #     version_label: ${{ github.sha }}
+      #     region: ap-southeast-1
+      #     deployment_package: deploy.zip
+      
+      # ==========================================
+      # Option 4: Deploy to VPS via SSH
+      # ==========================================
+      # Uncomment và setup SSH_PRIVATE_KEY, VPS_HOST, VPS_USERNAME trong GitHub secrets
+      # - name: Deploy to VPS
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USERNAME }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     source: "./publish/*"
+      #     target: "/var/www/agrilink-api"
+      
+      # - name: Restart application on VPS
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USERNAME }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       cd /var/www/agrilink-api
+      #       sudo systemctl restart agrilink-api
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agrilink-api-${{ github.sha }}
+          path: ./publish
+          retention-days: 7
+      
+      - name: Deployment summary
+        run: |
+          echo "### Deployment Completed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **.NET Version**: ${{ env.DOTNET_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Build artifacts have been uploaded and are ready for deployment." >> $GITHUB_STEP_SUMMARY

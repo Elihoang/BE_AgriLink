@@ -14,4 +14,5 @@ public class WorkAssignmentDto
     public decimal UnitPrice { get; set; }
     public decimal TotalAmount { get; set; }
     public string? Note { get; set; }
+    public string? WorkerImageUrl { get; set; }
 }

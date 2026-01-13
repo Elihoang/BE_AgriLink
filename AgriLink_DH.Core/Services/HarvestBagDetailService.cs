@@ -9,15 +9,23 @@ public class HarvestBagDetailService
 {
     private readonly IHarvestBagDetailRepository _bagDetailRepository;
     private readonly IHarvestSessionRepository _harvestSessionRepository;
+    private readonly ICropSeasonRepository _cropSeasonRepository;
+    private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
+
+    private const string REDIS_KEY_PREFIX = "harvest_sessions:user:";
 
     public HarvestBagDetailService(
         IHarvestBagDetailRepository bagDetailRepository,
         IHarvestSessionRepository harvestSessionRepository,
+        ICropSeasonRepository cropSeasonRepository,
+        RedisService redisService,
         IUnitOfWork unitOfWork)
     {
         _bagDetailRepository = bagDetailRepository;
         _harvestSessionRepository = harvestSessionRepository;
+        _cropSeasonRepository = cropSeasonRepository;
+        _redisService = redisService;
         _unitOfWork = unitOfWork;
     }
 
@@ -53,6 +61,9 @@ public class HarvestBagDetailService
 
         await _unitOfWork.SaveChangesAsync();
 
+        // Invalidate cache
+        await InvalidateCacheForSessionAsync(session);
+
         return MapToDto(bag);
     }
 
@@ -73,6 +84,12 @@ public class HarvestBagDetailService
 
         _bagDetailRepository.Remove(bag);
         await _unitOfWork.SaveChangesAsync();
+
+        // Invalidate cache
+        if (session != null)
+        {
+            await InvalidateCacheForSessionAsync(session);
+        }
 
         return true;
     }
@@ -118,5 +135,18 @@ public class HarvestBagDetailService
             Deduction = bag.Deduction,
             NetWeight = bag.NetWeight
         };
+    }
+
+    /// <summary>
+    /// Helper: Invalidate cache for a session
+    /// </summary>
+    private async Task InvalidateCacheForSessionAsync(HarvestSession session)
+    {
+        var season = session.CropSeason ?? await _cropSeasonRepository.GetByIdAsync(session.SeasonId);
+        if (season?.Farm != null)
+        {
+            var cacheKey = $"{REDIS_KEY_PREFIX}{season.Farm.OwnerUserId}";
+            await _redisService.DeleteAsync(cacheKey);
+        }
     }
 }

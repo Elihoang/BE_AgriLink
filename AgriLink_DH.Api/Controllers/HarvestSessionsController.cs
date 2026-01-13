@@ -37,6 +37,27 @@ public class HarvestSessionsController : ControllerBase
         }
     }
 
+    [HttpGet("my-sessions")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<HarvestSessionDto>>>> GetMySessions()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(ApiResponse<IEnumerable<HarvestSessionDto>>.ErrorResponse("Không xác định được người dùng", 401));
+            }
+
+            var sessions = await _harvestSessionService.GetByUserIdAsync(userId);
+            return Ok(ApiResponse<IEnumerable<HarvestSessionDto>>.SuccessResponse(sessions, "Lấy danh sách phiếu thu hoạch thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách phiếu thu hoạch của người dùng");
+            return StatusCode(500, ApiResponse<IEnumerable<HarvestSessionDto>>.ErrorResponse("Lỗi khi lấy danh sách phiếu thu hoạch", 500));
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ApiResponse<HarvestSessionDto>>> GetById(Guid id)
     {
