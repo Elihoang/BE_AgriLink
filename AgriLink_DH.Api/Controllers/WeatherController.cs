@@ -18,7 +18,7 @@ public class WeatherController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy dự báo thời tiết cho farm (based on farm coordinates)
+    /// [OLD ENDPOINT] Lấy dự báo đơn giản cho Farm (Compatibility)
     /// </summary>
     [HttpGet("farm/{farmId}")]
     public async Task<ActionResult<ApiResponse<WeatherForecastDto>>> GetWeatherByFarm(Guid farmId)
@@ -28,7 +28,7 @@ public class WeatherController : ControllerBase
         if (forecast == null)
         {
             return NotFound(ApiResponse<WeatherForecastDto>.ErrorResponse(
-                "Không thể lấy dự báo thời tiết. Kiểm tra farm có tọa độ chưa?", 404));
+                "Không thể lấy dự báo thời tiết đơn giản.", 404));
         }
 
         return Ok(ApiResponse<WeatherForecastDto>.SuccessResponse(
@@ -37,26 +37,38 @@ public class WeatherController : ControllerBase
     }
 
     /// <summary>
-    /// TEST: Lấy dự báo thời tiết theo tọa độ (không cần farm)
-    /// Ví dụ: /api/weather/coordinates?lat=10.8231&lon=106.6297 (TP.HCM)
+    /// [NEW ENDPOINT] Lấy chi tiết dự báo thời tiết (Current + Hourly + Daily) cho trang Weather Page
+    /// </summary>
+    [HttpGet("farm/{farmId}/detail")]
+    public async Task<ActionResult<ApiResponse<WeatherForecastDetailDto>>> GetWeatherDetailByFarm(Guid farmId)
+    {
+        var forecast = await _weatherService.GetForecastDetailAsync(farmId);
+
+        if (forecast == null)
+        {
+            return NotFound(ApiResponse<WeatherForecastDetailDto>.ErrorResponse(
+                "Không thể lấy dự báo thời tiết chi tiết hoặc lỗi API.", 404));
+        }
+
+        return Ok(ApiResponse<WeatherForecastDetailDto>.SuccessResponse(
+            forecast,
+            "Lấy dự báo thời tiết chi tiết thành công"));
+    }
+
+    /// <summary>
+    /// TEST: Lấy dự báo thời tiết theo tọa độ
     /// </summary>
     [HttpGet("coordinates")]
     public async Task<ActionResult<ApiResponse<WeatherForecastDto>>> GetWeatherByCoordinates(
         [FromQuery] decimal lat,
         [FromQuery] decimal lon)
     {
-        if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
-        {
-            return BadRequest(ApiResponse<WeatherForecastDto>.ErrorResponse(
-                "Invalid coordinates. Lat must be [-90, 90], Lon must be [-180, 180]"));
-        }
-
         var forecast = await _weatherService.GetWeatherByCoordinatesAsync(lat, lon);
 
         if (forecast == null)
         {
             return NotFound(ApiResponse<WeatherForecastDto>.ErrorResponse(
-                "Không thể lấy dự báo thời tiết từ OpenWeather API", 404));
+                "Không thể lấy dự báo thời tiết từ API", 404));
         }
 
         return Ok(ApiResponse<WeatherForecastDto>.SuccessResponse(

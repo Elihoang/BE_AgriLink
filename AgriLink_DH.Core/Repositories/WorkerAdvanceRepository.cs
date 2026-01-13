@@ -11,6 +11,17 @@ public class WorkerAdvanceRepository : BaseRepository<WorkerAdvance>, IWorkerAdv
     {
     }
 
+    public async Task<IEnumerable<WorkerAdvance>> GetByUserIdAsync(Guid userId)
+    {
+        return await _dbSet
+            .Include(wa => wa.Worker)
+            .Include(wa => wa.CropSeason)
+                .ThenInclude(cs => cs.Farm)
+            .Where(wa => wa.CropSeason.Farm.OwnerUserId == userId)
+            .OrderByDescending(wa => wa.AdvanceDate)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<WorkerAdvance>> GetByWorkerIdAsync(Guid workerId)
     {
         return await _dbSet

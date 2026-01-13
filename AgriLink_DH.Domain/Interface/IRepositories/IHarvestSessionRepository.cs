@@ -6,4 +6,5 @@ public interface IHarvestSessionRepository : IRepository<HarvestSession>
 {
     Task<IEnumerable<HarvestSession>> GetBySeasonIdAsync(Guid seasonId);
     Task<HarvestSession?> GetWithDetailsAsync(Guid id);
+    Task<IEnumerable<HarvestSession>> GetByUserIdAsync(Guid userId);
 }

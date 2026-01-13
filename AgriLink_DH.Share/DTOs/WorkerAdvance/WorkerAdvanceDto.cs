@@ -11,4 +11,6 @@ public class WorkerAdvanceDto
     public DateTime AdvanceDate { get; set; }
     public bool IsDeducted { get; set; }
     public string? Note { get; set; }
+    public string? WorkerImageUrl { get; set; } // Added
+    public string? WorkerCode { get; set; } // Added
 }

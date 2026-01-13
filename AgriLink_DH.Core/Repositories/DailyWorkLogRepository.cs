@@ -51,4 +51,58 @@ public class DailyWorkLogRepository : BaseRepository<DailyWorkLog>, IDailyWorkLo
                 .ThenInclude(wa => wa.Worker)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetByFarmAndTaskTypeAsync(Guid farmId, Guid taskTypeId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.TaskTypeId == taskTypeId && d.CropSeason.FarmId == farmId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetBySeasonAndTaskTypeAsync(Guid seasonId, Guid taskTypeId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.TaskTypeId == taskTypeId && d.SeasonId == seasonId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetByUserIdAsync(Guid userId)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+                .ThenInclude(s => s.Farm)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.CropSeason.Farm.OwnerUserId == userId)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DailyWorkLog>> GetByFarmAndDateRangeAsync(Guid farmId, DateTime fromDate, DateTime toDate)
+    {
+        return await _dbSet
+            .Include(d => d.CropSeason)
+                .ThenInclude(s => s.Farm)
+            .Include(d => d.CropSeason)
+                .ThenInclude(s => s.Product)
+            .Include(d => d.TaskType)
+            .Include(d => d.WorkAssignments)
+                .ThenInclude(wa => wa.Worker)
+            .Where(d => d.CropSeason.FarmId == farmId 
+                     && d.WorkDate >= fromDate 
+                     && d.WorkDate <= toDate)
+            .OrderByDescending(d => d.WorkDate)
+            .ToListAsync();
+    }
 }

@@ -12,5 +12,6 @@ public class MaterialUsageDto
     public string? Unit { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalCost { get; set; }
+    public string? MaterialImageUrl { get; set; }
     public string? Note { get; set; }
 }

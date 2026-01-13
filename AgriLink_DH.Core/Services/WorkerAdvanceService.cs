@@ -24,6 +24,12 @@ public class WorkerAdvanceService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<IEnumerable<WorkerAdvanceDto>> GetAdvancesByUserIdAsync(Guid userId)
+    {
+        var advances = await _workerAdvanceRepository.GetByUserIdAsync(userId);
+        return advances.Select(MapToDto);
+    }
+
     public async Task<IEnumerable<WorkerAdvanceDto>> GetAdvancesByWorkerAsync(Guid workerId)
     {
         var advances = await _workerAdvanceRepository.GetByWorkerIdAsync(workerId);
@@ -138,7 +144,9 @@ public class WorkerAdvanceService
             Amount = advance.Amount,
             AdvanceDate = advance.AdvanceDate,
             IsDeducted = advance.IsDeducted,
-            Note = advance.Note
+            Note = advance.Note,
+            WorkerImageUrl = advance.Worker?.ImageUrl,
+            WorkerCode = advance.WorkerId.ToString().Substring(0, 6).ToUpper()
         };
     }
 }

@@ -15,6 +15,7 @@ public class FarmWithSeasonDto
     public decimal? Latitude { get; set; }
     public decimal? Longitude { get; set; }
     public string? GoogleMapsUrl { get; set; }
+    public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     
     /// <summary>

@@ -45,22 +45,14 @@ public class CropSeasonService
     }
 
     /// <summary>
-    /// Lấy tất cả seasons của các farms thuộc user
+    /// Lấy tất cả seasons của các farms thuộc user  
+    /// OPTIMIZED: Chỉ 1 query thay vì N+1
     /// </summary>
     public async Task<IEnumerable<CropSeasonDto>> GetSeasonsByUserIdAsync(Guid userId)
     {
-        // Lấy tất cả farms của user
-        var userFarms = await _farmRepository.GetFarmsByUserIdAsync(userId);
-        var userSeasons = new List<CropSeasonDto>();
-
-        // Lấy seasons của từng farm (đã include Product và Farm)
-        foreach (var farm in userFarms)
-        {
-            var farmSeasons = await _cropSeasonRepository.GetSeasonsByFarmIdAsync(farm.Id);
-            userSeasons.AddRange(farmSeasons.Select(MapToDto));
-        }
-
-        return userSeasons.OrderByDescending(s => s.StartDate);
+        // Single query với JOIN - không còn N+1!
+        var userSeasons = await _cropSeasonRepository.GetSeasonsByUserIdAsync(userId);
+        return userSeasons.Select(MapToDto).OrderByDescending(s => s.StartDate);
     }
 
     public async Task<CropSeasonDto?> GetSeasonByIdAsync(Guid id)

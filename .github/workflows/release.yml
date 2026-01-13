@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="v0.0.0-dev"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREVIOUS_TAG" ]; then
+              CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            else
+              CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            fi
+          else
+            CHANGELOG="Manual release"
+          fi
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Restore dependencies
+        run: dotnet restore AgriLink_DH.sln
+      
+      - name: Build solution
+        run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
+      
+      - name: Run tests
+        run: dotnet test AgriLink_DH.sln --configuration Release --no-build
+      
+      - name: Publish API
+        run: |
+          dotnet publish AgriLink_DH.Api/AgriLink_DH.Api.csproj \
+            --configuration Release \
+            --output ./publish/api \
+            --no-build \
+            -p:Version=${{ steps.get_version.outputs.VERSION }}
+      
+      - name: Create release archives
+        run: |
+          cd publish
+          tar -czf agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz api/
+          cd ..
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## AgriLink_DH ${{ steps.get_version.outputs.VERSION }}
+            
+            ### Changes
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ### Assets
+            - `agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz` - API build for Linux x64
+            
+            ### Docker
+            ```bash
+            docker pull your-registry/agrilink-api:${{ steps.get_version.outputs.VERSION }}
+            ```
+            
+            ### Documentation
+            See [README.md](https://github.com/${{ github.repository }}/blob/${{ steps.get_version.outputs.VERSION }}/README.md) for installation and usage instructions.
+          files: |
+            publish/agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
+          draft: false
+          prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') || contains(steps.get_version.outputs.VERSION, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Release summary
+        run: |
+          echo "### Release Created!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz" >> $GITHUB_STEP_SUMMARY
+
+  # Optional: Build and push Docker image on release
+  docker-release:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: github.ref_type == 'tag'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      # Uncomment khi setup Docker registry
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKER_USERNAME }}/agrilink-api:latest
+      #       ${{ secrets.DOCKER_USERNAME }}/agrilink-api:${{ steps.get_version.outputs.VERSION }}
+      
+      - name: Docker build placeholder
+        run: |
+          echo "Docker build would run here if configured"
+          echo "Version: ${{ steps.get_version.outputs.VERSION }}"

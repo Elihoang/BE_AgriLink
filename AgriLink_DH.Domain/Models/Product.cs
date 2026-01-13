@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
-/// Danh mục Cây trồng Hệ thống (Dữ liệu tĩnh, Admin tạo sẵn)
+/// Danh mục Cây trồng Hệ thống 
 /// </summary>
 [Table("products")]
 public class Product

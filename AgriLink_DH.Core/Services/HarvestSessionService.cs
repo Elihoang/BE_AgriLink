@@ -9,15 +9,21 @@ public class HarvestSessionService
 {
     private readonly IHarvestSessionRepository _harvestSessionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
+    private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
+
+    private const string REDIS_KEY_PREFIX = "harvest_sessions:user:";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30); // Cache 30 phút
 
     public HarvestSessionService(
         IHarvestSessionRepository harvestSessionRepository,
         ICropSeasonRepository cropSeasonRepository,
+        RedisService redisService,
         IUnitOfWork unitOfWork)
     {
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;
+        _redisService = redisService;
         _unitOfWork = unitOfWork;
     }
 
@@ -25,6 +31,30 @@ public class HarvestSessionService
     {
         var sessions = await _harvestSessionRepository.GetBySeasonIdAsync(seasonId);
         return sessions.Select(MapToDto);
+    }
+
+    /// <summary>
+    /// Lấy tất cả harvest sessions của user - CÓ CACHE
+    /// </summary>
+    public async Task<IEnumerable<HarvestSessionDto>> GetByUserIdAsync(Guid userId)
+    {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{userId}";
+
+        // Try get from cache first
+        var cached = await _redisService.GetAsync<List<HarvestSessionDto>>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        // Cache miss - get from DB
+        var sessions = await _harvestSessionRepository.GetByUserIdAsync(userId);
+        var dtos = sessions.Select(MapToDto).ToList();
+
+        // Store in cache
+        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
+
+        return dtos;
     }
 
     public async Task<HarvestSessionDto?> GetByIdAsync(Guid id)
@@ -35,7 +65,7 @@ public class HarvestSessionService
 
     public async Task<HarvestSessionDto> CreateSessionAsync(CreateHarvestSessionDto dto)
     {
-        var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
+        var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(dto.SeasonId);
         if (season == null)
             throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
@@ -51,13 +81,19 @@ public class HarvestSessionService
         await _harvestSessionRepository.AddAsync(session);
         await _unitOfWork.SaveChangesAsync();
 
+        // Invalidate cache (get userId from season.Farm)
+        if (season.Farm != null)
+        {
+            await InvalidateUserCacheAsync(season.Farm.OwnerUserId);
+        }
+
         session.CropSeason = season;
         return MapToDto(session);
     }
 
     public async Task<HarvestSessionDto> CreateSessionWithBagsAsync(CreateHarvestSessionWithDetailsDto dto)
     {
-        var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
+        var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(dto.SeasonId);
         if (season == null)
             throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
@@ -102,6 +138,12 @@ public class HarvestSessionService
         await _harvestSessionRepository.AddAsync(session);
         await _unitOfWork.SaveChangesAsync();
 
+        // Invalidate cache
+        if (season.Farm != null)
+        {
+            await InvalidateUserCacheAsync(season.Farm.OwnerUserId);
+        }
+
         session.CropSeason = season;
         return MapToDto(session);
     }
@@ -112,8 +154,18 @@ public class HarvestSessionService
         if (session == null)
             throw new KeyNotFoundException($"Không tìm thấy phiếu thu hoạch với ID: {id}");
 
+        // Get userId before delete
+        var season = session.CropSeason ?? await _cropSeasonRepository.GetSeasonWithDetailsAsync(session.SeasonId);
+        var userId = season?.Farm?.OwnerUserId;
+
         _harvestSessionRepository.Remove(session);
         await _unitOfWork.SaveChangesAsync();
+
+        // Invalidate cache
+        if (userId.HasValue)
+        {
+            await InvalidateUserCacheAsync(userId.Value);
+        }
 
         return true;
     }
@@ -146,6 +198,15 @@ public class HarvestSessionService
         await _unitOfWork.SaveChangesAsync();
 
         return true;
+    }
+
+    /// <summary>
+    /// Xóa cache của user khi có thay đổi harvest sessions
+    /// </summary>
+    private async Task InvalidateUserCacheAsync(Guid userId)
+    {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{userId}";
+        await _redisService.DeleteAsync(cacheKey);
     }
 
     private static HarvestSessionDto MapToDto(HarvestSession session)

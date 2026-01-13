@@ -79,4 +79,26 @@ public class RedisService
     {
         return await _database.KeyExistsAsync(key);
     }
+
+    /// <summary>
+    /// Delete keys matching a pattern (e.g. "prefix:*")
+    /// Warning: Uses KEYS/SCAN, performant impact on large datasets
+    /// </summary>
+    public async Task DeleteByPatternAsync(string pattern)
+    {
+        // Get all endpoints
+        var endpoints = _redis.GetEndPoints();
+        foreach (var endpoint in endpoints)
+        {
+            var server = _redis.GetServer(endpoint);
+            if (server.IsConnected)
+            {
+                // Use Keys() which uses SCAN under the hood in newer StackExchange.Redis
+                await foreach (var key in server.KeysAsync(pattern: pattern))
+                {
+                    await _database.KeyDeleteAsync(key);
+                }
+            }
+        }
+    }
 }

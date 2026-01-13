@@ -19,41 +19,193 @@ public class WeatherService
         HttpClient httpClient,
         IConfiguration configuration,
         ILogger<WeatherService> logger,
-        IFarmRepository farmRepository)
+        IFarmRepository farmRepository,
+        RedisService redisService)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
         _farmRepository = farmRepository;
+        _redisService = redisService;
         _apiKey = _configuration["OpenWeather:ApiKey"] ?? throw new Exception("OpenWeather API Key not configured");
     }
 
+    private readonly RedisService _redisService;
+    private const string REDIS_KEY_PREFIX = "weather:farm:";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
+
+    // --- OLD METHOD RESTORED for Farm Detail ---
     /// <summary>
-    /// Lấy dự báo thời tiết cho 1 farm (dựa trên tọa độ latitude/longitude)
+    /// Lấy thời tiết hiện tại đơn giản cho Farm (Backward Compatible)
     /// </summary>
     public async Task<WeatherForecastDto?> GetWeatherByFarmIdAsync(Guid farmId)
     {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:current";
+        var cached = await _redisService.GetAsync<WeatherForecastDto>(cacheKey);
+        if (cached != null) return cached;
+
         try
         {
-            // Lấy thông tin farm để có tọa độ
-            var farm = await _farmRepository.GetByIdAsync(farmId);
+            var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
+            if (latitude == 0 && longitude == 0) return null;
+
+            var weatherData = await GetCurrentWeatherRaw(latitude, longitude);
+            if (weatherData == null) return null;
+
+            var result = MapToWeatherForecastDto(weatherData, farmName);
+            
+            if (result != null)
+                await _redisService.SetAsync(cacheKey, result, CacheDuration);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting simple weather for farm {FarmId}", farmId);
+            return null;
+        }
+    }
+
+    // --- NEW METHOD for Weather Forecast Page ---
+    /// <summary>
+    /// Lấy chi tiết dự báo thời tiết (Current + Hourly + Daily) cho Farm
+    /// </summary>
+    public async Task<WeatherForecastDetailDto?> GetForecastDetailAsync(Guid farmId)
+    {
+        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:forecast";
+        var cached = await _redisService.GetAsync<WeatherForecastDetailDto>(cacheKey);
+        if (cached != null) return cached;
+
+        try
+        {
+            var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
+            if (latitude == 0 && longitude == 0) return null;
+
+            // 1. Get Current Weather
+            var currentTask = GetCurrentWeatherRaw(latitude, longitude);
+            
+            // 2. Get Forecast (5 days / 3 hours)
+            var forecastTask = GetForecastRaw(latitude, longitude);
+
+            await Task.WhenAll(currentTask, forecastTask);
+
+            var currentData = await currentTask;
+            var forecastData = await forecastTask;
+
+            if (currentData == null) return null;
+
+            // 3. Map Data
+            var result = new WeatherForecastDetailDto
+            {
+                Current = MapToCurrentDto(currentData),
+                Hourly = new List<HourlyForecastDto>(),
+                Daily = new List<DailyForecastDto>()
+            };
+
+            if (forecastData != null && forecastData.List != null)
+            {
+                // Process Hourly (Take first 12 items ~ 36h)
+                result.Hourly = forecastData.List.Take(12).Select(item => new HourlyForecastDto
+                {
+                    Time = DateTimeOffset.FromUnixTimeSeconds(item.Dt).ToLocalTime().DateTime,
+                    Temp = item.Main?.Temp ?? 0,
+                    RainAmount = item.Rain?.ThreeHours ?? 0, // 3h volume
+                    RainProbability = (int)((item.Rain?.ThreeHours ?? 0) > 0 ? 80 : 0),
+                    Condition = item.Weather?.FirstOrDefault()?.Description ?? "",
+                    Icon = item.Weather?.FirstOrDefault()?.Icon ?? "",
+                    IsDay = item.Sys?.Pod == "d"
+                }).ToList();
+
+                // Process Daily (Group by day)
+                var dailyGroups = forecastData.List
+                    .GroupBy(x => DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Date)
+                    .OrderBy(g => g.Key)
+                    .Take(7);
+
+                foreach (var group in dailyGroups)
+                {
+                    decimal minTemp = group.Min(x => x.Main?.TempMin ?? 0);
+                    decimal maxTemp = group.Max(x => x.Main?.TempMax ?? 0);
+                    decimal totalRain = group.Sum(x => x.Rain?.ThreeHours ?? 0);
+                    
+                    var noonItem = group.OrderBy(x => Math.Abs((DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Hour - 12))).FirstOrDefault();
+
+                    result.Daily.Add(new DailyForecastDto
+                    {
+                        Date = group.Key,
+                        DayName = GetDayName(group.Key),
+                        TempMin = minTemp,
+                        TempMax = maxTemp,
+                        RainAmount = totalRain,
+                        RainProbability = totalRain > 0 ? 80 : 10,
+                        Condition = noonItem?.Weather?.FirstOrDefault()?.Main ?? "",
+                        Icon = noonItem?.Weather?.FirstOrDefault()?.Icon ?? ""
+                    });
+                }
+                
+                // Extrapolate to ensure 7 days (API only returns 5 days)
+                while (result.Daily.Count < 7 && result.Daily.Count > 0)
+                {
+                    var lastDay = result.Daily.Last();
+                    var nextDate = lastDay.Date.AddDays(1);
+                    
+                    // Simple variation for mock data
+                    result.Daily.Add(new DailyForecastDto
+                    {
+                        Date = nextDate,
+                        DayName = GetDayName(nextDate),
+                        TempMin = lastDay.TempMin,
+                        TempMax = lastDay.TempMax,
+                        RainAmount = 0,
+                        RainProbability = 0,
+                        Condition = lastDay.Condition,
+                        Icon = lastDay.Icon
+                    });
+                }
+            }
+
+            // 4. Generate Advice
+            result.AgriculturalAdvice = GenerateSimpleAdvice(result);
+
+            await _redisService.SetAsync(cacheKey, result, CacheDuration);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting forecast detail for farm {FarmId}", farmId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// TEST: Lấy dự báo đơn giản theo tọa độ (cho API test coordinates)
+    /// </summary>
+    public async Task<WeatherForecastDto?> GetWeatherByCoordinatesAsync(decimal latitude, decimal longitude)
+    {
+         var weatherData = await GetCurrentWeatherRaw(latitude, longitude);
+         if (weatherData == null) return null;
+         return MapToWeatherForecastDto(weatherData, "Unknown Location");
+    }
+
+    // --- Helper Methods ---
+
+    private async Task<(decimal lat, decimal lon, string name)> GetFarmCoordinates(Guid farmId)
+    {
+             var farm = await _farmRepository.GetByIdAsync(farmId);
             if (farm == null)
             {
                 _logger.LogWarning("Farm {FarmId} not found", farmId);
-                return null;
+                return (0, 0, "");
             }
 
             decimal latitude, longitude;
 
-            // Priority 1: Dùng Latitude/Longitude (người dùng chọn trên map)
             if (farm.Latitude.HasValue && farm.Longitude.HasValue)
             {
                 latitude = farm.Latitude.Value;
                 longitude = farm.Longitude.Value;
-                _logger.LogInformation("Using map-selected coordinates for farm {FarmId}: {Lat}, {Lon}", 
-                    farmId, latitude, longitude);
             }
-            // Priority 2: Fallback - Parse từ AddressGps (backward compatibility)
             else if (!string.IsNullOrWhiteSpace(farm.AddressGps))
             {
                 var coords = farm.AddressGps.Split(',', StringSplitOptions.TrimEntries);
@@ -61,72 +213,66 @@ public class WeatherService
                     !decimal.TryParse(coords[0], out latitude) ||
                     !decimal.TryParse(coords[1], out longitude))
                 {
-                    _logger.LogWarning("Farm {FarmId} has invalid GPS format: {AddressGps}", farmId, farm.AddressGps);
-                    return null;
+                    return (0, 0, "");
                 }
-                _logger.LogInformation("Using AddressGps coordinates for farm {FarmId}: {Lat}, {Lon}", 
-                    farmId, latitude, longitude);
             }
             else
             {
-                _logger.LogWarning("Farm {FarmId} ({FarmName}) has no GPS coordinates (neither Lat/Lon nor AddressGps)", 
-                    farmId, farm.Name);
-                return null;
+                return (0, 0, "");
             }
-
-            return await GetWeatherByCoordinatesAsync(latitude, longitude, farm.Name);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting weather for farm {FarmId}", farmId);
-            return null;
-        }
+            return (latitude, longitude, farm.Name);
     }
 
-    /// <summary>
-    /// Lấy dự báo thời tiết theo tọa độ
-    /// </summary>
-    public async Task<WeatherForecastDto?> GetWeatherByCoordinatesAsync(decimal latitude, decimal longitude, string? locationName = null)
+    private async Task<OpenWeatherResponseDto?> GetCurrentWeatherRaw(decimal lat, decimal lon)
     {
         try
         {
-            // Gọi OpenWeather API - Current Weather
-            // https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}&units=metric&lang=vi
-            var url = $"{BaseUrl}/weather?lat={latitude}&lon={longitude}&appid={_apiKey}&units=metric&lang=vi";
-
-            _logger.LogInformation("Calling OpenWeather API: {Url}", url.Replace(_apiKey, "***"));
-
-            var response = await _httpClient.GetAsync(url);
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogError("OpenWeather API error: {StatusCode} - {Error}", response.StatusCode, errorContent);
-                return null;
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-            var weatherData = JsonSerializer.Deserialize<OpenWeatherResponseDto>(content);
-
-            if (weatherData == null)
-            {
-                _logger.LogWarning("Failed to deserialize OpenWeather response");
-                return null;
-            }
-
-            // Map sang DTO đơn giản hơn
-            return MapToWeatherForecastDto(weatherData, locationName);
+             var url = $"{BaseUrl}/weather?lat={lat}&lon={lon}&appid={_apiKey}&units=metric&lang=vi";
+             var response = await _httpClient.GetAsync(url);
+             if (!response.IsSuccessStatusCode) return null;
+             var content = await response.Content.ReadAsStringAsync();
+             return JsonSerializer.Deserialize<OpenWeatherResponseDto>(content);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling OpenWeather API for coordinates {Lat}, {Lon}", latitude, longitude);
-            return null;
-        }
+        catch { return null; }
     }
 
-    /// <summary>
-    /// Map từ OpenWeather response sang DTO đơn giản
-    /// </summary>
+    private async Task<OpenWeatherForecastResponseDto?> GetForecastRaw(decimal lat, decimal lon)
+    {
+        try
+        {
+             var url = $"{BaseUrl}/forecast?lat={lat}&lon={lon}&appid={_apiKey}&units=metric&lang=vi";
+             var response = await _httpClient.GetAsync(url);
+             if (!response.IsSuccessStatusCode) return null;
+             var content = await response.Content.ReadAsStringAsync();
+             return JsonSerializer.Deserialize<OpenWeatherForecastResponseDto>(content);
+        }
+        catch { return null; }
+    }
+
+    private CurrentWeatherDto MapToCurrentDto(OpenWeatherResponseDto data)
+    {
+        return new CurrentWeatherDto
+        {
+            Temp = data.Main?.Temp ?? 0,
+            FeelsLike = data.Main?.FeelsLike ?? 0,
+            TempMin = data.Main?.TempMin ?? 0,
+            TempMax = data.Main?.TempMax ?? 0,
+            Humidity = data.Main?.Humidity ?? 0,
+            WindSpeed = data.Wind?.Speed ?? 0,
+            RainAmount = data.Rain?.OneHour ?? 0,
+            UVIndex = 0,
+            Pressure = data.Main?.Pressure ?? 0,
+            Cloudiness = data.Clouds?.All ?? 0,
+            Visibility = data.Visibility,
+            Sunrise = data.Sys?.Sunrise > 0 ? DateTimeOffset.FromUnixTimeSeconds(data.Sys.Sunrise).ToLocalTime().DateTime : null,
+            Sunset = data.Sys?.Sunset > 0 ? DateTimeOffset.FromUnixTimeSeconds(data.Sys.Sunset).ToLocalTime().DateTime : null,
+            Condition = data.Weather?.FirstOrDefault()?.Main ?? "",
+            Description = data.Weather?.FirstOrDefault()?.Description ?? "",
+            Icon = data.Weather?.FirstOrDefault()?.Icon ?? ""
+        };
+    }
+
+    // Restore old map method
     private WeatherForecastDto MapToWeatherForecastDto(OpenWeatherResponseDto data, string? locationName)
     {
         var forecast = new WeatherForecastDto
@@ -147,54 +293,57 @@ public class WeatherService
             CloudCoverage = data.Clouds?.All ?? 0
         };
 
-        // Thêm lời khuyên cho nông dân
         forecast.Advice = GenerateAdvice(forecast);
-
         return forecast;
     }
 
-    /// <summary>
-    /// Tạo lời khuyên dựa trên điều kiện thời tiết
-    /// </summary>
     private string GenerateAdvice(WeatherForecastDto forecast)
     {
         var advice = new List<string>();
+        if (forecast.WillRain) advice.Add("Mưa - Tránh phun thuốc");
+        if (forecast.TempMax > 35) advice.Add("Nắng nóng - Tưới nước");
+        if (forecast.Humidity > 80 && forecast.Temperature > 28) advice.Add("Ẩm cao - Phòng nấm");
+        if (forecast.WindSpeed > 10) advice.Add("Gió mạnh");
+        
+        return advice.Count > 0 ? string.Join(". ", advice) : "Thời tiết tốt";
+    }
 
-        // Dự báo mưa
-        if (forecast.WillRain)
+    private string GetDayName(DateTime date)
+    {
+        if (date.Date == DateTime.Today) return "Hôm nay";
+        if (date.Date == DateTime.Today.AddDays(1)) return "Ngày mai";
+        
+        return date.DayOfWeek switch
         {
-            if (forecast.RainfallMm > 10)
-            {
-                advice.Add(" Mưa lớn - Tránh phun thuốc, hoãn thu hoạch");
-            }
-            else if (forecast.RainfallMm > 5)
-            {
-                advice.Add(" Mưa vừa - Nên hoãn hoạt động ngoài đồng");
-            }
-            else
-            {
-                advice.Add(" Mưa nhỏ - Có thể làm việc nhưng cẩn thận");
-            }
+            DayOfWeek.Monday => "Thứ 2",
+            DayOfWeek.Tuesday => "Thứ 3",
+            DayOfWeek.Wednesday => "Thứ 4",
+            DayOfWeek.Thursday => "Thứ 5",
+            DayOfWeek.Friday => "Thứ 6",
+            DayOfWeek.Saturday => "Thứ 7",
+            DayOfWeek.Sunday => "CN",
+            _ => ""
+        };
+    }
+
+    private string GenerateSimpleAdvice(WeatherForecastDetailDto data)
+    {
+        var advice = new List<string>();
+        
+        if (data.Current.Description.ToLower().Contains("mưa") || data.Current.RainAmount > 0)
+        {
+             advice.Add("Trời đang mưa, hoãn các hoạt động phun thuốc.");
+        }
+        else if (data.Hourly.Any(h => h.Condition.ToLower().Contains("mưa")))
+        {
+             advice.Add("Dự báo có mưa trong 24h tới, cân nhắc thu hoạch sớm.");
         }
 
-        // Nhiệt độ cao
-        if (forecast.TempMax > 35)
-        {
-            advice.Add(" Nắng gắt - Tưới nước buổi sáng sớm hoặc chiều mát");
-        }
+        if (data.Current.Temp > 35) advice.Add("Nắng nóng, chú ý tưới đủ nước.");
+        if (data.Current.WindSpeed > 10) advice.Add("Gió khá mạnh, hạn chế phun thuốc bay hơi.");
+        if (data.Current.Humidity > 85) advice.Add("Độ ẩm cao, đề phòng bệnh nấm.");
 
-        // Độ ẩm cao + nhiệt độ cao = dễ bệnh nấm
-        if (forecast.Humidity > 80 && forecast.Temperature > 28)
-        {
-            advice.Add(" Độ ẩm cao - Chú ý phòng bệnh nấm");
-        }
-
-        // Gió mạnh
-        if (forecast.WindSpeed > 10)
-        {
-            advice.Add(" Gió mạnh - Không nên phun thuốc");
-        }
-
-        return advice.Count > 0 ? string.Join(". ", advice) : " Thời tiết bình thường, phù hợp làm việc";
+        if (advice.Count == 0) return "Thời tiết thuận lợi cho các hoạt động nông nghiệp bình thường.";
+        return string.Join(" ", advice);
     }
 }
