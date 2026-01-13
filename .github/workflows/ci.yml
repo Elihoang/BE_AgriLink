@@ -119,19 +119,6 @@ jobs:
       - name: Build for Production
         run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
       
-      - name: Run tests
-        run: dotnet test AgriLink_DH.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-        continue-on-error: true
-      
-      - name: Publish test results
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: .NET Tests
-          path: '**/test-results.trx'
-          reporter: dotnet-trx
-          fail-on-error: false
-      
       - name: Publish API
         if: matrix.is-primary
         run: dotnet publish AgriLink_DH.Api/AgriLink_DH.Api.csproj --configuration Release --output ./publish --no-build

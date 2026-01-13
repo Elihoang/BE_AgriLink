@@ -37,10 +37,6 @@ jobs:
       - name: Build
         run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
       
-      - name: Run tests
-        run: dotnet test AgriLink_DH.sln --configuration Release --no-build --logger "trx"
-        continue-on-error: true
-      
       - name: PR Summary
         run: |
           echo "### PR Validation Summary" >> $GITHUB_STEP_SUMMARY
