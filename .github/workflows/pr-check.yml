@@ -13,34 +13,34 @@ jobs:
   # Job 1: PR Validation
   # ==========================================
   pr-validation:
-    name: ✅ Validate Pull Request
+    name: Validate Pull Request
     runs-on: ubuntu-latest
     timeout-minutes: 15
     
     steps:
-      - name: 📥 Checkout PR
+      - name: Checkout PR
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - name: ⚙️ Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: 🔄 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore AgriLink_DH.sln
       
-      - name: 🏗️ Build
+      - name: Build
         run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
       
-      - name: 🧪 Run tests
+      - name: Run tests
         run: dotnet test AgriLink_DH.sln --configuration Release --no-build --logger "trx"
         continue-on-error: true
       
-      - name: 📊 PR Summary
+      - name: PR Summary
         run: |
-          echo "### ✅ PR Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### PR Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **PR**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Title**: ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
@@ -48,14 +48,14 @@ jobs:
           echo "- **Base Branch**: ${{ github.event.pull_request.base.ref }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Head Branch**: ${{ github.event.pull_request.head.ref }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Build successful" >> $GITHUB_STEP_SUMMARY
+          echo "Build successful" >> $GITHUB_STEP_SUMMARY
       
-      - name: 💬 Comment PR
+      - name: Comment PR
         uses: actions/github-script@v7
         if: always()
         with:
           script: |
-            const status = '${{ job.status }}' === 'success' ? '✅ Passed' : '❌ Failed';
+            const status = '${{ job.status }}' === 'success' ? 'Passed' : 'Failed';
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -67,59 +67,59 @@ jobs:
   # Job 2: Code Review Checks
   # ==========================================
   code-review-checks:
-    name: 🔍 Code Review Checks
+    name: Code Review Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - name: 📏 Check PR size
+      - name: Check PR size
         run: |
           FILES_CHANGED=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD | wc -l)
-          echo "### 📊 PR Size Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "### PR Size Analysis" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Files changed: **$FILES_CHANGED**" >> $GITHUB_STEP_SUMMARY
           
           if [ $FILES_CHANGED -gt 50 ]; then
-            echo "::warning::⚠️ This PR changes more than 50 files. Consider splitting it into smaller PRs."
-            echo "- ⚠️ **Warning**: Large PR (>50 files)" >> $GITHUB_STEP_SUMMARY
+            echo "::warning::This PR changes more than 50 files. Consider splitting it into smaller PRs."
+            echo "- **Warning**: Large PR (>50 files)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- ✅ **Good**: Reasonable PR size" >> $GITHUB_STEP_SUMMARY
+            echo "- **Good**: Reasonable PR size" >> $GITHUB_STEP_SUMMARY
           fi
       
-      - name: 🔍 Check for TODOs
+      - name: Check for TODOs
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📝 Code Quality Checks" >> $GITHUB_STEP_SUMMARY
+          echo "### Code Quality Checks" >> $GITHUB_STEP_SUMMARY
           
           if git diff origin/${{ github.event.pull_request.base.ref }}...HEAD | grep -i "TODO\|FIXME\|HACK"; then
-            echo "::warning::⚠️ Found TODO/FIXME/HACK comments in the PR"
-            echo "- ⚠️ **Warning**: Contains TODO/FIXME/HACK comments" >> $GITHUB_STEP_SUMMARY
+            echo "::warning::Found TODO/FIXME/HACK comments in the PR"
+            echo "- **Warning**: Contains TODO/FIXME/HACK comments" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- ✅ **Good**: No TODO/FIXME/HACK comments" >> $GITHUB_STEP_SUMMARY
+            echo "- **Good**: No TODO/FIXME/HACK comments" >> $GITHUB_STEP_SUMMARY
           fi
         continue-on-error: true
       
-      - name: 📝 Check commit messages
+      - name: Check commit messages
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Commit Message Quality" >> $GITHUB_STEP_SUMMARY
+          echo "### Commit Message Quality" >> $GITHUB_STEP_SUMMARY
           
           SHORT_MESSAGES=0
           git log origin/${{ github.event.pull_request.base.ref }}..HEAD --pretty=format:"%s" | while read msg; do
             if [ ${#msg} -lt 10 ]; then
-              echo "::warning::⚠️ Commit message too short: $msg"
+              echo "::warning::Commit message too short: $msg"
               SHORT_MESSAGES=$((SHORT_MESSAGES + 1))
             fi
           done
           
           if [ $SHORT_MESSAGES -eq 0 ]; then
-            echo "- ✅ **Good**: All commit messages are descriptive" >> $GITHUB_STEP_SUMMARY
+            echo "- **Good**: All commit messages are descriptive" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- ⚠️ **Warning**: Some commit messages are too short" >> $GITHUB_STEP_SUMMARY
+            echo "- **Warning**: Some commit messages are too short" >> $GITHUB_STEP_SUMMARY
           fi
         continue-on-error: true

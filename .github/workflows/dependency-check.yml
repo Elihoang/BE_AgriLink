@@ -1,4 +1,4 @@
-name: 📦 Dependency Check & Update
+name: Dependency Check & Update
 
 on:
   schedule:
@@ -15,50 +15,50 @@ jobs:
   # Job 1: Dependency Security & Health Check
   # ==========================================
   dependency-check:
-    name: 🔒 Check Dependencies
+    name: Check Dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 10
     
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: 🔄 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore AgriLink_DH.sln
       
-      - name: 🔒 Security audit
+      - name: Security audit
         run: |
-          echo "### 🔒 Security Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "### Security Audit Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          dotnet list AgriLink_DH.sln package --vulnerable --include-transitive || echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          dotnet list AgriLink_DH.sln package --vulnerable --include-transitive || echo "No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
       
-      - name: 📦 Outdated packages
+      - name: Outdated packages
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Outdated Packages" >> $GITHUB_STEP_SUMMARY
+          echo "### Outdated Packages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          dotnet list AgriLink_DH.sln package --outdated || echo "✅ All packages up to date!" >> $GITHUB_STEP_SUMMARY
+          dotnet list AgriLink_DH.sln package --outdated || echo "All packages up to date!" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
       
-      - name: 🏥 Package health check
+      - name: Package health check
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏥 Package Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "### Package Health Check" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Check for deprecated packages
           echo "#### Deprecated Packages" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          dotnet list package --deprecated 2>&1 || echo "✅ No deprecated packages found" >> $GITHUB_STEP_SUMMARY
+          dotnet list package --deprecated 2>&1 || echo "No deprecated packages found" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
           echo "" >> $GITHUB_STEP_SUMMARY

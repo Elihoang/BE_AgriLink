@@ -85,20 +85,20 @@ jobs:
         with:
           name: Release ${{ steps.get_version.outputs.VERSION }}
           body: |
-            ## 🚀 AgriLink_DH ${{ steps.get_version.outputs.VERSION }}
+            ## AgriLink_DH ${{ steps.get_version.outputs.VERSION }}
             
-            ### 📝 Changes
+            ### Changes
             ${{ steps.changelog.outputs.CHANGELOG }}
             
-            ### 📦 Assets
+            ### Assets
             - `agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz` - API build for Linux x64
             
-            ### 🐳 Docker
+            ### Docker
             ```bash
             docker pull your-registry/agrilink-api:${{ steps.get_version.outputs.VERSION }}
             ```
             
-            ### 📚 Documentation
+            ### Documentation
             See [README.md](https://github.com/${{ github.repository }}/blob/${{ steps.get_version.outputs.VERSION }}/README.md) for installation and usage instructions.
           files: |
             publish/agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
@@ -109,13 +109,13 @@ jobs:
       
       - name: Release summary
         run: |
-          echo "### Release Created! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Created!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: ${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Tag**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- agrilink-api-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz" >> $GITHUB_STEP_SUMMARY
 
   # Optional: Build and push Docker image on release

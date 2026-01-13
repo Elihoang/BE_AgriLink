@@ -29,22 +29,22 @@ jobs:
   # Job 1: Code Quality & Security Analysis
   # ==========================================
   code-quality:
-    name: 🔍 Code Quality & Security Audit
+    name: Code Quality & Security Audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for better analysis
       
-      - name: ⚙️ Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: 📦 Cache NuGet packages
+      - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -52,29 +52,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-${{ env.CACHE_VERSION }}-
       
-      - name: 🔄 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore AgriLink_DH.sln
       
-      - name: 🔒 Security audit
+      - name: Security audit
         run: |
-          echo "### 🔒 Security Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "### Security Audit Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           dotnet list AgriLink_DH.sln package --vulnerable --include-transitive 2>&1 | tee security-scan.log || echo "No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
           if grep -q "has the following vulnerable packages" security-scan.log; then
-            echo "::warning::⚠️ Vulnerable packages detected!"
+            echo "::warning::Vulnerable packages detected!"
           fi
         continue-on-error: true
       
-      - name: 📝 Check code formatting
+      - name: Check code formatting
         run: dotnet format AgriLink_DH.sln --verify-no-changes --verbosity diagnostic
         continue-on-error: true
       
-      - name: 📊 Check for outdated packages
+      - name: Check for outdated packages
         run: |
-          echo "### 📦 Outdated NuGet Packages" >> $GITHUB_STEP_SUMMARY
+          echo "### Outdated NuGet Packages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           dotnet list AgriLink_DH.sln package --outdated || echo "All packages up to date!" >> $GITHUB_STEP_SUMMARY
@@ -85,7 +85,7 @@ jobs:
   # Job 2: Build & Test
   # ==========================================
   build:
-    name: 🏗️ Build Application
+    name: Build Application
     runs-on: ubuntu-latest
     needs: code-quality
     timeout-minutes: 15
@@ -97,15 +97,15 @@ jobs:
             is-primary: true
     
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup .NET ${{ matrix.dotnet-version }}
+      - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       
-      - name: 📦 Cache NuGet packages
+      - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -113,30 +113,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-${{ env.CACHE_VERSION }}-
       
-      - name: 🔄 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore AgriLink_DH.sln
       
-      - name: 🏗️ Build for Production
+      - name: Build for Production
         run: dotnet build AgriLink_DH.sln --configuration Release --no-restore
       
-      - name: 🧪 Run tests
+      - name: Run tests
         run: dotnet test AgriLink_DH.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
         continue-on-error: true
       
-      - name: 📊 Publish test results
+      - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: 🧪 .NET Tests
+          name: .NET Tests
           path: '**/test-results.trx'
           reporter: dotnet-trx
           fail-on-error: false
       
-      - name: 📦 Publish API
+      - name: Publish API
         if: matrix.is-primary
         run: dotnet publish AgriLink_DH.Api/AgriLink_DH.Api.csproj --configuration Release --output ./publish --no-build
       
-      - name: 📤 Upload build artifacts
+      - name: Upload build artifacts
         if: matrix.is-primary
         uses: actions/upload-artifact@v4
         with:
@@ -145,41 +145,41 @@ jobs:
           retention-days: 30
           compression-level: 9
       
-      - name: 📊 Build Summary
+      - name: Build Summary
         if: always()
         run: |
-          echo "## ✅ Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **.NET Version**: ${{ matrix.dotnet-version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: Success ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Success" >> $GITHUB_STEP_SUMMARY
 
   # ==========================================
   # Job 3: Database Migration Check
   # ==========================================
   migration-check:
-    name: 🗄️ Database Migration Check
+    name: Database Migration Check
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request'
     timeout-minutes: 10
     
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: ⚙️ Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: 🔄 Restore dependencies
+      - name: Restore dependencies
         run: dotnet restore AgriLink_DH.sln
       
-      - name: 🔍 Check for pending migrations
+      - name: Check for pending migrations
         run: |
-          echo "### 🗄️ Database Migration Status" >> $GITHUB_STEP_SUMMARY
+          echo "### Database Migration Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # List all migrations
@@ -192,18 +192,18 @@ jobs:
   # Job 4: Success Summary
   # ==========================================
   success:
-    name: ✅ Pipeline Success
+    name: Pipeline Success
     runs-on: ubuntu-latest
     needs: [code-quality, build, migration-check]
     if: always()
     
     steps:
-      - name: 🎉 All checks passed
+      - name: All checks passed
         run: |
-          echo "### ✅ CI Pipeline Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "### CI Pipeline Completed Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 Code Quality: Passed ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ Build: Passed ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- 🗄️ Migration Check: Passed ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Quality: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- Migration Check: Passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**✨ Ready for review/merge**" >> $GITHUB_STEP_SUMMARY
+          echo "**Ready for review/merge**" >> $GITHUB_STEP_SUMMARY
