@@ -108,7 +108,7 @@
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[8.2.1, )"
+              "version": "[8.15.0, )"
             }
           },
           "imports": [

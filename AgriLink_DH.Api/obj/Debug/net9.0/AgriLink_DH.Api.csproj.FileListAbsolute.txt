@@ -222,7 +222,6 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.Composition
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.Composition.TypedParts.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.IO.Hashing.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.Text.Json.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\cs\Microsoft.CodeAnalysis.resources.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\de\Microsoft.CodeAnalysis.resources.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\es\Microsoft.CodeAnalysis.resources.dll
@@ -318,9 +317,6 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\obj\Debug\net9.0\refint\AgriLink_DH
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\obj\Debug\net9.0\AgriLink_DH.Api.pdb
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\obj\Debug\net9.0\AgriLink_DH.Api.genruntimeconfig.cache
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\obj\Debug\net9.0\ref\AgriLink_DH.Api.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Binder.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Microsoft.Extensions.Hosting.Abstractions.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.AspNetCore.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Extensions.Hosting.dll
@@ -330,9 +326,4 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Settings.C
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.Console.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.Debug.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.File.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.Diagnostics.DiagnosticSource.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.IO.Pipelines.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.Text.Encodings.Web.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
-C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Text.Encodings.Web.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Enrichers.Thread.dll
