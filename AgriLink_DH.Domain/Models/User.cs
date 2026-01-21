@@ -33,6 +33,10 @@ public class User
     [MaxLength(20)]
     public string? PhoneNumber { get; set; }
 
+    [Column("address")]
+    [MaxLength(500)]
+    public string? Address { get; set; }
+
     [Column("role")]
     public UserRole Role { get; set; } = UserRole.User;
 

@@ -94,6 +94,7 @@ public class UserService
 
         user.FullName = dto.FullName;
         user.PhoneNumber = dto.PhoneNumber;
+        user.Address = dto.Address;
         user.ImageUrl = dto.ImageUrl;
 
         _userRepository.Update(user);
@@ -169,6 +170,7 @@ public class UserService
             Email = user.Email,
             FullName = user.FullName,
             PhoneNumber = user.PhoneNumber,
+            Address = user.Address,
             Role = user.Role,
             RoleLabel = user.Role.ToString(),
             IsActive = user.IsActive,
