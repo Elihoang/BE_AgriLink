@@ -200,6 +200,15 @@ public class AuthService
         return await _redisService.DeleteRefreshTokenAsync(userId);
     }
 
+    /// <summary>
+    /// Lấy thông tin user theo ID (cho /auth/me)
+    /// </summary>
+    public async Task<UserResponseDto?> GetUserByIdAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        return user != null ? MapToUserResponseDto(user) : null;
+    }
+
     private UserResponseDto MapToUserResponseDto(User user)
     {
         return new UserResponseDto
@@ -209,6 +218,8 @@ public class AuthService
             Email = user.Email,
             FullName = user.FullName,
             PhoneNumber = user.PhoneNumber,
+            Address = user.Address,
+            ImageUrl = user.ImageUrl,
             Role = user.Role.ToString(),
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt

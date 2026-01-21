@@ -97,6 +97,86 @@ public class ApplicationDbContext : DbContext
             .HasIndex(pp => new { pp.SeasonId, pp.RowNumber, pp.ColumnNumber })
             .IsUnique();
 
+        // PlantPosition: Index on farm_id for farm-level queries
+        modelBuilder.Entity<PlantPosition>()
+            .HasIndex(pp => pp.FarmId);
+
+        // ========================================
+        // PERFORMANCE INDEXES (Added for optimization)
+        // ========================================
+
+        // WeatherLog: Index on farm_id (heavily queried)
+        modelBuilder.Entity<WeatherLog>()
+            .HasIndex(wl => wl.FarmId);
+
+        // WeatherLog: Composite index on farm_id + log_date for date range queries
+        modelBuilder.Entity<WeatherLog>()
+            .HasIndex(wl => new { wl.FarmId, wl.LogDate });
+
+        // MaterialUsage: Index on season_id (frequently filtered)
+        modelBuilder.Entity<MaterialUsage>()
+            .HasIndex(mu => mu.SeasonId);
+
+        // MaterialUsage: Composite index on season_id + usage_date for reporting
+        modelBuilder.Entity<MaterialUsage>()
+            .HasIndex(mu => new { mu.SeasonId, mu.UsageDate });
+
+        // MaterialUsage: Index on is_deleted for soft delete filtering
+        modelBuilder.Entity<MaterialUsage>()
+            .HasIndex(mu => mu.IsDeleted);
+
+        // WorkerAdvance: Index on worker_id (query advances by worker)
+        modelBuilder.Entity<WorkerAdvance>()
+            .HasIndex(wa => wa.WorkerId);
+
+        // WorkerAdvance: Index on season_id (query advances by season)
+        modelBuilder.Entity<WorkerAdvance>()
+            .HasIndex(wa => wa.SeasonId);
+
+        // WorkerAdvance: Composite index on worker_id + season_id
+        modelBuilder.Entity<WorkerAdvance>()
+            .HasIndex(wa => new { wa.WorkerId, wa.SeasonId });
+
+        // WorkerAdvance: Index on is_deducted for filtering unpaid advances
+        modelBuilder.Entity<WorkerAdvance>()
+            .HasIndex(wa => wa.IsDeducted);
+
+        // WorkAssignment: Index on worker_id (salary queries)
+        modelBuilder.Entity<WorkAssignment>()
+            .HasIndex(wa => wa.WorkerId);
+
+        // WorkAssignment: Index on log_id (join with DailyWorkLog)
+        modelBuilder.Entity<WorkAssignment>()
+            .HasIndex(wa => wa.LogId);
+
+        // Worker: Index on is_active (filter active workers)
+        modelBuilder.Entity<Worker>()
+            .HasIndex(w => w.IsActive);
+
+        // CropSeason: Index on status (filter by active/completed seasons)
+        modelBuilder.Entity<CropSeason>()
+            .HasIndex(cs => cs.Status);
+
+        // CropSeason: Index on is_deleted for soft delete filtering
+        modelBuilder.Entity<CropSeason>()
+            .HasIndex(cs => cs.IsDeleted);
+
+        // TaskType: Index on farm_id for farm-specific task types
+        modelBuilder.Entity<TaskType>()
+            .HasIndex(tt => tt.FarmId);
+
+        // DailyWorkLog: Index on task_type_id for task-based queries
+        modelBuilder.Entity<DailyWorkLog>()
+            .HasIndex(dwl => dwl.TaskTypeId);
+
+        // DailyWorkLog: Index on is_deleted for soft delete filtering
+        modelBuilder.Entity<DailyWorkLog>()
+            .HasIndex(dwl => dwl.IsDeleted);
+
+        // Farm: Index on is_deleted for soft delete filtering
+        modelBuilder.Entity<Farm>()
+            .HasIndex(f => f.IsDeleted);
+
         // ========================================
         // CASCADE DELETE CONFIGURATIONS
         // ========================================

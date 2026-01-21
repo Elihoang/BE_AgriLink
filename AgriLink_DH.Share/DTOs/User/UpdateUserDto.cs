@@ -17,5 +17,8 @@ public class UpdateUserDto
     public string? PhoneNumber { get; set; }
 
     [MaxLength(500)]
+    public string? Address { get; set; }
+
+    [MaxLength(500)]
     public string? ImageUrl { get; set; }
 }

@@ -84,7 +84,11 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsDeleted");
+
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("Status");
 
                     b.HasIndex("FarmId", "ProductId");
 
@@ -128,6 +132,8 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnName("work_date");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("TaskTypeId");
 
@@ -196,6 +202,8 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnName("owner_user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("OwnerUserId");
 
@@ -468,9 +476,13 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsDeleted");
+
                     b.HasIndex("MaterialId");
 
                     b.HasIndex("SeasonId");
+
+                    b.HasIndex("SeasonId", "UsageDate");
 
                     b.ToTable("material_usages");
                 });
@@ -632,6 +644,11 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("address");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at");
@@ -772,6 +789,8 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("FarmId");
 
+                    b.HasIndex("FarmId", "LogDate");
+
                     b.ToTable("weather_logs");
                 });
 
@@ -868,6 +887,8 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("FarmId");
 
+                    b.HasIndex("IsActive");
+
                     b.ToTable("workers");
                 });
 
@@ -905,9 +926,13 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsDeducted");
+
                     b.HasIndex("SeasonId");
 
                     b.HasIndex("WorkerId");
+
+                    b.HasIndex("WorkerId", "SeasonId");
 
                     b.ToTable("worker_advances");
                 });

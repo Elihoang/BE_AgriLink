@@ -67,6 +67,10 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<WeatherService>();
         services.AddScoped<WeatherService>();
         
+        // Market Price Service - Lấy giá cà phê, hồ tiêu
+        services.AddHttpClient<MarketPriceService>();
+        services.AddScoped<MarketPriceService>();
+        
         return services;
     }
 }

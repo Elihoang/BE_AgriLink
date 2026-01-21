@@ -109,23 +109,28 @@ public class AuthController : ControllerBase
     }
 
     
-    /// Lấy thông tin user hiện tại (test JWT)
+    /// <summary>
+    /// Lấy thông tin user hiện tại (đầy đủ từ database)
     /// </summary>
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<ApiResponse<object>> GetCurrentUser()
+    public async Task<ActionResult<ApiResponse<object>>> GetCurrentUser()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var username = User.FindFirst(ClaimTypes.Name)?.Value;
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        var role = User.FindFirst(ClaimTypes.Role)?.Value;
-
-        return Ok(ApiResponse<object>.SuccessResponse(new
+        
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
         {
-            UserId = userId,
-            Username = username,
-            Email = email,
-            Role = role
-        }, "User information retrieved successfully"));
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User not authenticated", 401));
+        }
+
+        // Lấy thông tin đầy đủ từ database
+        var userDto = await _authService.GetUserByIdAsync(userGuid);
+        
+        if (userDto == null)
+        {
+            return NotFound(ApiResponse<object>.ErrorResponse("User not found", 404));
+        }
+
+        return Ok(ApiResponse<object>.SuccessResponse(userDto, "User information retrieved successfully"));
     }
 }
