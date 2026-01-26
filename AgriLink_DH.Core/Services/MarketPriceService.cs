@@ -2,6 +2,7 @@ using AgriLink_DH.Share.DTOs.MarketPrice;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
+using PuppeteerSharp;
 
 namespace AgriLink_DH.Core.Services;
 
@@ -247,7 +248,7 @@ public class MarketPriceService
     
     /// <summary>
     /// Lấy giá từ chocaphe.vn (Web Scraping)
-    /// ⚠️ CHÚ Ý: Có thể vi phạm bản quyền, chỉ dùng cho mục đích học tập
+    ///  CHÚ Ý: Có thể vi phạm bản quyền, chỉ dùng cho mục đích học tập
     /// </summary>
     private async Task<MarketPriceResponseDto?> FetchFromWebScrapingAsync()
     {
@@ -320,7 +321,7 @@ public class MarketPriceService
     
     /// <summary>
     /// Lấy giá từ Twelve Data API (Coffee Futures - ARABICA)
-    /// ✅ Hợp pháp, có API key chính thức
+    ///  Hợp pháp, có API key chính thức
     /// </summary>
     private async Task<MarketPriceResponseDto?> FetchFromTwelveDataAsync()
     {
@@ -430,7 +431,7 @@ public class MarketPriceService
             var now = DateTime.Now;
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
-            client.Timeout = TimeSpan.FromSeconds(5);
+            client.Timeout = TimeSpan.FromSeconds(10);
 
             string response;
             try 
@@ -439,49 +440,129 @@ public class MarketPriceService
             }
             catch 
             {
-                return null; // Connection failed
+                _logger.LogError("Failed to connect to chocaphe.vn");
+                return null;
             }
             
-            // Helper extract function
-            decimal ExtractPrice(string content, string keyword)
+            // Kiểm tra xem response có chứa data thật không
+            if (!response.Contains("Đắk Lắk") && !response.Contains("Dak Lak"))
             {
-                // Regex tìm keyword -> bỏ qua tag -> bắt cụm số (VD: 99,600)
-                // Pattern: Keyword... (bất ký tự gì khoảng ngắn) ... số có định dạng xx,xxx hoặc xx.xxx
-                var pattern = $@"{keyword}.*?([\d,.]+)";
-                var match = System.Text.RegularExpressions.Regex.Match(content, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
-                
-                if (match.Success)
+                _logger.LogWarning("HTML response doesn't contain expected data. Page may use JavaScript rendering.");
+                return null;
+            }
+            
+            // Helper function để extract price và change từ table row
+            // HTML structure: <tr><td>Tên</td><td>Giá</td><td>Thay đổi</td></tr>
+            (decimal price, decimal change) ExtractFromTableRow(string content, string regionName)
+            {
+                try
                 {
-                    var raw = match.Groups[1].Value.Replace(",", "").Replace(".", "");
-                    if (decimal.TryParse(raw, out decimal val) && val > 10000) return val;
+                    // Pattern phức tạp hơn để match HTML table structure
+                    // Tìm row chứa tên region, sau đó extract 2 số tiếp theo (giá và thay đổi)
+                    
+                    // Step 1: Tìm <tr> chứa tên region
+                    var rowPattern = $@"<tr[^>]*>.*?{Regex.Escape(regionName)}.*?</tr>";
+                    var rowMatch = Regex.Match(content, rowPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                    
+                    if (!rowMatch.Success)
+                    {
+                        _logger.LogWarning($"{regionName}: Could not find table row");
+                        return (0, 0);
+                    }
+                    
+                    var rowHtml = rowMatch.Value;
+                    
+                    // Step 2: Extract các <td> cells
+                    var cellsPattern = @"<td[^>]*>(.*?)</td>";
+                    var cellMatches = Regex.Matches(rowHtml, cellsPattern, RegexOptions.Singleline);
+                    
+                    if (cellMatches.Count < 3)
+                    {
+                        _logger.LogWarning($"{regionName}: Not enough table cells found ({cellMatches.Count})");
+                        return (0, 0);
+                    }
+                    
+                    // Cell 0: Tên thị trường
+                    // Cell 1: Giá trung bình
+                    // Cell 2: Thay đổi
+                    
+                    // Extract price từ cell 1
+                    var priceCell = StripHtmlTags(cellMatches[1].Groups[1].Value);
+                    var priceNumbers = Regex.Match(priceCell, @"[\d,]+");
+                    decimal price = 0;
+                    if (priceNumbers.Success)
+                    {
+                        var priceStr = priceNumbers.Value.Replace(",", "").Replace(".", "");
+                        decimal.TryParse(priceStr, out price);
+                    }
+                    
+                    // Extract change từ cell 2
+                    var changeCell = StripHtmlTags(cellMatches[2].Groups[1].Value);
+                    var changeNumbers = Regex.Match(changeCell, @"-?[\d,]+");
+                    decimal change = 0;
+                    if (changeNumbers.Success)
+                    {
+                        var changeStr = changeNumbers.Value.Replace(",", "").Replace(".", "");
+                        decimal.TryParse(changeStr, out change);
+                    }
+                    
+                    // Detect direction từ SVG icon hoặc class
+                    if (rowHtml.Contains("arrow-down") || rowHtml.Contains("text-red"))
+                    {
+                        change = -Math.Abs(change);
+                    }
+                    else if (rowHtml.Contains("arrow-up") || rowHtml.Contains("text-green"))
+                    {
+                        change = Math.Abs(change);
+                    }
+                    // minus icon thì change = 0 hoặc giữ nguyên
+                    
+                    _logger.LogInformation($"Scraped {regionName}: Price={price:N0}, Change={change:+0;-0;0}");
+                    
+                    // Validate price > 10k
+                    if (price > 10000)
+                    {
+                        return (price, change);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"{regionName}: Price {price} too low, rejected");
+                    }
                 }
-                return 0;
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error extracting {regionName}");
+                }
+                
+                return (0, 0);
+            }
+            
+            // Helper to strip HTML tags
+            string StripHtmlTags(string html)
+            {
+                return Regex.Replace(html, @"<[^>]+>", "").Trim();
             }
 
-            // 1. Cào từng tỉnh cụ thể
-            decimal daklakPrice = ExtractPrice(response, "Đắk Lắk");
-            decimal lamdongPrice = ExtractPrice(response, "Lâm Đồng");
-            decimal gialaiPrice = ExtractPrice(response, "Gia Lai");
-            decimal daknongPrice = ExtractPrice(response, "Đắk Nông");
-            decimal pepperPrice = ExtractPrice(response, "Hồ tiêu");
+            // Scrape từng tỉnh
+            var (daklakPrice, daklakChange) = ExtractFromTableRow(response, "Đắk Lắk");
+            var (lamdongPrice, lamdongChange) = ExtractFromTableRow(response, "Lâm Đồng");
+            var (gialaiPrice, gialaiChange) = ExtractFromTableRow(response, "Gia Lai");
+            var (daknongPrice, daknongChange) = ExtractFromTableRow(response, "Đắk Nông");
+            var (pepperPrice, pepperChange) = ExtractFromTableRow(response, "Hồ tiêu");
+            
+            // Extract USD exchange rate
+            var (usdRate, usdChange) = ExtractFromTableRow(response, "Tỷ giá USD");
 
-            // Validate & Fallback (nếu web đổi cấu trúc)
-            // Nếu cào xịt (0) thì dùng logic dự phòng dựa trên giá Đắk Lắk (nếu có)
-            if (daklakPrice == 0) daklakPrice = 99600; // Mock safety net
-            if (lamdongPrice == 0) lamdongPrice = daklakPrice - 800;
-            if (gialaiPrice == 0) gialaiPrice = daklakPrice - 100;
-            if (daknongPrice == 0) daknongPrice = daklakPrice + 100;
-            if (pepperPrice == 0) pepperPrice = 148500; // Mock safety net
-
-            // 3. Build Full Response
+            // Build regional prices
             var regionalPrices = new List<RegionalPriceDto>
             {
-                new() { Region = "Đắk Lắk", RegionCode = "DAK_LAK", CoffeePrice = daklakPrice, PepperPrice = pepperPrice, Change = 600, UpdatedAt = now },
-                new() { Region = "Lâm Đồng", RegionCode = "LAM_DONG", CoffeePrice = lamdongPrice, PepperPrice = pepperPrice, Change = 500, UpdatedAt = now },
-                new() { Region = "Gia Lai", RegionCode = "GIA_LAI", CoffeePrice = gialaiPrice, PepperPrice = pepperPrice, Change = 500, UpdatedAt = now },
-                new() { Region = "Đắk Nông", RegionCode = "DAK_NONG", CoffeePrice = daknongPrice, PepperPrice = pepperPrice, Change = 400, UpdatedAt = now }
+                new() { Region = "Đắk Lắk", RegionCode = "DAK_LAK", CoffeePrice = daklakPrice, PepperPrice = pepperPrice, Change = daklakChange, UpdatedAt = now },
+                new() { Region = "Lâm Đồng", RegionCode = "LAM_DONG", CoffeePrice = lamdongPrice, PepperPrice = pepperPrice, Change = lamdongChange, UpdatedAt = now },
+                new() { Region = "Gia Lai", RegionCode = "GIA_LAI", CoffeePrice = gialaiPrice, PepperPrice = pepperPrice, Change = gialaiChange, UpdatedAt = now },
+                new() { Region = "Đắk Nông", RegionCode = "DAK_NONG", CoffeePrice = daknongPrice, PepperPrice = pepperPrice, Change = daknongChange, UpdatedAt = now }
             };
 
+            // Build commodities
             var commodities = new List<CommodityPriceDto>
             {
                 new CommodityPriceDto
@@ -489,8 +570,8 @@ public class MarketPriceService
                     Name = "Cà phê Nhân xô (Việt Nam)",
                     Code = "ROBUSTA_VN",
                     CurrentPrice = daklakPrice,
-                    Change = 500,
-                    ChangePercent = 0.5m,
+                    Change = daklakChange,
+                    ChangePercent = daklakPrice > 0 ? Math.Round((daklakChange / daklakPrice) * 100, 2) : 0,
                     Unit = "VND/kg",
                     UpdatedAt = now,
                     Source = "chocaphe.vn"
@@ -500,13 +581,29 @@ public class MarketPriceService
                     Name = "Hồ tiêu (Việt Nam)",
                     Code = "PEPPER_VN",
                     CurrentPrice = pepperPrice,
-                    Change = 500,
-                    ChangePercent = 0.35m,
+                    Change = pepperChange,
+                    ChangePercent = pepperPrice > 0 ? Math.Round((pepperChange / pepperPrice) * 100, 2) : 0,
                     Unit = "VND/kg",
                     UpdatedAt = now,
                     Source = "chocaphe.vn"
                 }
             };
+            
+            // Add USD rate if found
+            if (usdRate > 0)
+            {
+                commodities.Add(new CommodityPriceDto
+                {
+                    Name = "Tỷ giá USD/VND",
+                    Code = "USD_VND",
+                    CurrentPrice = usdRate,
+                    Change = usdChange,
+                    ChangePercent = usdRate > 0 ? Math.Round((usdChange / usdRate) * 100, 2) : 0,
+                    Unit = "VND",
+                    UpdatedAt = now,
+                    Source = "chocaphe.vn"
+                });
+            }
             
             return new MarketPriceResponseDto
             {
@@ -519,8 +616,278 @@ public class MarketPriceService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error scraping full market data");
-            return null; // Return null to indicate failure
+            return null;
         }
+    }
+
+    /// <summary>
+    /// FULL STRATEGY 2: HEADLESS BROWSER SCRAPING
+    /// Scrape giacaphe.com với PuppeteerSharp (render JavaScript)
+    /// </summary>
+    public async Task<MarketPriceResponseDto?> FetchFromGiaCaPheWithPuppeteerAsync()
+    {
+        try
+        {
+            var now = DateTime.Now;
+            
+            // Download Chromium nếu chưa có (chỉ chạy lần đầu)
+            _logger.LogInformation("Checking Puppeteer browser...");
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            
+            _logger.LogInformation("Launching headless browser...");
+            await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            {
+                Headless = true,
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
+            });
+            
+            await using var page = await browser.NewPageAsync();
+            
+            // Set user agent to avoid bot detection
+            await page.SetUserAgentAsync("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            
+            // Navigate to giacaphe.com
+            _logger.LogInformation("Navigating to giacaphe.com...");
+            await page.GoToAsync("https://giacaphe.com/gia-ca-phe-noi-dia/", new NavigationOptions
+            {
+                WaitUntil = new[] { WaitUntilNavigation.Networkidle2 },
+                Timeout = 60000
+            });
+            
+            // Wait a bit for JavaScript to execute
+            await Task.Delay(3000);
+            
+            // Scroll down to ensure the price table is in viewport
+            _logger.LogInformation("Scrolling down to price table...");
+            await page.EvaluateFunctionAsync(@"() => {
+                const table = document.querySelector('#gia-noi-dia');
+                if (table) {
+                    table.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }");
+            
+            await Task.Delay(2000);
+            
+            // Take FULL PAGE screenshot for debugging
+            var screenshotPath = Path.Combine(Path.GetTempPath(), $"giacaphe_debug_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+            await page.ScreenshotAsync(screenshotPath, new ScreenshotOptions { FullPage = true });
+            _logger.LogInformation($"Full page screenshot saved to: {screenshotPath}");
+            
+            // Wait for table structure to exist
+            _logger.LogInformation("Waiting for table structure...");
+            await page.WaitForSelectorAsync(".price-table tbody tr", new WaitForSelectorOptions { Timeout = 10000 });
+            
+            // CRITICAL: Wait for JavaScript to populate the span elements with actual price data
+            // The spans are initially empty and filled by JS after page load
+            _logger.LogInformation("Waiting for price data to be populated by JavaScript...");
+            
+            bool dataPopulated = false;
+            int maxRetries = 10;
+            
+            for (int i = 0; i < maxRetries; i++)
+            {
+                // First, log what we see
+                var debugInfo = await page.EvaluateFunctionAsync<string>(@"() => {
+                    const rows = document.querySelectorAll('.price-table tbody tr');
+                    let info = `Found ${rows.length} rows\n`;
+                    
+                    if (rows.length > 0) {
+                        const firstRow = rows[0];
+                        const cells = firstRow.querySelectorAll('td');
+                        info += `First row has ${cells.length} cells\n`;
+                        
+                        if (cells.length >= 2) {
+                            info += `Cell 1 innerHTML: ${cells[1].innerHTML}\n`;
+                            info += `Cell 1 textContent: '${cells[1].textContent.trim()}'\n`;
+                        }
+                    }
+                    
+                    return info;
+                }");
+                
+                _logger.LogInformation($"Debug info (attempt {i + 1}):\n{debugInfo}");
+                
+                var hasData = await page.EvaluateFunctionAsync<bool>(@"() => {
+                    const rows = document.querySelectorAll('.price-table tbody tr');
+                    if (rows.length === 0) return false;
+                    
+                    // Check if at least one price cell has content
+                    for (let row of rows) {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 2) {
+                            const priceText = cells[1].textContent.trim();
+                            // If we find any cell with numbers, data is populated
+                            if (priceText && /\d/.test(priceText)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }");
+                
+                if (hasData)
+                {
+                    dataPopulated = true;
+                    _logger.LogInformation($"Price data populated successfully after {(i + 1) * 2} seconds!");
+                    break;
+                }
+                
+                _logger.LogInformation($"Waiting for data... attempt {i + 1}/{maxRetries}");
+                await Task.Delay(2000);
+            }
+            
+            if (!dataPopulated)
+            {
+                _logger.LogError("Timeout waiting for price data to populate. Screenshot saved for debugging.");
+                return null;
+            }
+            
+            // Extract data using JavaScript evaluation
+            var priceData = await page.EvaluateFunctionAsync<PriceDataJs>(@"() => {
+                const rows = document.querySelectorAll('.price-table tbody tr');
+                const data = {};
+                
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 3) {
+                        const name = cells[0].textContent.trim();
+                        const priceText = cells[1].textContent.trim().replace(/[,\.]/g, '');
+                        const changeText = cells[2].textContent.trim().replace(/[,\.]/g, '').replace('+', '');
+                        
+                        data[index] = {
+                            name: name,
+                            price: parseInt(priceText) || 0,
+                            change: parseInt(changeText) || 0
+                        };
+                    }
+                });
+                
+                return data;
+            }");
+            
+            _logger.LogInformation("Successfully scraped {Count} rows from giacaphe.com", priceData?.Count ?? 0);
+            
+            // Parse data
+            decimal daklakPrice = 0, daklakChange = 0;
+            decimal lamdongPrice = 0, lamdongChange = 0;
+            decimal gialaiPrice = 0, gialaiChange = 0;
+            decimal daknongPrice = 0, daknongChange = 0;
+            decimal pepperPrice = 0, pepperChange = 0;
+            decimal usdRate = 0, usdChange = 0;
+            
+            if (priceData != null)
+            {
+                foreach (var kvp in priceData)
+                {
+                    var item = kvp.Value;
+                    var name = item.Name?.ToLower() ?? "";
+                    
+                    if (name.Contains("đắk lắk") || name.Contains("dak lak"))
+                    {
+                        daklakPrice = item.Price;
+                        daklakChange = item.Change;
+                    }
+                    else if (name.Contains("lâm đồng") || name.Contains("lam dong"))
+                    {
+                        lamdongPrice = item.Price;
+                        lamdongChange = item.Change;
+                    }
+                    else if (name.Contains("gia lai"))
+                    {
+                        gialaiPrice = item.Price;
+                        gialaiChange = item.Change;
+                    }
+                    else if (name.Contains("đắk nông") || name.Contains("dak nong"))
+                    {
+                        daknongPrice = item.Price;
+                        daknongChange = item.Change;
+                    }
+                    else if (name.Contains("hồ tiêu") || name.Contains("ho tieu"))
+                    {
+                        pepperPrice = item.Price;
+                        pepperChange = item.Change;
+                    }
+                    else if (name.Contains("usd") || name.Contains("tỷ giá"))
+                    {
+                        usdRate = item.Price;
+                        usdChange = item.Change;
+                    }
+                }
+            }
+            
+            // Build response
+            var regionalPrices = new List<RegionalPriceDto>
+            {
+                new() { Region = "Đắk Lắk", RegionCode = "DAK_LAK", CoffeePrice = daklakPrice, PepperPrice = pepperPrice, Change = daklakChange, UpdatedAt = now },
+                new() { Region = "Lâm Đồng", RegionCode = "LAM_DONG", CoffeePrice = lamdongPrice, PepperPrice = pepperPrice, Change = lamdongChange, UpdatedAt = now },
+                new() { Region = "Gia Lai", RegionCode = "GIA_LAI", CoffeePrice = gialaiPrice, PepperPrice = pepperPrice, Change = gialaiChange, UpdatedAt = now },
+                new() { Region = "Đắk Nông", RegionCode = "DAK_NONG", CoffeePrice = daknongPrice, PepperPrice = pepperPrice, Change = daknongChange, UpdatedAt = now }
+            };
+
+            var commodities = new List<CommodityPriceDto>
+            {
+                new CommodityPriceDto
+                {
+                    Name = "Cà phê Nhân xô (Việt Nam)",
+                    Code = "ROBUSTA_VN",
+                    CurrentPrice = daklakPrice,
+                    Change = daklakChange,
+                    ChangePercent = daklakPrice > 0 ? Math.Round((daklakChange / daklakPrice) * 100, 2) : 0,
+                    Unit = "VND/kg",
+                    UpdatedAt = now,
+                    Source = "giacaphe.com (Puppeteer)"
+                },
+                new CommodityPriceDto
+                {
+                    Name = "Hồ tiêu (Việt Nam)",
+                    Code = "PEPPER_VN",
+                    CurrentPrice = pepperPrice,
+                    Change = pepperChange,
+                    ChangePercent = pepperPrice > 0 ? Math.Round((pepperChange / pepperPrice) * 100, 2) : 0,
+                    Unit = "VND/kg",
+                    UpdatedAt = now,
+                    Source = "giacaphe.com (Puppeteer)"
+                }
+            };
+            
+            if (usdRate > 0)
+            {
+                commodities.Add(new CommodityPriceDto
+                {
+                    Name = "Tỷ giá USD/VND",
+                    Code = "USD_VND",
+                    CurrentPrice = usdRate,
+                    Change = usdChange,
+                    ChangePercent = usdRate > 0 ? Math.Round((usdChange / usdRate) * 100, 2) : 0,
+                    Unit = "VND",
+                    UpdatedAt = now,
+                    Source = "giacaphe.com (Puppeteer)"
+                });
+            }
+            
+            return new MarketPriceResponseDto
+            {
+                FetchedAt = now,
+                IsFromCache = false,
+                Commodities = commodities,
+                RegionalPrices = regionalPrices
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error scraping giacaphe.com with Puppeteer");
+            return null;
+        }
+    }
+
+    // Helper class for Puppeteer JS evaluation
+    private class PriceDataJs : Dictionary<int, PriceItemJs> { }
+    private class PriceItemJs
+    {
+        public string? Name { get; set; }
+        public decimal Price { get; set; }
+        public decimal Change { get; set; }
     }
 
     /// <summary>

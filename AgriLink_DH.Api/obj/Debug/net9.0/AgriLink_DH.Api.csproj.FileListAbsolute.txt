@@ -327,3 +327,4 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.Cons
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.Debug.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.File.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Enrichers.Thread.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\PuppeteerSharp.dll

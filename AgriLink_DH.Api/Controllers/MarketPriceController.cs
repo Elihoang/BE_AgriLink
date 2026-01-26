@@ -9,11 +9,11 @@ namespace AgriLink_DH.Api.Controllers;
 [Route("api/[controller]")]
 public class MarketPriceController : ControllerBase
 {
-    private readonly MarketPriceService _marketPriceService;
+    private readonly MarketPriceDbService _marketPriceService;
     private readonly ILogger<MarketPriceController> _logger;
 
     public MarketPriceController(
-        MarketPriceService marketPriceService,
+        MarketPriceDbService marketPriceService,
         ILogger<MarketPriceController> logger)
     {
         _marketPriceService = marketPriceService;
@@ -21,20 +21,14 @@ public class MarketPriceController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy giá thị trường (tự động chọn provider từ config)
+    /// Lấy giá thị trường mới nhất từ database
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetMarketPrices()
     {
         try
         {
-            var prices = await _marketPriceService.GetMarketPricesAsync();
-
-            if (prices == null)
-            {
-                return NotFound(ApiResponse<MarketPriceResponseDto>.ErrorResponse(
-                    "Không thể lấy dữ liệu giá thị trường", 404));
-            }
+            var prices = await _marketPriceService.GetLatestPricesAsync();
 
             return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(
                 prices,
@@ -48,103 +42,98 @@ public class MarketPriceController : ControllerBase
         }
     }
 
-
     /// <summary>
-    /// Lấy giá từ API (Alpha Vantage - Global Coffee)
-    /// ✅ Hợp pháp, Free tier
+    /// [ADMIN] Cập nhật giá thủ công
     /// </summary>
-    [HttpGet("api-data")]
-    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetPricesFromAPI()
+    [HttpPost("admin/update")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdatePrice([FromBody] UpdateMarketPriceRequest request)
     {
         try
         {
-            // Tạm thời gọi trực tiếp Twelve Data hoặc Alpha Vantage tùy cấu hình
-            // Nhưng ở đây ta muốn test Alpha Vantage
-            var prices = await _marketPriceService.GetPricesFromAlphaVantageAsync();
+            // TODO: Add authentication/authorization for admin
+            var updatedBy = User.Identity?.Name ?? "Admin";
+            
+            var result = await _marketPriceService.UpdatePriceAsync(request, updatedBy);
 
-            if (prices == null)
-            {
-                return NotFound(ApiResponse<MarketPriceResponseDto>.ErrorResponse(
-                    "Không thể lấy dữ liệu từ API Global", 404));
-            }
-
-            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(
-                prices,
-                "Lấy giá từ Alpha Vantage API thành công"));
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new 
+                { 
+                    id = result.Id, 
+                    productId = result.ProductId,
+                    region = result.Region,
+                    price = result.Price,
+                    recordedDate = result.RecordedDate
+                },
+                "Cập nhật giá thành công"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching from API");
-            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse(
-                "Lỗi khi gọi API", 500));
+            _logger.LogError(ex, "Error updating market price");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                "Lỗi khi cập nhật giá", 500));
         }
     }
 
-    // ==================== REGIONAL PRICE ENDPOINTS ====================
-
     /// <summary>
-    /// Lấy giá Full từ Web Scraping
+    /// [ADMIN] Cập nhật nhiều giá cùng lúc (Batch update)
     /// </summary>
-    [HttpGet("regional/scraping")]
-    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetFullScraping()
-    {
-        var result = await _marketPriceService.FetchFullFromScrapingAsync();
-        if (result == null) 
-             return NotFound(ApiResponse<MarketPriceResponseDto>.ErrorResponse("Scraping failed or connection error", 404));
-
-        return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result));
-    }
-
-    /// <summary>
-    /// Lấy giá Full từ API Conversion
-    /// </summary>
-    [HttpGet("regional/conversion")]
-    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetFullConversion()
-    {
-        // Reuse AlphaVantage logic which now returns Full DTO with conversion
-        var result = await _marketPriceService.FetchFromAlphaVantageAsync(); 
-        if (result == null)
-             return NotFound(ApiResponse<MarketPriceResponseDto>.ErrorResponse("API Global failed", 404));
-             
-        return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result));
-    }
-
-    /// <summary>
-    /// Lấy giá Full từ Manual Mock
-    /// </summary>
-    [HttpGet("regional/manual")]
-    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetFullManual()
-    {
-        var result = await _marketPriceService.GetFullManualDataAsync();
-        return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result));
-    }
-
-    /// <summary>
-    /// Xóa cache và làm mới
-    /// </summary>
-    [HttpPost("refresh")]
-    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> RefreshMarketPrices()
+    [HttpPost("admin/batch-update")]
+    public async Task<ActionResult<ApiResponse<object>>> BatchUpdatePrices([FromBody] List<UpdateMarketPriceRequest> requests)
     {
         try
         {
-            await _marketPriceService.ClearCacheAsync();
-            var prices = await _marketPriceService.GetMarketPricesAsync();
+            var updatedBy = User.Identity?.Name ?? "Admin";
+            var results = new List<object>();
 
-            if (prices == null)
+            foreach (var request in requests)
             {
-                return NotFound(ApiResponse<MarketPriceResponseDto>.ErrorResponse(
-                    "Không thể lấy dữ liệu giá thị trường", 404));
+                var result = await _marketPriceService.UpdatePriceAsync(request, updatedBy);
+                results.Add(new 
+                { 
+                    id = result.Id, 
+                    productId = result.ProductId,
+                    region = result.Region,
+                    price = result.Price
+                });
             }
 
-            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(
-                prices,
-                "Làm mới giá thị trường thành công"));
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new { count = results.Count, items = results },
+                $"Cập nhật thành công {results.Count} bản ghi"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error refreshing market prices");
-            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse(
-                "Lỗi khi làm mới giá thị trường", 500));
+            _logger.LogError(ex, "Error batch updating prices");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                "Lỗi khi cập nhật giá hàng loạt", 500));
+        }
+    }
+
+    /// <summary>
+    /// Lấy lịch sử giá theo sản phẩm và khu vực
+    /// </summary>
+    [HttpGet("history")]
+    public async Task<ActionResult<ApiResponse<object>>> GetPriceHistory(
+        [FromQuery] Guid productId,
+        [FromQuery] string? regionCode = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int limit = 30)
+    {
+        try
+        {
+            var history = await _marketPriceService.GetPriceHistoryAsync(
+                productId, regionCode, fromDate, toDate, limit);
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                history,
+                $"Lấy lịch sử giá thành công ({history.Count} records)"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting price history");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                "Lỗi khi lấy lịch sử giá", 500));
         }
     }
 }
