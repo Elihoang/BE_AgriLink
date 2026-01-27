@@ -1158,6 +1158,22 @@
           }
         }
       },
+      "PuppeteerSharp/20.2.5": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "8.0.0"
+        },
+        "compile": {
+          "lib/net8.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Scalar.AspNetCore/2.0.0": {
         "type": "package",
         "compile": {
@@ -1722,6 +1738,7 @@
           "Microsoft.EntityFrameworkCore": "9.0.11",
           "Microsoft.Extensions.Configuration.Json": "9.0.11",
           "Microsoft.Extensions.Http": "9.0.0",
+          "PuppeteerSharp": "20.2.5",
           "StackExchange.Redis": "2.10.1",
           "System.IdentityModel.Tokens.Jwt": "8.15.0"
         },
@@ -4089,6 +4106,21 @@
         "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
         "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
         "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
+    "PuppeteerSharp/20.2.5": {
+      "sha512": "w9/oEME3spddIKjh8C3sMxQziJe6lcdsTtQCnG3GevupZYQPx243dz1znh9YIE9otulXa9lg+Pnf/SMUCq4/Gw==",
+      "type": "package",
+      "path": "puppeteersharp/20.2.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net8.0/PuppeteerSharp.dll",
+        "lib/net8.0/PuppeteerSharp.xml",
+        "lib/netstandard2.0/PuppeteerSharp.dll",
+        "lib/netstandard2.0/PuppeteerSharp.xml",
+        "puppeteersharp.20.2.5.nupkg.sha512",
+        "puppeteersharp.nuspec"
       ]
     },
     "Scalar.AspNetCore/2.0.0": {

@@ -207,6 +207,10 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
+            "PuppeteerSharp": {
+              "target": "Package",
+              "version": "[20.2.5, )"
+            },
             "StackExchange.Redis": {
               "target": "Package",
               "version": "[2.10.1, )"

@@ -37,6 +37,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<WeatherLog> WeatherLogs { get; set; }
     public DbSet<PlantPosition> PlantPositions { get; set; } // Grid layout tracking từng cây
     public DbSet<Material> Materials { get; set; } // Quản lý kho vật tư
+    public DbSet<MarketPriceHistory> MarketPriceHistory { get; set; } // Lịch sử giá thị trường
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -270,5 +271,23 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Material>()
             .HasIndex(m => new { m.OwnerUserId, m.Name })
             .IsUnique();
+
+        // MarketPriceHistory: Composite index on product_id + region_code + recorded_date
+        // Để query nhanh và tránh duplicate
+        modelBuilder.Entity<MarketPriceHistory>()
+            .HasIndex(mph => new { mph.ProductId, mph.RegionCode, mph.RecordedDate });
+
+        // MarketPriceHistory: Index on recorded_date for time-series queries
+        modelBuilder.Entity<MarketPriceHistory>()
+            .HasIndex(mph => mph.RecordedDate);
+        
+        // MarketPriceHistory: Foreign key to Product
+        modelBuilder.Entity<MarketPriceHistory>()
+            .HasOne(mph => mph.Product)
+            .WithMany()
+            .HasForeignKey(mph => mph.ProductId)
+            .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Product nếu có giá
+        
+        // Seed data sẽ được nhập thủ công qua API /admin/update
     }
 }

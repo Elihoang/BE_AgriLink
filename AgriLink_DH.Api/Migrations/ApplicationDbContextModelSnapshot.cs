@@ -353,6 +353,79 @@ namespace AgriLink_DH.Api.Migrations
                     b.ToTable("harvest_sessions");
                 });
 
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.MarketPriceHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Change")
+                        .HasColumnType("numeric")
+                        .HasColumnName("change");
+
+                    b.Property<decimal>("ChangePercent")
+                        .HasColumnType("numeric")
+                        .HasColumnName("change_percent");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric")
+                        .HasColumnName("price");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<DateTime>("RecordedDate")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("recorded_date");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("region");
+
+                    b.Property<string>("RegionCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("region_code");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("unit");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecordedDate");
+
+                    b.HasIndex("ProductId", "RegionCode", "RecordedDate");
+
+                    b.ToTable("market_price_history");
+                });
+
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Material", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1015,6 +1088,17 @@ namespace AgriLink_DH.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("CropSeason");
+                });
+
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.MarketPriceHistory", b =>
+                {
+                    b.HasOne("AgriLink_DH.Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Material", b =>

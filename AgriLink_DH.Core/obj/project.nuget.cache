@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "fiJW+Vk4rrI=",
+  "dgSpecHash": "Blno22dXX/A=",
   "success": true,
   "projectFilePath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
   "expectedPackageFiles": [
@@ -35,6 +35,7 @@
     "C:\\Users\\duyho\\.nuget\\packages\\microsoft.identitymodel.logging\\8.15.0\\microsoft.identitymodel.logging.8.15.0.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.15.0\\microsoft.identitymodel.tokens.8.15.0.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+    "C:\\Users\\duyho\\.nuget\\packages\\puppeteersharp\\20.2.5\\puppeteersharp.20.2.5.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\stackexchange.redis\\2.10.1\\stackexchange.redis.2.10.1.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.15.0\\system.identitymodel.tokens.jwt.8.15.0.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\system.io.hashing\\9.0.10\\system.io.hashing.9.0.10.nupkg.sha512",
