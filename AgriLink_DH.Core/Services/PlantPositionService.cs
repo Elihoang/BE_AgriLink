@@ -8,15 +8,15 @@ using System.Text.Json;
 
 namespace AgriLink_DH.Core.Services;
 
-public class PlantPositionService
+public class PlantPositionService : BaseCachedService
 {
     private readonly IPlantPositionRepository _plantPositionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IFarmRepository _farmRepository;
-    private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
 
-    private const string REDIS_KEY_PREFIX = "plant_positions:season:";
+    private const string CACHE_KEY_FARM_PREFIX = "plant_positions:farm:";
+    private const string CACHE_KEY_SEASON_PREFIX = "plant_positions:season:";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1); // Cache 1h
 
     public PlantPositionService(
@@ -25,11 +25,11 @@ public class PlantPositionService
         IFarmRepository farmRepository,
         RedisService redisService,
         IUnitOfWork unitOfWork)
+        : base(redisService)
     {
         _plantPositionRepository = plantPositionRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _farmRepository = farmRepository;
-        _redisService = redisService;
         _unitOfWork = unitOfWork;
     }
 
@@ -38,23 +38,17 @@ public class PlantPositionService
     /// </summary>
     public async Task<IEnumerable<PlantPositionDto>> GetByFarmAsync(Guid farmId)
     {
-        var cacheKey = $"plant_positions:farm:{farmId}";
+        var cacheKey = $"{CACHE_KEY_FARM_PREFIX}{farmId}";
 
-        // Try get from cache first
-        var cached = await _redisService.GetAsync<List<PlantPositionDto>>(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
-
-        // Cache miss - get from DB
-        var positions = await _plantPositionRepository.GetByFarmIdAsync(farmId);
-        var dtos = positions.Select(MapToDto).ToList();
-
-        // Store in cache
-        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
-
-        return dtos;
+        return await GetOrSetCacheListAsync(
+            cacheKey,
+            async () =>
+            {
+                var positions = await _plantPositionRepository.GetByFarmIdAsync(farmId);
+                return positions.Select(MapToDto);
+            },
+            CacheDuration
+        );
     }
 
     /// <summary>
@@ -62,23 +56,17 @@ public class PlantPositionService
     /// </summary>
     public async Task<IEnumerable<PlantPositionDto>> GetBySeasonAsync(Guid seasonId)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{seasonId}";
+        var cacheKey = $"{CACHE_KEY_SEASON_PREFIX}{seasonId}";
 
-        // Try get from cache first
-        var cached = await _redisService.GetAsync<List<PlantPositionDto>>(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
-
-        // Cache miss - get from DB
-        var positions = await _plantPositionRepository.GetBySeasonIdAsync(seasonId);
-        var dtos = positions.Select(MapToDto).ToList();
-
-        // Store in cache
-        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
-
-        return dtos;
+        return await GetOrSetCacheListAsync(
+            cacheKey,
+            async () =>
+            {
+                var positions = await _plantPositionRepository.GetBySeasonIdAsync(seasonId);
+                return positions.Select(MapToDto);
+            },
+            CacheDuration
+        );
     }
 
     /// <summary>
@@ -133,7 +121,7 @@ public class PlantPositionService
         // Invalidate cache if season assigned
         if (dto.SeasonId.HasValue)
         {
-            await InvalidateCacheAsync(dto.SeasonId.Value);
+            await InvalidateCacheAsync($"{CACHE_KEY_SEASON_PREFIX}{dto.SeasonId.Value}");
         }
 
         return MapToDto(savedPosition!);
@@ -162,7 +150,7 @@ public class PlantPositionService
         // Invalidate cache if season assigned
         if (position.SeasonId.HasValue)
         {
-            await InvalidateCacheAsync(position.SeasonId.Value);
+            await InvalidateCacheAsync($"{CACHE_KEY_SEASON_PREFIX}{position.SeasonId.Value}");
         }
 
         return MapToDto(position);
@@ -185,7 +173,7 @@ public class PlantPositionService
         // Invalidate cache if season assigned
         if (seasonId.HasValue)
         {
-            await InvalidateCacheAsync(seasonId.Value);
+            await InvalidateCacheAsync($"{CACHE_KEY_SEASON_PREFIX}{seasonId.Value}");
         }
 
         return true;
@@ -232,25 +220,16 @@ public class PlantPositionService
         await _unitOfWork.SaveChangesAsync();
 
         // Invalidate farm cache
-        await _redisService.DeleteAsync($"plant_positions:farm:{farmId}");
+        await InvalidateCacheAsync($"{CACHE_KEY_FARM_PREFIX}{farmId}");
 
         // Invalidate season cache if any position has season
         var seasonIds = positions.Where(p => p.SeasonId.HasValue).Select(p => p.SeasonId!.Value).Distinct();
         foreach (var seasonId in seasonIds)
         {
-            await InvalidateCacheAsync(seasonId);
+            await InvalidateCacheAsync($"{CACHE_KEY_SEASON_PREFIX}{seasonId}");
         }
 
         return positions.Count;
-    }
-
-    /// <summary>
-    /// Xóa cache khi có thay đổi
-    /// </summary>
-    private async Task InvalidateCacheAsync(Guid seasonId)
-    {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{seasonId}";
-        await _redisService.DeleteAsync(cacheKey);
     }
 
     private static PlantPositionDto MapToDto(PlantPosition position)

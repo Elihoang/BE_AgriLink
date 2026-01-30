@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Blno22dXX/A=",
+  "dgSpecHash": "JqfAQAwSsxE=",
   "success": true,
-  "projectFilePath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
+  "projectFilePath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\duyho\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.3.0\\microsoft.aspnetcore.http.abstractions.2.3.0.nupkg.sha512",

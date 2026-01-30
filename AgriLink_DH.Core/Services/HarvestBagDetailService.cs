@@ -5,15 +5,14 @@ using AgriLink_DH.Share.DTOs.HarvestBagDetail;
 
 namespace AgriLink_DH.Core.Services;
 
-public class HarvestBagDetailService
+public class HarvestBagDetailService : BaseCachedService
 {
     private readonly IHarvestBagDetailRepository _bagDetailRepository;
     private readonly IHarvestSessionRepository _harvestSessionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
-    private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
 
-    private const string REDIS_KEY_PREFIX = "harvest_sessions:user:";
+    private const string CACHE_KEY_USER_PREFIX = "harvest_sessions:user:";
 
     public HarvestBagDetailService(
         IHarvestBagDetailRepository bagDetailRepository,
@@ -21,11 +20,11 @@ public class HarvestBagDetailService
         ICropSeasonRepository cropSeasonRepository,
         RedisService redisService,
         IUnitOfWork unitOfWork)
+        : base(redisService)
     {
         _bagDetailRepository = bagDetailRepository;
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;
-        _redisService = redisService;
         _unitOfWork = unitOfWork;
     }
 
@@ -140,13 +139,16 @@ public class HarvestBagDetailService
     /// <summary>
     /// Helper: Invalidate cache for a session
     /// </summary>
+    /// <summary>
+    /// Helper: Invalidate cache for a session
+    /// </summary>
     private async Task InvalidateCacheForSessionAsync(HarvestSession session)
     {
         var season = session.CropSeason ?? await _cropSeasonRepository.GetByIdAsync(session.SeasonId);
         if (season?.Farm != null)
         {
-            var cacheKey = $"{REDIS_KEY_PREFIX}{season.Farm.OwnerUserId}";
-            await _redisService.DeleteAsync(cacheKey);
+            var cacheKey = $"{CACHE_KEY_USER_PREFIX}{season.Farm.OwnerUserId}";
+            await InvalidateCacheAsync(cacheKey);
         }
     }
 }

@@ -10,12 +10,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace AgriLink_DH.Core.Services;
 
-public class AuthService
+public class AuthService : BaseCachedService
 {
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtHelper _jwtHelper;
-    private readonly RedisService _redisService;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
 
@@ -26,11 +25,11 @@ public class AuthService
         RedisService redisService,
         IConfiguration configuration,
         ApplicationDbContext context)
+        : base(redisService)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _jwtHelper = jwtHelper;
-        _redisService = redisService;
         _configuration = configuration;
         _context = context;
     }
@@ -78,7 +77,7 @@ public class AuthService
         var refreshTokenExpiration = TimeSpan.FromDays(
             Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
         );
-        await _redisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
+        await RedisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
 
         // Log registration
         await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Register, true);
@@ -126,7 +125,7 @@ public class AuthService
         var refreshTokenExpiration = TimeSpan.FromDays(
             Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
         );
-        await _redisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
+        await RedisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
 
         // Log successful login
         await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Login, true);
@@ -151,7 +150,7 @@ public class AuthService
             User? matchedUser = null;
             foreach (var user in allUsers)
             {
-                var storedRefreshToken = await _redisService.GetRefreshTokenAsync(user.Id.ToString());
+                var storedRefreshToken = await RedisService.GetRefreshTokenAsync(user.Id.ToString());
                 if (!string.IsNullOrEmpty(storedRefreshToken) && storedRefreshToken == refreshToken)
                 {
                     matchedUser = user;
@@ -177,7 +176,7 @@ public class AuthService
             var refreshTokenExpiration = TimeSpan.FromDays(
                 Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
             );
-            await _redisService.SetRefreshTokenAsync(matchedUser.Id.ToString(), newTokens.RefreshToken, refreshTokenExpiration);
+            await RedisService.SetRefreshTokenAsync(matchedUser.Id.ToString(), newTokens.RefreshToken, refreshTokenExpiration);
 
             return (true, "Làm mới token thành công", newTokens);
         }
@@ -197,7 +196,7 @@ public class AuthService
         }
 
         // Delete refresh token from Redis
-        return await _redisService.DeleteRefreshTokenAsync(userId);
+        return await RedisService.DeleteRefreshTokenAsync(userId);
     }
 
     /// <summary>

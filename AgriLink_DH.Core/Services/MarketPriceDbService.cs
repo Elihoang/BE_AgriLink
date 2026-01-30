@@ -230,4 +230,48 @@ public class MarketPriceDbService
             throw;
         }
     }
+
+    /// <summary>
+    /// Lấy giá hôm trước (để tính toán Change tự động)
+    /// </summary>
+    public async Task<Dictionary<string, decimal>> GetPreviousDayPricesAsync()
+    {
+        try
+        {
+            var today = DateTime.Today;
+            var yesterday = today.AddDays(-1);
+            
+            // Tìm ngày gần nhất trước hôm nay
+            var lastDate = await _context.MarketPriceHistory
+                .Where(mph => mph.RecordedDate < today)
+                .MaxAsync(mph => (DateTime?)mph.RecordedDate);
+            
+            if (!lastDate.HasValue)
+            {
+                return new Dictionary<string, decimal>();
+            }
+            
+            // Lấy tất cả giá của ngày đó
+            var previousPrices = await _context.MarketPriceHistory
+                .Include(mph => mph.Product)
+                .Where(mph => mph.RecordedDate == lastDate.Value)
+                .ToListAsync();
+            
+            // Tạo dictionary với key: "productId|regionCode"
+            var priceDict = new Dictionary<string, decimal>();
+            
+            foreach (var price in previousPrices)
+            {
+                var key = $"{price.ProductId}|{price.RegionCode ?? "NATIONAL"}";
+                priceDict[key] = price.Price;
+            }
+            
+            return priceDict;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting previous day prices");
+            throw;
+        }
+    }
 }

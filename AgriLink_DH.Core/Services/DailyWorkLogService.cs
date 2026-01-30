@@ -7,7 +7,7 @@ using AgriLink_DH.Share.Extensions;
 
 namespace AgriLink_DH.Core.Services;
 
-public class DailyWorkLogService
+public class DailyWorkLogService : BaseCachedService
 {
     private readonly IDailyWorkLogRepository _dailyWorkLogRepository;
     private readonly IWorkAssignmentRepository _workAssignmentRepository;
@@ -22,24 +22,23 @@ public class DailyWorkLogService
         IWorkerRepository workerRepository,
         IUnitOfWork unitOfWork,
         RedisService redisService)
+        : base(redisService)
     {
         _dailyWorkLogRepository = dailyWorkLogRepository;
         _workAssignmentRepository = workAssignmentRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _workerRepository = workerRepository;
         _unitOfWork = unitOfWork;
-        _redisService = redisService;
     }
 
-    private readonly RedisService _redisService;
-    private const string REDIS_KEY_PREFIX = "worklogs:";
+    private const string CACHE_KEY_PREFIX = "worklogs:";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
 
     private async Task InvalidateFarmCacheAsync(Guid farmId)
     {
         // Delete all keys for this farm (ranges, seasons, etc if named correctly)
         // Pattern: worklogs:farm:{farmId}:*
-        await _redisService.DeleteByPatternAsync($"{REDIS_KEY_PREFIX}farm:{farmId}:*");
+        await InvalidateCacheByPatternAsync($"{CACHE_KEY_PREFIX}farm:{farmId}:*");
     }
 
     private async Task<Guid> GetFarmIdBySeasonId(Guid seasonId)
@@ -93,16 +92,17 @@ public class DailyWorkLogService
 
     public async Task<IEnumerable<DailyWorkLogDto>> GetLogsByFarmAndDateRangeAsync(Guid farmId, DateTime fromDate, DateTime toDate)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}farm:{farmId}:range:{fromDate.Ticks}-{toDate.Ticks}";
+        var cacheKey = $"{CACHE_KEY_PREFIX}farm:{farmId}:range:{fromDate.Ticks}-{toDate.Ticks}";
         
-        var cached = await _redisService.GetAsync<List<DailyWorkLogDto>>(cacheKey);
-        if (cached != null) return cached;
-
-        var logs = await _dailyWorkLogRepository.GetByFarmAndDateRangeAsync(farmId, fromDate, toDate);
-        var dtos = logs.Select(MapToDto).ToList();
-
-        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
-        return dtos;
+        return await GetOrSetCacheListAsync(
+            cacheKey,
+            async () =>
+            {
+                var logs = await _dailyWorkLogRepository.GetByFarmAndDateRangeAsync(farmId, fromDate, toDate);
+                return logs.Select(MapToDto);
+            },
+            CacheDuration
+        );
     }
 
     public async Task<DailyWorkLogDto> CreateLogAsync(CreateDailyWorkLogDto dto)

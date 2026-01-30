@@ -136,4 +136,26 @@ public class MarketPriceController : ControllerBase
                 "Lỗi khi lấy lịch sử giá", 500));
         }
     }
+
+    /// <summary>
+    /// [ADMIN] Lấy giá hôm trước để tính toán Change tự động
+    /// </summary>
+    [HttpGet("previous-prices")]
+    public async Task<ActionResult<ApiResponse<object>>> GetPreviousDayPrices()
+    {
+        try
+        {
+            var previousPrices = await _marketPriceService.GetPreviousDayPricesAsync();
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                previousPrices,
+                "Lấy giá hôm trước thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting previous day prices");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(
+                "Lỗi khi lấy giá hôm trước", 500));
+        }
+    }
 }
