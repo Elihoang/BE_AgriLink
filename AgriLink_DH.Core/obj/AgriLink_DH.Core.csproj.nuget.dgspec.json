@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj": {}
+    "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj": {}
   },
   "projects": {
-    "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj": {
+    "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
+        "projectUniqueName": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
         "projectName": "AgriLink_DH.Core",
-        "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
+        "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\AgriLink_DH.Core.csproj",
         "packagesPath": "C:\\Users\\duyho\\.nuget\\packages\\",
-        "outputPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\obj\\",
+        "outputPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,11 +32,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
-                "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj"
+              "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
+                "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj"
               },
-              "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj": {
-                "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj"
+              "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj": {
+                "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj"
               }
             }
           }
@@ -110,14 +110,14 @@
         }
       }
     },
-    "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
+    "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
+        "projectUniqueName": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
         "projectName": "AgriLink_DH.Domain",
-        "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
+        "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj",
         "packagesPath": "C:\\Users\\duyho\\.nuget\\packages\\",
-        "outputPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\obj\\",
+        "outputPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -181,14 +181,14 @@
         }
       }
     },
-    "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj": {
+    "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj",
+        "projectUniqueName": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj",
         "projectName": "AgriLink_DH.Share",
-        "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj",
+        "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\AgriLink_DH.Share.csproj",
         "packagesPath": "C:\\Users\\duyho\\.nuget\\packages\\",
-        "outputPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\obj\\",
+        "outputPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Share\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -209,8 +209,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
-                "projectPath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj"
+              "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj": {
+                "projectPath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Domain\\AgriLink_DH.Domain.csproj"
               }
             }
           }

@@ -9,12 +9,12 @@ namespace AgriLink_DH.Core.Services;
 /// <summary>
 /// Service lấy giá cà phê từ nhiều nguồn: Web Scraping hoặc API
 /// </summary>
-public class MarketPriceService
+public class MarketPriceService : BaseCachedService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly RedisService _redisService;
     private readonly ILogger<MarketPriceService> _logger;
     private readonly IConfiguration _configuration;
+    
     private const string CACHE_KEY = "market_prices";
     private const int CACHE_MINUTES = 30;
 
@@ -23,9 +23,9 @@ public class MarketPriceService
         RedisService redisService,
         ILogger<MarketPriceService> logger,
         IConfiguration configuration)
+        : base(redisService)
     {
         _httpClientFactory = httpClientFactory;
-        _redisService = redisService;
         _logger = logger;
         _configuration = configuration;
     }
@@ -37,36 +37,33 @@ public class MarketPriceService
     {
         try
         {
-            // Kiểm tra cache
-            var cachedData = await _redisService.GetAsync<MarketPriceResponseDto>(CACHE_KEY);
-            if (cachedData != null)
-            {
-                _logger.LogInformation("Returning market prices from Redis cache");
-                cachedData.IsFromCache = true;
-                return cachedData;
-            }
+            return await GetOrSetCacheAsync<MarketPriceResponseDto>(
+                CACHE_KEY,
+                async () =>
+                {
+                    _logger.LogInformation("Fetching fresh market prices");
 
-            _logger.LogInformation("Fetching fresh market prices");
+                    // Lấy từ config: "WebScraping" hoặc "TwelveData"
+                    var provider = _configuration["MarketPrice:Provider"] ?? "TwelveData";
 
-            // Lấy từ config: "WebScraping" hoặc "TwelveData"
-            var provider = _configuration["MarketPrice:Provider"] ?? "TwelveData";
+                    MarketPriceResponseDto? result = provider.ToLower() switch
+                    {
+                        "webscraping" => await FetchFromWebScrapingAsync(),
+                        "twelvedata" => await FetchFromTwelveDataAsync(),
+                        "alphavantage" => await FetchFromAlphaVantageAsync(),
+                        _ => await FetchFromAlphaVantageAsync()
+                    };
 
-            MarketPriceResponseDto? result = provider.ToLower() switch
-            {
-                "webscraping" => await FetchFromWebScrapingAsync(),
-                "twelvedata" => await FetchFromTwelveDataAsync(),
-                "alphavantage" => await FetchFromAlphaVantageAsync(),
-                _ => await FetchFromAlphaVantageAsync()
-            };
+                    if (result != null)
+                    {
+                        result.IsFromCache = false;
+                        _logger.LogInformation("Market prices fetched successfully");
+                    }
 
-            if (result != null)
-            {
-                await _redisService.SetAsync(CACHE_KEY, result, TimeSpan.FromMinutes(CACHE_MINUTES));
-                result.IsFromCache = false;
-                _logger.LogInformation("Market prices cached successfully");
-            }
-
-            return result;
+                    return result;
+                },
+                TimeSpan.FromMinutes(CACHE_MINUTES)
+            );
         }
         catch (Exception ex)
         {
@@ -942,7 +939,7 @@ public class MarketPriceService
     /// </summary>
     public async Task ClearCacheAsync()
     {
-        await _redisService.DeleteAsync(CACHE_KEY);
+        await RedisService.DeleteAsync(CACHE_KEY);
         _logger.LogInformation("Market price cache cleared");
     }
 }

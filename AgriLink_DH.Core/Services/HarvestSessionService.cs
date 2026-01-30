@@ -5,14 +5,13 @@ using AgriLink_DH.Share.DTOs.HarvestSession;
 
 namespace AgriLink_DH.Core.Services;
 
-public class HarvestSessionService
+public class HarvestSessionService : BaseCachedService
 {
     private readonly IHarvestSessionRepository _harvestSessionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
-    private readonly RedisService _redisService;
     private readonly IUnitOfWork _unitOfWork;
 
-    private const string REDIS_KEY_PREFIX = "harvest_sessions:user:";
+    private const string CACHE_KEY_USER_PREFIX = "harvest_sessions:user:";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30); // Cache 30 phút
 
     public HarvestSessionService(
@@ -20,10 +19,10 @@ public class HarvestSessionService
         ICropSeasonRepository cropSeasonRepository,
         RedisService redisService,
         IUnitOfWork unitOfWork)
+        : base(redisService)
     {
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;
-        _redisService = redisService;
         _unitOfWork = unitOfWork;
     }
 
@@ -38,23 +37,17 @@ public class HarvestSessionService
     /// </summary>
     public async Task<IEnumerable<HarvestSessionDto>> GetByUserIdAsync(Guid userId)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{userId}";
+        var cacheKey = $"{CACHE_KEY_USER_PREFIX}{userId}";
 
-        // Try get from cache first
-        var cached = await _redisService.GetAsync<List<HarvestSessionDto>>(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
-
-        // Cache miss - get from DB
-        var sessions = await _harvestSessionRepository.GetByUserIdAsync(userId);
-        var dtos = sessions.Select(MapToDto).ToList();
-
-        // Store in cache
-        await _redisService.SetAsync(cacheKey, dtos, CacheDuration);
-
-        return dtos;
+        return await GetOrSetCacheListAsync(
+            cacheKey,
+            async () =>
+            {
+                var sessions = await _harvestSessionRepository.GetByUserIdAsync(userId);
+                return sessions.Select(MapToDto);
+            },
+            CacheDuration
+        );
     }
 
     public async Task<HarvestSessionDto?> GetByIdAsync(Guid id)
@@ -205,8 +198,8 @@ public class HarvestSessionService
     /// </summary>
     private async Task InvalidateUserCacheAsync(Guid userId)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{userId}";
-        await _redisService.DeleteAsync(cacheKey);
+        var cacheKey = $"{CACHE_KEY_USER_PREFIX}{userId}";
+        await InvalidateCacheAsync(cacheKey);
     }
 
     private static HarvestSessionDto MapToDto(HarvestSession session)

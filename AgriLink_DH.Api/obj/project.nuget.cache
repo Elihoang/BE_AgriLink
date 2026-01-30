@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sjH9UO+PcIs=",
+  "dgSpecHash": "UtRrcdjlou4=",
   "success": true,
-  "projectFilePath": "C:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Api\\AgriLink_DH.Api.csproj",
+  "projectFilePath": "c:\\HocTap\\CaNhan\\AgriLink_DH\\AgriLink_DH.Api\\AgriLink_DH.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\duyho\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\duyho\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

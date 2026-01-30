@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AgriLink_DH.Core.Services;
 
-public class WeatherService
+public class WeatherService : BaseCachedService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
@@ -21,17 +21,17 @@ public class WeatherService
         ILogger<WeatherService> logger,
         IFarmRepository farmRepository,
         RedisService redisService)
+        : base(redisService)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
         _farmRepository = farmRepository;
-        _redisService = redisService;
         _apiKey = _configuration["OpenWeather:ApiKey"] ?? throw new Exception("OpenWeather API Key not configured");
     }
 
-    private readonly RedisService _redisService;
-    private const string REDIS_KEY_PREFIX = "weather:farm:";
+    private const string CACHE_KEY_FARM_CURRENT = "weather:farm:{0}:current";
+    private const string CACHE_KEY_FARM_FORECAST = "weather:farm:{0}:forecast";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
 
     // --- OLD METHOD RESTORED for Farm Detail ---
@@ -40,30 +40,30 @@ public class WeatherService
     /// </summary>
     public async Task<WeatherForecastDto?> GetWeatherByFarmIdAsync(Guid farmId)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:current";
-        var cached = await _redisService.GetAsync<WeatherForecastDto>(cacheKey);
-        if (cached != null) return cached;
+        var cacheKey = string.Format(CACHE_KEY_FARM_CURRENT, farmId);
 
-        try
-        {
-            var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
-            if (latitude == 0 && longitude == 0) return null;
+        return await GetOrSetCacheAsync(
+            cacheKey,
+            async () =>
+            {
+                try
+                {
+                    var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
+                    if (latitude == 0 && longitude == 0) return null;
 
-            var weatherData = await GetCurrentWeatherRaw(latitude, longitude);
-            if (weatherData == null) return null;
+                    var weatherData = await GetCurrentWeatherRaw(latitude, longitude);
+                    if (weatherData == null) return null;
 
-            var result = MapToWeatherForecastDto(weatherData, farmName);
-            
-            if (result != null)
-                await _redisService.SetAsync(cacheKey, result, CacheDuration);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting simple weather for farm {FarmId}", farmId);
-            return null;
-        }
+                    return MapToWeatherForecastDto(weatherData, farmName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting simple weather for farm {FarmId}", farmId);
+                    return null;
+                }
+            },
+            CacheDuration
+        );
     }
 
     // --- NEW METHOD for Weather Forecast Page ---
@@ -72,110 +72,123 @@ public class WeatherService
     /// </summary>
     public async Task<WeatherForecastDetailDto?> GetForecastDetailAsync(Guid farmId)
     {
-        var cacheKey = $"{REDIS_KEY_PREFIX}{farmId}:forecast";
-        var cached = await _redisService.GetAsync<WeatherForecastDetailDto>(cacheKey);
-        if (cached != null) return cached;
+        var cacheKey = string.Format(CACHE_KEY_FARM_FORECAST, farmId);
 
-        try
+        return await GetOrSetCacheAsync(
+            cacheKey,
+            async () =>
+            {
+                try
+                {
+                    var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
+                    if (latitude == 0 && longitude == 0) return null;
+
+                    // 1. Get Current Weather
+                    var currentTask = GetCurrentWeatherRaw(latitude, longitude);
+
+                    // 2. Get Forecast (5 days / 3 hours)
+                    var forecastTask = GetForecastRaw(latitude, longitude);
+
+                    await Task.WhenAll(currentTask, forecastTask);
+
+                    var currentData = await currentTask;
+                    var forecastData = await forecastTask;
+
+                    if (currentData == null) return null;
+
+                    // 3. Map Data
+                    var result = new WeatherForecastDetailDto
+                    {
+                        Current = MapToCurrentDto(currentData),
+                        Hourly = new List<HourlyForecastDto>(),
+                        Daily = new List<DailyForecastDto>()
+                    };
+
+                    if (forecastData != null && forecastData.List != null)
+                    {
+                         // ... logic remains same, just returning result
+                         return ProcessForecastData(result, forecastData);
+                    }
+                    else
+                    {
+                        result.AgriculturalAdvice = GenerateSimpleAdvice(result);
+                        return result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error getting forecast detail for farm {FarmId}", farmId);
+                    return null;
+                }
+            },
+            CacheDuration
+        );
+    }
+
+    private WeatherForecastDetailDto ProcessForecastData(WeatherForecastDetailDto result, OpenWeatherForecastResponseDto forecastData)
+    {
+        // Process Hourly (Take first 12 items ~ 36h)
+        result.Hourly = forecastData.List.Take(12).Select(item => new HourlyForecastDto
         {
-            var (latitude, longitude, farmName) = await GetFarmCoordinates(farmId);
-            if (latitude == 0 && longitude == 0) return null;
+            Time = DateTimeOffset.FromUnixTimeSeconds(item.Dt).ToLocalTime().DateTime,
+            Temp = item.Main?.Temp ?? 0,
+            RainAmount = item.Rain?.ThreeHours ?? 0, // 3h volume
+            RainProbability = (int)((item.Rain?.ThreeHours ?? 0) > 0 ? 80 : 0),
+            Condition = item.Weather?.FirstOrDefault()?.Description ?? "",
+            Icon = item.Weather?.FirstOrDefault()?.Icon ?? "",
+            IsDay = item.Sys?.Pod == "d"
+        }).ToList();
 
-            // 1. Get Current Weather
-            var currentTask = GetCurrentWeatherRaw(latitude, longitude);
+        // Process Daily (Group by day)
+        var dailyGroups = forecastData.List
+            .GroupBy(x => DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Date)
+            .OrderBy(g => g.Key)
+            .Take(7);
+
+        foreach (var group in dailyGroups)
+        {
+            decimal minTemp = group.Min(x => x.Main?.TempMin ?? 0);
+            decimal maxTemp = group.Max(x => x.Main?.TempMax ?? 0);
+            decimal totalRain = group.Sum(x => x.Rain?.ThreeHours ?? 0);
             
-            // 2. Get Forecast (5 days / 3 hours)
-            var forecastTask = GetForecastRaw(latitude, longitude);
+            var noonItem = group.OrderBy(x => Math.Abs((DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Hour - 12))).FirstOrDefault();
 
-            await Task.WhenAll(currentTask, forecastTask);
-
-            var currentData = await currentTask;
-            var forecastData = await forecastTask;
-
-            if (currentData == null) return null;
-
-            // 3. Map Data
-            var result = new WeatherForecastDetailDto
+            result.Daily.Add(new DailyForecastDto
             {
-                Current = MapToCurrentDto(currentData),
-                Hourly = new List<HourlyForecastDto>(),
-                Daily = new List<DailyForecastDto>()
-            };
-
-            if (forecastData != null && forecastData.List != null)
-            {
-                // Process Hourly (Take first 12 items ~ 36h)
-                result.Hourly = forecastData.List.Take(12).Select(item => new HourlyForecastDto
-                {
-                    Time = DateTimeOffset.FromUnixTimeSeconds(item.Dt).ToLocalTime().DateTime,
-                    Temp = item.Main?.Temp ?? 0,
-                    RainAmount = item.Rain?.ThreeHours ?? 0, // 3h volume
-                    RainProbability = (int)((item.Rain?.ThreeHours ?? 0) > 0 ? 80 : 0),
-                    Condition = item.Weather?.FirstOrDefault()?.Description ?? "",
-                    Icon = item.Weather?.FirstOrDefault()?.Icon ?? "",
-                    IsDay = item.Sys?.Pod == "d"
-                }).ToList();
-
-                // Process Daily (Group by day)
-                var dailyGroups = forecastData.List
-                    .GroupBy(x => DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Date)
-                    .OrderBy(g => g.Key)
-                    .Take(7);
-
-                foreach (var group in dailyGroups)
-                {
-                    decimal minTemp = group.Min(x => x.Main?.TempMin ?? 0);
-                    decimal maxTemp = group.Max(x => x.Main?.TempMax ?? 0);
-                    decimal totalRain = group.Sum(x => x.Rain?.ThreeHours ?? 0);
-                    
-                    var noonItem = group.OrderBy(x => Math.Abs((DateTimeOffset.FromUnixTimeSeconds(x.Dt).ToLocalTime().Hour - 12))).FirstOrDefault();
-
-                    result.Daily.Add(new DailyForecastDto
-                    {
-                        Date = group.Key,
-                        DayName = GetDayName(group.Key),
-                        TempMin = minTemp,
-                        TempMax = maxTemp,
-                        RainAmount = totalRain,
-                        RainProbability = totalRain > 0 ? 80 : 10,
-                        Condition = noonItem?.Weather?.FirstOrDefault()?.Main ?? "",
-                        Icon = noonItem?.Weather?.FirstOrDefault()?.Icon ?? ""
-                    });
-                }
-                
-                // Extrapolate to ensure 7 days (API only returns 5 days)
-                while (result.Daily.Count < 7 && result.Daily.Count > 0)
-                {
-                    var lastDay = result.Daily.Last();
-                    var nextDate = lastDay.Date.AddDays(1);
-                    
-                    // Simple variation for mock data
-                    result.Daily.Add(new DailyForecastDto
-                    {
-                        Date = nextDate,
-                        DayName = GetDayName(nextDate),
-                        TempMin = lastDay.TempMin,
-                        TempMax = lastDay.TempMax,
-                        RainAmount = 0,
-                        RainProbability = 0,
-                        Condition = lastDay.Condition,
-                        Icon = lastDay.Icon
-                    });
-                }
-            }
-
-            // 4. Generate Advice
-            result.AgriculturalAdvice = GenerateSimpleAdvice(result);
-
-            await _redisService.SetAsync(cacheKey, result, CacheDuration);
-
-            return result;
+                Date = group.Key,
+                DayName = GetDayName(group.Key),
+                TempMin = minTemp,
+                TempMax = maxTemp,
+                RainAmount = totalRain,
+                RainProbability = totalRain > 0 ? 80 : 10,
+                Condition = noonItem?.Weather?.FirstOrDefault()?.Main ?? "",
+                Icon = noonItem?.Weather?.FirstOrDefault()?.Icon ?? ""
+            });
         }
-        catch (Exception ex)
+        
+        // Extrapolate to ensure 7 days (API only returns 5 days)
+        while (result.Daily.Count < 7 && result.Daily.Count > 0)
         {
-            _logger.LogError(ex, "Error getting forecast detail for farm {FarmId}", farmId);
-            return null;
+            var lastDay = result.Daily.Last();
+            var nextDate = lastDay.Date.AddDays(1);
+            
+            // Simple variation for mock data
+            result.Daily.Add(new DailyForecastDto
+            {
+                Date = nextDate,
+                DayName = GetDayName(nextDate),
+                TempMin = lastDay.TempMin,
+                TempMax = lastDay.TempMax,
+                RainAmount = 0,
+                RainProbability = 0,
+                Condition = lastDay.Condition,
+                Icon = lastDay.Icon
+            });
         }
+
+        // 4. Generate Advice
+        result.AgriculturalAdvice = GenerateSimpleAdvice(result);
+        return result;
     }
 
     /// <summary>
