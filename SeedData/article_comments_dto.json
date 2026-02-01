@@ -1,0 +1,27 @@
+[
+  {
+    "articleId": "30000000-0000-0000-0000-000000000001",
+    "parentCommentId": null,
+    "content": "Cảm ơn tác giả! Bài viết rất chi tiết và dễ hiểu. Tôi sẽ thử áp dụng kỹ thuật này cho vườn cà phê của mình 👍"
+  },
+  {
+    "articleId": "30000000-0000-0000-0000-000000000001",
+    "parentCommentId": "40000000-0000-0000-0000-000000000001",
+    "content": "Chúc bạn thành công! Nhớ tỉa đúng thời điểm nhé, tránh giai đoạn ra hoa"
+  },
+  {
+    "articleId": "30000000-0000-0000-0000-000000000001",
+    "parentCommentId": null,
+    "content": "Cho hỏi nếu cây đã 15 năm tuổi thì có nên tỉa cành không ạ? Hay nên thay mới?"
+  },
+  {
+    "articleId": "30000000-0000-0000-0000-000000000002",
+    "parentCommentId": null,
+    "content": "Vườn tôi đang bị bệnh này rất nặng. Vừa rồi đã phun theo hướng dẫn trong bài và thấy có hiệu quả. Cảm ơn bác sĩ Mai!"
+  },
+  {
+    "articleId": "30000000-0000-0000-0000-000000000003",
+    "parentCommentId": null,
+    "content": "Giá mà cao thế này thì phải chăm sóc thật tốt để năng suất cao. Dự báo tháng 2 sao các bác?"
+  }
+]

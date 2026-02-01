@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Kỹ thuật canh tác",
+    "code": "TechnicalGuide",
+    "description": "Hướng dẫn kỹ thuật trồng trọt, chăm sóc, thu hoạch các loại cây trồng",
+    "icon": "🌱",
+    "color": "#10B981",
+    "displayOrder": 1,
+    "isActive": true
+  },
+  {
+    "name": "Phòng trừ sâu bệnh",
+    "code": "PestControl",
+    "description": "Cách nhận biết và phòng trừ sâu bệnh hại cây trồng",
+    "icon": "🐛",
+    "color": "#EF4444",
+    "displayOrder": 2,
+    "isActive": true
+  },
+  {
+    "name": "Giống cây trồng",
+    "code": "PlantVarieties",
+    "description": "Thông tin về các giống cây trồng, ưu nhược điểm từng giống",
+    "icon": "🌿",
+    "color": "#8B5CF6",
+    "displayOrder": 3,
+    "isActive": true
+  },
+  {
+    "name": "Thị trường & Giá cả",
+    "code": "Market",
+    "description": "Tin tức thị trường, xu hướng giá, dự báo cung cầu",
+    "icon": "📈",
+    "color": "#F59E0B",
+    "displayOrder": 4,
+    "isActive": true
+  },
+  {
+    "name": "Công nghệ & Đổi mới",
+    "code": "Technology",
+    "description": "Ứng dụng công nghệ, thiết bị hiện đại trong nông nghiệp",
+    "icon": "💡",
+    "color": "#3B82F6",
+    "displayOrder": 5,
+    "isActive": true
+  },
+  {
+    "name": "Chính sách & Pháp luật",
+    "code": "Policy",
+    "description": "Các chính sách hỗ trợ nông dân, quy định pháp luật liên quan",
+    "icon": "📋",
+    "color": "#6366F1",
+    "displayOrder": 6,
+    "isActive": true
+  },
+  {
+    "name": "Câu chuyện thành công",
+    "code": "SuccessStory",
+    "description": "Chia sẻ kinh nghiệm từ các nông dân thành công",
+    "icon": "⭐",
+    "color": "#EC4899",
+    "displayOrder": 7,
+    "isActive": true
+  }
+]

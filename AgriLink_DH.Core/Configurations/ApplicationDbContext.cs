@@ -40,6 +40,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<MarketPriceHistory> MarketPriceHistory { get; set; } // Lịch sử giá thị trường
     #endregion
 
+    #region DbSets - Nhóm Article System (Tri thức nông nghiệp)
+    public DbSet<Article> Articles { get; set; }
+    public DbSet<ArticleCategory> ArticleCategories { get; set; }
+    public DbSet<ArticleAuthor> ArticleAuthors { get; set; }
+    public DbSet<ArticleComment> ArticleComments { get; set; }
+    public DbSet<ArticleLike> ArticleLikes { get; set; }
+    #endregion
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -289,5 +297,117 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict); // Không cho xóa Product nếu có giá
         
         // Seed data sẽ được nhập thủ công qua API /admin/update
+
+        // ========================================
+        // ARTICLE SYSTEM INDEXES & CONFIGURATIONS
+        // ========================================
+
+        // Article: UNIQUE slug (SEO-friendly URLs)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => a.Slug)
+            .IsUnique();
+
+        // Article: Index on category_id (filter by category)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => a.CategoryId);
+
+        // Article: Index on author_id (get articles by author)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => a.AuthorId);
+
+        // Article: Index on status (filter published/draft)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => a.Status);
+
+        // Article: Index on is_featured (get featured articles)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => a.IsFeatured);
+
+        // Article: Composite index on status + published_at (get latest published articles)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => new { a.Status, a.PublishedAt });
+
+        // Article: Composite index on category_id + status (filter articles by category and status)
+        modelBuilder.Entity<Article>()
+            .HasIndex(a => new { a.CategoryId, a.Status });
+
+        // Article: Enum to string conversion
+        modelBuilder.Entity<Article>()
+            .Property(a => a.Status)
+            .HasConversion<string>();
+
+        // ArticleCategory: Index on code (unique type)
+        modelBuilder.Entity<ArticleCategory>()
+            .HasIndex(ac => ac.Code)
+            .IsUnique();
+
+        // ArticleCategory: Index on is_active
+        modelBuilder.Entity<ArticleCategory>()
+            .HasIndex(ac => ac.IsActive);
+
+        // ArticleCategory: Index on display_order (sorting)
+        modelBuilder.Entity<ArticleCategory>()
+            .HasIndex(ac => ac.DisplayOrder);
+
+        // ArticleCategory: Enum to string conversion
+        modelBuilder.Entity<ArticleCategory>()
+            .Property(ac => ac.Code)
+            .HasConversion<string>();
+
+        // ArticleAuthor: Index on is_verified
+        modelBuilder.Entity<ArticleAuthor>()
+            .HasIndex(aa => aa.IsVerified);
+
+        // ArticleAuthor: Index on is_active
+        modelBuilder.Entity<ArticleAuthor>()
+            .HasIndex(aa => aa.IsActive);
+
+        // ArticleComment: Index on article_id (get comments by article)
+        modelBuilder.Entity<ArticleComment>()
+            .HasIndex(ac => ac.ArticleId);
+
+        // ArticleComment: Index on user_id (get comments by user)
+        modelBuilder.Entity<ArticleComment>()
+            .HasIndex(ac => ac.UserId);
+
+        // ArticleComment: Index on parent_comment_id (threaded comments)
+        modelBuilder.Entity<ArticleComment>()
+            .HasIndex(ac => ac.ParentCommentId);
+
+        // ArticleComment: Index on status (filter by status)
+        modelBuilder.Entity<ArticleComment>()
+            .HasIndex(ac => ac.Status);
+
+        // ArticleComment: Composite index on article_id + created_at (sort comments)
+        modelBuilder.Entity<ArticleComment>()
+            .HasIndex(ac => new { ac.ArticleId, ac.CreatedAt });
+
+        // ArticleComment: Enum to string conversion
+        modelBuilder.Entity<ArticleComment>()
+            .Property(ac => ac.Status)
+            .HasConversion<string>();
+
+        // ArticleLike: UNIQUE constraint on article_id + user_id (user can only like once)
+        modelBuilder.Entity<ArticleLike>()
+            .HasIndex(al => new { al.ArticleId, al.UserId })
+            .IsUnique();
+
+        // ArticleLike: Index on user_id (get likes by user)
+        modelBuilder.Entity<ArticleLike>()
+            .HasIndex(al => al.UserId);
+
+        // Article-Comment: Cascade delete
+        modelBuilder.Entity<ArticleComment>()
+            .HasOne(ac => ac.Article)
+            .WithMany(a => a.Comments)
+            .HasForeignKey(ac => ac.ArticleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Article-Like: Cascade delete
+        modelBuilder.Entity<ArticleLike>()
+            .HasOne(al => al.Article)
+            .WithMany(a => a.Likes)
+            .HasForeignKey(al => al.ArticleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

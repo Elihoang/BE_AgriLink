@@ -1,0 +1,47 @@
+[
+  {
+    "categoryId": "20000000-0000-0000-0000-000000000001",
+    "authorId": "10000000-0000-0000-0000-000000000001",
+    "title": "Kỹ thuật tỉa cành cà phê Robusta mùa khô 2025",
+    "description": "Hướng dẫn chi tiết cách tỉa cành cà phê Robusta đúng kỹ thuật để tăng năng suất và chất lượng quả trong mùa khô 2025",
+    "content": "# Tại sao cần tỉa cành cà phê?\n\nViệc tỉa cành cà phê đúng thời điểm và kỹ thuật giúp:\n- Tăng năng suất 20-30%\n- Cải thiện chất lượng hạt\n- Giảm bệnh nấm do thoáng khí\n\n## Thời điểm tỉa cành\n\nTỉa cành vào **sau thu hoạch** (tháng 3-4) hoặc **trước mùa mưa** (tháng 5-6).\n\n## Các bước thực hiện\n\n1. **Chuẩn bị dụng cụ**: Kéo cắt cành sắc, đã khử trùng\n2. **Cắt bỏ cành khô, bệnh**: Loại bỏ các cành yếu, sâu bệnh\n3. **Cắt tỉa tán**: Giữ chiều cao 1.8-2m, đảm bảo ánh sáng\n4. **Xử lý vết cắt**: Bôi thuốc sát trùng\n\n## Lưu ý quan trọng\n\n⚠️ **Không tỉa trong giai đoạn ra hoa** (tháng 11-12)\n⚠️ **Tránh tỉa quá mạnh** (không quá 30% tán lá)\n\n---\n\n📞 Liên hệ chuyên gia: 090.512.3456",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800",
+    "tags": ["Cà phê", "Kỹ thuật canh tác", "Tỉa cành", "Robusta"],
+    "hashtags": ["#CaPheRobusta", "#KyThuatCanhTac", "#MuaKho2025", "#TiaCanh"],
+    "readTime": 8,
+    "audioUrl": null,
+    "audioDuration": null,
+    "videoUrl": "https://www.youtube.com/watch?v=example1",
+    "isFeatured": true,
+    "allowComments": true,
+    "publishImmediately": true
+  },
+  {
+    "categoryId": "20000000-0000-0000-0000-000000000002",
+    "authorId": "10000000-0000-0000-0000-000000000002",
+    "title": "Nhận biết và phòng trừ bệnh rỉ sắt trên cà phê",
+    "description": "Bệnh rỉ sắt là một trong những bệnh nguy hiểm nhất trên cà phê. Bài viết hướng dẫn cách nhận biết sớm và các biện pháp phòng trừ hiệu quả",
+    "content": "# Triệu chứng bệnh rỉ sắt\n\n## Giai đoạn đầu\n- Xuất hiện các **đốm vàng nhỏ** ở mặt dưới lá\n- Đường kính 2-3mm\n\n## Giai đoạn phát triển\n- Đốm to dần, chuyển sang màu **cam đỏ**\n- Bào tử phát tán dưới dạng bột màu rỉ sắt\n- Lá vàng rụng sớm\n\n# Biện pháp phòng trừ\n\n## 1. Biện pháp canh tác\n- Tỉa cành thông thoáng\n- Bón phân cân đối NPK\n- Tưới nước hợp lý\n\n## 2. Biện pháp hóa học\n- Phun **Copper Oxychloride 85%** (2-3g/lít nước)\n- Phun **Mancozeb 80%** (2g/lít nước)\n- Chu kỳ: 15-20 ngày, tùy mức độ bệnh\n\n## 3. Thuốc sinh học\n- **Trichoderma** phòng trừ nấm bệnh\n- **Bacillus subtilis** tăng sức đề kháng\n\n⚠️ **Lưu ý**: Ngừng phun thuốc trước thu hoạch 21 ngày!",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+    "tags": ["Bệnh rỉ sắt", "Cà phê", "Phòng trừ", "Bảo vệ thực vật"],
+    "hashtags": ["#BenhRiSat", "#PhongTruSauBenh", "#CaPhe"],
+    "readTime": 12,
+    "isFeatured": true,
+    "allowComments": true,
+    "publishImmediately": true
+  },
+  {
+    "categoryId": "20000000-0000-0000-0000-000000000004",
+    "authorId": "10000000-0000-0000-0000-000000000004",
+    "title": "Giá cà phê nhân tháng 1/2025: Dự báo tăng mạnh do nguồn cung thấp",
+    "description": "Phân tích xu hướng giá cà phê nhân tháng 1/2025 và dự báo thị trường trong quý I. Nguồn cung toàn cầu giảm, giá dự kiến tăng cao",
+    "content": "# Tình hình thị trường cà phê tháng 1/2025\n\n## Giá trong nước\n\n- **Robusta**: 120.000 - 125.000 VNĐ/kg ↗️\n- **Arabica**: 180.000 - 190.000 VNĐ/kg ↗️\n\n## Nguyên nhân tăng giá\n\n1. **Nguồn cung giảm**:\n   - Brazil hạn hán, năng suất giảm 15%\n   - Vietnam thu hoạch chậm do thời tiết\n\n2. **Nhu cầu tăng**:\n   - Trung Quốc tăng nhập khẩu\n   - Thị trường châu Âu phục hồi\n\n## Dự báo quý I/2025\n\n📈 Giá dự kiến **tiếp tục tăng 5-10%**\n\n💡 **Khuyến nghị nông dân**: Chăm sóc tốt để tăng năng suất, có thể chờ bán khi giá tốt hơn.",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800",
+    "tags": ["Thị trường cà phê", "Giá cà phê", "Dự báo", "Tháng 1/2025"],
+    "hashtags": ["#GiaCaPhe", "#ThiTruong", "#DuBao2025"],
+    "readTime": 6,
+    "isFeatured": false,
+    "allowComments": true,
+    "publishImmediately": true
+  }
+]

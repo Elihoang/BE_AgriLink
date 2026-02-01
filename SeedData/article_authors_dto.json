@@ -1,0 +1,61 @@
+[
+  {
+    "name": "ThS. Nguyễn Văn Nam",
+    "title": "Thạc sĩ",
+    "organization": "Viện Khoa học Kỹ thuật Nông Lâm nghiệp Tây Nguyên",
+    "email": "nv.nam@vienkhoahoc.vn",
+    "phone": "0905123456",
+    "avatarUrl": "https://i.pravatar.cc/150?img=12",
+    "bio": "Chuyên gia về cà phê Robusta với 15 năm kinh nghiệm nghiên cứu và thực hành tại Tây Nguyên. Tác giả của hơn 30 công trình khoa học về kỹ thuật canh tác cà phê bền vững.",
+    "isVerified": true,
+    "specialties": ["Cà phê Robusta", "Canh tác bền vững", "Phòng trừ sâu bệnh"],
+    "socialLinks": {
+      "facebook": "https://facebook.com/chuyengiacacphe",
+      "linkedin": "https://linkedin.com/in/nvnam"
+    },
+    "isActive": true
+  },
+  {
+    "name": "TS. Lê Thị Mai",
+    "title": "Tiến sĩ",
+    "organization": "Trường Đại học Nông Lâm TP.HCM",
+    "email": "ltmai@nlu.edu.vn",
+    "phone": "0912345678",
+    "avatarUrl": "https://i.pravatar.cc/150?img=45",
+    "bio": "Tiến sĩ chuyên ngành Bảo vệ thực vật, có nhiều nghiên cứu về phòng trừ dịch hại tổng hợp IPM cho cây trồng nhiệt đới.",
+    "isVerified": true,
+    "specialties": ["Bảo vệ thực vật", "IPM", "Thuốc sinh học"],
+    "socialLinks": {
+      "linkedin": "https://linkedin.com/in/ltmai"
+    },
+    "isActive": true
+  },
+  {
+    "name": "Kỹ sư. Trần Minh Tuấn",
+    "title": "Kỹ sư",
+    "organization": "Công ty CP Tiến phát Coffee",
+    "email": "tm.tuan@tienphat.vn",
+    "phone": "0987654321",
+    "avatarUrl": "https://i.pravatar.cc/150?img=33",
+    "bio": "Chuyên gia ứng dụng công nghệ trong nông nghiệp. Tư vấn cho nhiều hợp tác xã và doanh nghiệp về nông nghiệp số.",
+    "isVerified": false,
+    "specialties": ["Nông nghiệp số", "Công nghệ sau thu hoạch", "Quản lý trang trại"],
+    "socialLinks": {
+      "facebook": "https://facebook.com/nongnghiepso"
+    },
+    "isActive": true
+  },
+  {
+    "name": "Biên tập viên AgriLink",
+    "title": "Biên tập viên",
+    "organization": "AgriLink Platform",
+    "email": "editor@agrilink.vn",
+    "phone": null,
+    "avatarUrl": "https://i.pravatar.cc/150?img=68",
+    "bio": "Đội ngũ biên tập chuyên nghiệp, tổng hợp và biên soạn các bài viết hữu ích cho nông dân.",
+    "isVerified": true,
+    "specialties": ["Tin tức nông nghiệp", "Thị trường"],
+    "socialLinks": null,
+    "isActive": true
+  }
+]
