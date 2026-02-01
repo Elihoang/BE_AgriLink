@@ -36,6 +36,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlantPositionRepository, Core.Repositories.PlantPositionRepository>();
         services.AddScoped<IMaterialRepository, Core.Repositories.MaterialRepository>();
         
+        // Article System Repositories
+        services.AddScoped<IArticleRepository, Core.Repositories.ArticleRepository>();
+        services.AddScoped<IArticleCategoryRepository, Core.Repositories.ArticleCategoryRepository>();
+        services.AddScoped<IArticleAuthorRepository, Core.Repositories.ArticleAuthorRepository>();
+        services.AddScoped<IArticleCommentRepository, Core.Repositories.ArticleCommentRepository>();
+        services.AddScoped<IArticleLikeRepository, Core.Repositories.ArticleLikeRepository>();
+        
         return services;
     }
 
@@ -69,6 +76,13 @@ public static class ServiceCollectionExtensions
         
         // Market Price Service - Quản lý giá nông sản (Database)
         services.AddScoped<MarketPriceDbService>();
+        
+        // Article System Services
+        services.AddScoped<ArticleService>();
+        services.AddScoped<ArticleCategoryService>();
+        services.AddScoped<ArticleAuthorService>();
+        services.AddScoped<ArticleCommentService>();
+        services.AddScoped<ArticleLikeService>();
         
         return services;
     }
