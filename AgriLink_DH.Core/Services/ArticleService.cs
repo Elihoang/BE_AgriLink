@@ -16,6 +16,8 @@ public class ArticleService : BaseCachedService
     private readonly IArticleRepository _articleRepository;
     private readonly IArticleCategoryRepository _categoryRepository;
     private readonly IArticleAuthorRepository _authorRepository;
+    private readonly IArticleCommentRepository _commentRepository;
+    private readonly IArticleLikeRepository _likeRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     // Cache keys & expiration
@@ -30,14 +32,67 @@ public class ArticleService : BaseCachedService
         IArticleRepository articleRepository,
         IArticleCategoryRepository categoryRepository,
         IArticleAuthorRepository authorRepository,
+        IArticleCommentRepository commentRepository,
+        IArticleLikeRepository likeRepository,
         IUnitOfWork unitOfWork,
         RedisService redisService)
-        : base(redisService) // Pass to base class
+        : base(redisService)
     {
         _articleRepository = articleRepository;
         _categoryRepository = categoryRepository;
         _authorRepository = authorRepository;
+        _commentRepository = commentRepository;
+        _likeRepository = likeRepository;
         _unitOfWork = unitOfWork;
+    }
+
+    /// <summary>
+    /// Lấy chi tiết bài viết đầy đủ (Article + Comments + Like info)
+    /// </summary>
+    public async Task<ArticleFullDetailDto?> GetFullDetailBySlugAsync(string slug, Guid? currentUserId, CancellationToken cancellationToken = default)
+    {
+        // 1. Get Article (Try cache first if implemented in GetBySlugAsync, here direct repo for custom aggregation)
+        // Note: Caching aggregated data containing comments might be tricky if comments update often. 
+        // For now, let's cache the 'Article' part via existing method if possible, or just raw fetch.
+        
+        var article = await _articleRepository.GetBySlugAsync(slug, cancellationToken);
+        if (article == null) return null;
+
+        // 2. Get Comments
+        var comments = await _commentRepository.GetByArticleIdAsync(article.Id, cancellationToken);
+        
+        // 3. Get Like Count
+        var likeCount = await _likeRepository.GetLikeCountByArticleIdAsync(article.Id, cancellationToken);
+
+        // 4. Check User Liked (if user logged in)
+        var userHasLiked = false;
+        if (currentUserId.HasValue && currentUserId.Value != Guid.Empty)
+        {
+            userHasLiked = await _likeRepository.HasUserLikedArticleAsync(article.Id, currentUserId.Value, cancellationToken);
+        }
+
+        // 5. Aggregate
+        return new ArticleFullDetailDto
+        {
+            Article = MapToDto(article),
+            Comments = comments.Select(c => new AgriLink_DH.Share.DTOs.ArticleComment.ArticleCommentDto 
+            {
+                Id = c.Id,
+                Content = c.Content,
+                ArticleId = c.ArticleId,
+                UserId = c.UserId,
+                UserName = c.User?.FullName ?? "Unknown",
+                UserAvatar = c.User?.ImageUrl,
+                ParentCommentId = c.ParentCommentId,
+                LikeCount = c.LikeCount,
+                Status = c.Status,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt
+            }).ToList(),
+            LikeCount = likeCount,
+            CommentCount = comments.Count(),
+            UserHasLiked = userHasLiked
+        };
     }
 
     public async Task<IEnumerable<ArticleDto>> GetAllArticlesAsync(CancellationToken cancellationToken = default)

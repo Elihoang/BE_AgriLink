@@ -29,24 +29,103 @@ public class ArticlesController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy tất cả bài viết (Admin)
+    /// Lấy tất cả bài viết với pagination và filters
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<ArticleDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<IEnumerable<ArticleDto>>>> GetAllArticles()
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<object>>> GetAllArticles(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? status = null,
+        [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? authorId = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? sortBy = "publishedAt",
+        [FromQuery] bool? isFeatured = null)
     {
         try
         {
-            var articles = await _articleService.GetAllArticlesAsync();
-            return Ok(ApiResponse<IEnumerable<ArticleDto>>.SuccessResponse(
-                articles,
+            // Parse status if provided
+            ArticleStatus? articleStatus = null;
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<ArticleStatus>(status, true, out var parsedStatus))
+            {
+                articleStatus = parsedStatus;
+            }
+
+            // Get filtered articles
+            IEnumerable<ArticleDto> articles;
+            
+            if (articleStatus.HasValue)
+            {
+                articles = await _articleService.GetArticlesByStatusAsync(articleStatus.Value);
+            }
+            else
+            {
+                articles = await _articleService.GetAllArticlesAsync();
+            }
+
+            // Apply filters
+            var filteredArticles = articles.AsQueryable();
+
+            if (categoryId.HasValue)
+            {
+                filteredArticles = filteredArticles.Where(a => a.CategoryId == categoryId.Value);
+            }
+
+            if (authorId.HasValue)
+            {
+                filteredArticles = filteredArticles.Where(a => a.AuthorId == authorId.Value);
+            }
+
+            if (isFeatured.HasValue)
+            {
+                filteredArticles = filteredArticles.Where(a => a.IsFeatured == isFeatured.Value);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var searchLower = search.ToLower();
+                filteredArticles = filteredArticles.Where(a => 
+                    (a.Title != null && a.Title.ToLower().Contains(searchLower)) ||
+                    (a.Description != null && a.Description.ToLower().Contains(searchLower))
+                );
+            }
+
+            // Apply sorting
+            filteredArticles = sortBy?.ToLower() switch
+            {
+                "viewcount" => filteredArticles.OrderByDescending(a => a.ViewCount),
+                "likecount" => filteredArticles.OrderByDescending(a => a.LikeCount),
+                "commentcount" => filteredArticles.OrderByDescending(a => a.CommentCount),
+                "createdat" => filteredArticles.OrderByDescending(a => a.CreatedAt),
+                _ => filteredArticles.OrderByDescending(a => a.PublishedAt) // Default: publishedAt
+            };
+
+            // Pagination
+            var totalCount = filteredArticles.Count();
+            var items = filteredArticles
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var result = new
+            {
+                items,
+                totalCount,
+                page,
+                pageSize,
+                totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                result,
                 "Lấy danh sách bài viết thành công"
             ));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Lỗi khi lấy danh sách bài viết");
-            return StatusCode(500, ApiResponse<IEnumerable<ArticleDto>>.ErrorResponse(
+            return StatusCode(500, ApiResponse<object>.ErrorResponse(
                 "Đã xảy ra lỗi khi lấy danh sách bài viết",
                 500
             ));
@@ -394,4 +473,183 @@ public class ArticlesController : ControllerBase
             ));
         }
     }
+
+    /// <summary>
+    /// Lấy chi tiết bài viết đầy đủ (Article + Comments + Likes)
+    /// </summary>
+    [HttpGet("by-slug/{slug}/full-detail")]
+    [ProducesResponseType(typeof(ApiResponse<ArticleFullDetailDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<ArticleFullDetailDto>>> GetArticleFullDetail(string slug)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            Guid? currentUserId = userId == Guid.Empty ? null : userId;
+
+            var result = await _articleService.GetFullDetailBySlugAsync(slug, currentUserId);
+            
+            if (result == null)
+            {
+                return NotFound(ApiResponse<ArticleFullDetailDto>.NotFoundResponse($"Không tìm thấy bài viết: {slug}"));
+            }
+
+            return Ok(ApiResponse<ArticleFullDetailDto>.SuccessResponse(
+                result,
+                "Lấy chi tiết bài viết thành công"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy full detail bài viết: {Slug}", slug);
+            return StatusCode(500, ApiResponse<ArticleFullDetailDto>.ErrorResponse(
+                "Đã xảy ra lỗi khi lấy bài viết",
+                500
+            ));
+        }
+    }
+
+    // TODO: Implement these methods in ArticleService
+    /*
+    /// <summary>
+    /// Tăng view count
+    /// </summary>
+    [HttpPost("{id:guid}/view")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> IncrementView(Guid id)
+    {
+        try
+        {
+            await _articleService.IncrementViewCountAsync(id);
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Tăng lượt xem thành công"
+            ));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Không tìm thấy bài viết có ID: {Id}", id);
+            return NotFound(ApiResponse<bool>.NotFoundResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi tăng view count cho bài viết: {Id}", id);
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(
+                "Đã xảy ra lỗi khi tăng lượt xem",
+                500
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Like bài viết (yêu cầu đăng nhập)
+    /// </summary>
+    [HttpPost("{id:guid}/like")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> LikeArticle(Guid id)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(ApiResponse<bool>.ErrorResponse(
+                    "Bạn cần đăng nhập để thích bài viết",
+                    401
+                ));
+            }
+
+            await _articleService.LikeArticleAsync(id, userId);
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Thích bài viết thành công"
+            ));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Không tìm thấy bài viết có ID: {Id}", id);
+            return NotFound(ApiResponse<bool>.NotFoundResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi like bài viết: {Id}", id);
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(
+                "Đã xảy ra lỗi khi thích bài viết",
+                500
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Unlike bài viết (yêu cầu đăng nhập)
+    /// </summary>
+    [HttpDelete("{id:guid}/like")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> UnlikeArticle(Guid id)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(ApiResponse<bool>.ErrorResponse(
+                    "Bạn cần đăng nhập",
+                    401
+                ));
+            }
+
+            await _articleService.UnlikeArticleAsync(id, userId);
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Bỏ thích bài viết thành công"
+            ));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Không tìm thấy bài viết có ID: {Id}", id);
+            return NotFound(ApiResponse<bool>.NotFoundResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi unlike bài viết: {Id}", id);
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(
+                "Đã xảy ra lỗi khi bỏ thích bài viết",
+                500
+            ));
+        }
+    }
+
+    /// <summary>
+    /// Kiểm tra user đã like bài viết chưa
+    /// </summary>
+    [HttpGet("{id:guid}/liked")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> CheckUserLiked(Guid id)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty)
+            {
+                return Ok(ApiResponse<bool>.SuccessResponse(
+                    false,
+                    "Chưa đăng nhập"
+                ));
+            }
+
+            var hasLiked = await _articleService.HasUserLikedAsync(id, userId);
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                hasLiked,
+                hasLiked ? "Đã thích" : "Chưa thích"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi kiểm tra like status: {Id}", id);
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse(
+                "Đã xảy ra lỗi",
+                500
+            ));
+        }
+    }
+    */
 }
