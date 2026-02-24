@@ -9,8 +9,8 @@
     "tags": ["Cà phê", "Kỹ thuật canh tác", "Tỉa cành", "Robusta"],
     "hashtags": ["#CaPheRobusta", "#KyThuatCanhTac", "#MuaKho2025", "#TiaCanh"],
     "readTime": 8,
-    "audioUrl": null,
-    "audioDuration": null,
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "audioDuration": 480,
     "videoUrl": "https://www.youtube.com/watch?v=example1",
     "isFeatured": true,
     "allowComments": true,
@@ -26,6 +26,8 @@
     "tags": ["Bệnh rỉ sắt", "Cà phê", "Phòng trừ", "Bảo vệ thực vật"],
     "hashtags": ["#BenhRiSat", "#PhongTruSauBenh", "#CaPhe"],
     "readTime": 12,
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    "audioDuration": 600,
     "isFeatured": true,
     "allowComments": true,
     "publishImmediately": true
@@ -40,6 +42,8 @@
     "tags": ["Thị trường cà phê", "Giá cà phê", "Dự báo", "Tháng 1/2025"],
     "hashtags": ["#GiaCaPhe", "#ThiTruong", "#DuBao2025"],
     "readTime": 6,
+    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    "audioDuration": 360,
     "isFeatured": false,
     "allowComments": true,
     "publishImmediately": true

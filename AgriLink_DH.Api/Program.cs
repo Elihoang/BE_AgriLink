@@ -79,11 +79,39 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     )
 );
 
-// Add Redis (Aiven)
+// Add Redis (Aiven) - SSL với ConfigurationOptions để bypass Aiven self-signed cert
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var configuration = builder.Configuration.GetConnectionString("Redis");
-    return ConnectionMultiplexer.Connect(configuration!);
+    var connectionString = builder.Configuration.GetConnectionString("Redis")!;
+    var options = ConfigurationOptions.Parse(connectionString);
+
+    // Bắt buộc cho Aiven: bỏ qua SSL cert validation (Aiven dùng self-signed cert)
+    options.CertificateValidation += (sender, certificate, chain, sslPolicyErrors) => true;
+
+    // Tăng timeout cho cloud Redis (network latency cao hơn localhost)
+    options.ConnectTimeout = 10000;    // 10 giây để connect
+    options.SyncTimeout = 10000;       // 10 giây cho sync ops
+    options.AsyncTimeout = 10000;      // 10 giây cho async ops
+    options.ConnectRetry = 5;          // Retry 5 lần nếu kết nối thất bại
+    options.KeepAlive = 60;            // Giữ alive mỗi 60s
+    options.AbortOnConnectFail = false; // Không abort app nếu Redis down
+
+    options.ReconnectRetryPolicy = new LinearRetry(1000); // Retry mỗi 1s
+
+    Log.Information("[REDIS] Connecting to Aiven Redis: {Endpoint}", options.EndPoints.FirstOrDefault());
+
+    var multiplexer = ConnectionMultiplexer.Connect(options);
+
+    multiplexer.ConnectionFailed += (_, e) =>
+        Log.Error("[REDIS] Connection failed: {Endpoint} - {FailureType} - {Exception}",
+            e.EndPoint, e.FailureType, e.Exception?.Message);
+
+    multiplexer.ConnectionRestored += (_, e) =>
+        Log.Information("[REDIS] Connection restored: {Endpoint}", e.EndPoint);
+
+    Log.Information("[REDIS] Connected successfully: IsConnected={IsConnected}", multiplexer.IsConnected);
+
+    return multiplexer;
 });
 
 // Add JWT Authentication

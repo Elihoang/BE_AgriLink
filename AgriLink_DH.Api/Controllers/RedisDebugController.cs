@@ -28,15 +28,17 @@ public class RedisDebugController : ControllerBase
     /// 🔍 Xem tất cả keys trong Redis (pattern: *)
     /// </summary>
     [HttpGet("keys")]
-    public ActionResult<ApiResponse<List<string>>> GetAllKeys([FromQuery] string pattern = "*")
+    public async Task<ActionResult<ApiResponse<List<string>>>> GetAllKeys([FromQuery] string pattern = "*")
     {
         try
         {
             var server = _redis.GetServer(_redis.GetEndPoints().First());
-            var keys = server.Keys(pattern: pattern)
-                .Select(k => k.ToString())
-                .OrderBy(k => k)
-                .ToList();
+            var keys = new List<string>();
+            await foreach (var key in server.KeysAsync(pattern: pattern))
+            {
+                keys.Add(key.ToString());
+            }
+            keys.Sort();
 
             return Ok(ApiResponse<List<string>>.SuccessResponse(keys, $"Tìm thấy {keys.Count} keys"));
         }
@@ -142,12 +144,12 @@ public class RedisDebugController : ControllerBase
     /// 🔥 DANGER: Xóa TẤT CẢ keys (flush database)
     /// </summary>
     [HttpDelete("flush-all")]
-    public ActionResult<ApiResponse<string>> FlushAll()
+    public async Task<ActionResult<ApiResponse<string>>> FlushAll()
     {
         try
         {
             var server = _redis.GetServer(_redis.GetEndPoints().First());
-            server.FlushDatabase();
+            await server.FlushDatabaseAsync();
             return Ok(ApiResponse<string>.SuccessResponse("Database đã được flush!", "⚠️ Đã xóa TẤT CẢ cache"));
         }
         catch (Exception ex)
@@ -161,12 +163,12 @@ public class RedisDebugController : ControllerBase
     /// ℹ️ Redis Server Info
     /// </summary>
     [HttpGet("info")]
-    public ActionResult<ApiResponse<object>> GetServerInfo()
+    public async Task<ActionResult<ApiResponse<object>>> GetServerInfo()
     {
         try
         {
             var server = _redis.GetServer(_redis.GetEndPoints().First());
-            var info = server.Info("Server");
+            var info = await server.InfoAsync("Server");
             
             var result = new
             {
@@ -198,9 +200,11 @@ public class RedisDebugController : ControllerBase
             var db = _redis.GetDatabase();
             
             // Scan tất cả keys có pattern "refresh_token:*" (với underscore)
-            var refreshTokenKeys = server.Keys(pattern: "refresh_token:*")
-                .Select(k => k.ToString())
-                .ToList();
+            var refreshTokenKeys = new List<string>();
+            await foreach (var k in server.KeysAsync(pattern: "refresh_token:*"))
+            {
+                refreshTokenKeys.Add(k.ToString());
+            }
 
             var refreshTokens = new List<object>();
 
