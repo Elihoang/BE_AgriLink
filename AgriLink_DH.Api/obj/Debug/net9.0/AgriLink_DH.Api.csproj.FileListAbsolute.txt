@@ -328,3 +328,11 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.Debu
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Sinks.File.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Serilog.Enrichers.Thread.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\PuppeteerSharp.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\ClosedXML.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\ClosedXML.Parser.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\DocumentFormat.OpenXml.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\DocumentFormat.OpenXml.Framework.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\ExcelNumberFormat.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\RBush.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\SixLabors.Fonts.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.IO.Packaging.dll

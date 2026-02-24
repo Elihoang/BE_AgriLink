@@ -96,3 +96,7 @@ appsettings.Staging.json
 # Keep example files
 !appsettings.json
 !.env.example
+
+# Ignore appsettings
+appsettings.json
+appsettings.*.json
