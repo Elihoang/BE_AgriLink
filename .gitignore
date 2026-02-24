@@ -88,15 +88,9 @@ docker-compose.override.yml
 Logs/
 *.log
 
-# Sensitive configuration
-appsettings.Development.json
-appsettings.Production.json
-appsettings.Staging.json
-
-# Keep example files
-!appsettings.json
-!.env.example
-
-# Ignore appsettings
+# Sensitive configuration - ignore ALL appsettings files
 appsettings.json
 appsettings.*.json
+
+# Keep example env file
+!.env.example
