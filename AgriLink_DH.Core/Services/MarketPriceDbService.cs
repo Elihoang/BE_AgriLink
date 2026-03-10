@@ -30,31 +30,36 @@ public class MarketPriceDbService
         try
         {
             var today = DateTime.Today;
-            
-            // Lấy tất cả giá mới nhất, Include Product để lấy tên/code
-            var latestPrices = await _context.MarketPriceHistory
-                .Include(mph => mph.Product)
-                .Where(mph => mph.RecordedDate == today)
-                .ToListAsync();
-            
-            // Nếu hôm nay chưa có data, lấy ngày gần nhất
-            if (!latestPrices.Any())
-            {
-                var lastDate = await _context.MarketPriceHistory
-                    .MaxAsync(mph => (DateTime?)mph.RecordedDate);
-                
-                if (lastDate.HasValue)
-                {
-                    latestPrices = await _context.MarketPriceHistory
-                        .Include(mph => mph.Product)
-                        .Where(mph => mph.RecordedDate == lastDate.Value)
-                        .ToListAsync();
-                }
-            }
-            
-            // Group data dựa trên Product Code
-            var coffeeData = latestPrices.Where(p => p.Product?.Code == "CF_ROBUSTA").ToList();
-            var pepperData = latestPrices.Where(p => p.Product?.Code == "PEPPER").ToList();
+
+            // ── Lấy ngày gần nhất RIÊNG cho từng sản phẩm ──────────────────
+            // Fix: coffee và pepper có thể được cập nhật vào các ngày khác nhau.
+            // Nếu dùng chung 1 ngày thì sản phẩm nào không có data ngày đó sẽ mất.
+
+            var lastCoffeeDate = await _context.MarketPriceHistory
+                .Include(m => m.Product)
+                .Where(m => m.Product != null && m.Product.Code == "CF_ROBUSTA")
+                .MaxAsync(m => (DateTime?)m.RecordedDate);
+
+            var lastPepperDate = await _context.MarketPriceHistory
+                .Include(m => m.Product)
+                .Where(m => m.Product != null && m.Product.Code == "PEPPER")
+                .MaxAsync(m => (DateTime?)m.RecordedDate);
+
+            var coffeeData = lastCoffeeDate.HasValue
+                ? await _context.MarketPriceHistory
+                    .Include(m => m.Product)
+                    .Where(m => m.Product != null && m.Product.Code == "CF_ROBUSTA"
+                             && m.RecordedDate == lastCoffeeDate.Value)
+                    .ToListAsync()
+                : new List<MarketPriceHistory>();
+
+            var pepperData = lastPepperDate.HasValue
+                ? await _context.MarketPriceHistory
+                    .Include(m => m.Product)
+                    .Where(m => m.Product != null && m.Product.Code == "PEPPER"
+                             && m.RecordedDate == lastPepperDate.Value)
+                    .ToListAsync()
+                : new List<MarketPriceHistory>();
             
             // Build response
             var commodities = new List<CommodityPriceDto>();
@@ -97,16 +102,31 @@ public class MarketPriceDbService
                 });
             }
             
-            // Regional prices (Coffee only for now)
+            // Regional prices — Coffee theo tỉnh + Pepper toàn quốc
             var regionalPrices = coffeeData.Select(c => new RegionalPriceDto
             {
                 Region = c.Region ?? "N/A",
                 RegionCode = c.RegionCode ?? "N/A",
                 CoffeePrice = c.Price,
-                PepperPrice = pepperData.FirstOrDefault(p => p.RegionCode == c.RegionCode)?.Price ?? 0,
+                PepperPrice = 0, // Pepper không theo tỉnh
                 Change = c.Change,
                 UpdatedAt = c.RecordedDate
             }).ToList();
+
+            // Thêm hàng Hồ tiêu toàn quốc (RegionCode = null)
+            var pepperNational = pepperData.FirstOrDefault(p => p.RegionCode == null);
+            if (pepperNational != null)
+            {
+                regionalPrices.Add(new RegionalPriceDto
+                {
+                    Region = "Toàn quốc",
+                    RegionCode = "NATIONAL",
+                    CoffeePrice = 0,
+                    PepperPrice = pepperNational.Price,
+                    Change = pepperNational.Change,
+                    UpdatedAt = pepperNational.RecordedDate
+                });
+            }
             
             return new MarketPriceResponseDto
             {

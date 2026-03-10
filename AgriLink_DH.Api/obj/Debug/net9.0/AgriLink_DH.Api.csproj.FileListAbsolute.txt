@@ -336,3 +336,5 @@ C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\ExcelNumberFormat.
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\RBush.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\SixLabors.Fonts.dll
 C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\System.IO.Packaging.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\CloudinaryDotNet.dll
+C:\HocTap\CaNhan\AgriLink_DH\AgriLink_DH.Api\bin\Debug\net9.0\Newtonsoft.Json.dll

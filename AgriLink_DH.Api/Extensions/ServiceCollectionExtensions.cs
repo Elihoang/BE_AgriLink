@@ -84,6 +84,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ArticleCommentService>();
         services.AddScoped<ArticleLikeService>();
         
+        // Cloudinary - Upload ảnh
+        services.AddSingleton<CloudinaryService>();
+        
         return services;
     }
 }
