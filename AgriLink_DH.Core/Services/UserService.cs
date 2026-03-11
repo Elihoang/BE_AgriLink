@@ -23,6 +23,12 @@ public class UserService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<IEnumerable<UserDto>> GetAllAsync()
+    {
+        var users = await _userRepository.GetAllAsync();
+        return users.OrderByDescending(u => u.CreatedAt).Select(MapToDto);
+    }
+
     public async Task<UserDto?> GetByIdAsync(Guid id)
     {
         var user = await _userRepository.GetByIdAsync(id);

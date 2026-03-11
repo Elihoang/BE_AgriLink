@@ -21,6 +21,25 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Lấy toàn bộ danh sách người dùng (Admin only)
+    /// </summary>
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserDto>>>> GetAll()
+    {
+        try
+        {
+            var users = await _userService.GetAllAsync();
+            return Ok(ApiResponse<IEnumerable<UserDto>>.SuccessResponse(users));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi lấy danh sách người dùng");
+            return StatusCode(500, ApiResponse<IEnumerable<UserDto>>.ErrorResponse("Lỗi khi lấy danh sách người dùng", 500));
+        }
+    }
+
+    /// <summary>
     /// Lấy thông tin user theo ID
     /// </summary>
     [HttpGet("{id:guid}")]

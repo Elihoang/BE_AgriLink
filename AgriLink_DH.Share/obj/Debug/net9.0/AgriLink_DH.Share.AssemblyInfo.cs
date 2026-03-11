@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AgriLink_DH.Share")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b2b05419175cec0996d5fbb8938d65d8063f6d8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0c8dc5d9c66f3281cd32df64a86c293d25c9780")]
 [assembly: System.Reflection.AssemblyProductAttribute("AgriLink_DH.Share")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AgriLink_DH.Share")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
