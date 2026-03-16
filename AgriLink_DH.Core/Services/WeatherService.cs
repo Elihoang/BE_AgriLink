@@ -359,4 +359,19 @@ public class WeatherService : BaseCachedService
         if (advice.Count == 0) return "Thời tiết thuận lợi cho các hoạt động nông nghiệp bình thường.";
         return string.Join(" ", advice);
     }
+
+    public List<ProvinceDto> GetVietnameseProvinces()
+    {
+        return new List<ProvinceDto>
+        {
+            new ProvinceDto { Name = "Gia Lai", DisplayName = "Gia Lai (Pleiku)", Latitude = 13.9833m, Longitude = 108.0000m, Region = "Tây Nguyên" },
+            new ProvinceDto { Name = "Dak Lak", DisplayName = "Đắk Lắk (BMT)", Latitude = 12.6667m, Longitude = 108.0500m, Region = "Tây Nguyên" },
+            new ProvinceDto { Name = "Lam Dong", DisplayName = "Lâm Đồng (Bảo Lộc)", Latitude = 11.5453m, Longitude = 107.8039m, Region = "Tây Nguyên" },
+            new ProvinceDto { Name = "Dak Nong", DisplayName = "Đắk Nông (Gia Nghĩa)", Latitude = 12.0000m, Longitude = 107.6833m, Region = "Tây Nguyên" },
+            new ProvinceDto { Name = "Kon Tum", DisplayName = "Kon Tum", Latitude = 14.3500m, Longitude = 108.0000m, Region = "Tây Nguyên" },
+            new ProvinceDto { Name = "Son La", DisplayName = "Sơn La", Latitude = 21.3289m, Longitude = 103.9129m, Region = "Tây Bắc" },
+            new ProvinceDto { Name = "Ho Chi Minh", DisplayName = "TP. Hồ Chí Minh", Latitude = 10.7769m, Longitude = 106.7009m, Region = "Miền Nam" },
+            new ProvinceDto { Name = "Ha Noi", DisplayName = "Hà Nội", Latitude = 21.0285m, Longitude = 105.8542m, Region = "Miền Bắc" }
+        };
+    }
 }
