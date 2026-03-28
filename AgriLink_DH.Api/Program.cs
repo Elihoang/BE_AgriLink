@@ -139,6 +139,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Bind MomoSettings
+builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoDisbursement"));
+
 // Add Repositories and Services
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();

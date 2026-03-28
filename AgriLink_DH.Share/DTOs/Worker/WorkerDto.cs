@@ -13,4 +13,7 @@ public class WorkerDto
     public decimal? DefaultDailyWage { get; set; }
     public bool IsActive { get; set; }
     public string? ImageUrl { get; set; }
+    public string? MomoPhone { get; set; }
+    public string? BankAccount { get; set; }
+    public string? BankName { get; set; }
 }

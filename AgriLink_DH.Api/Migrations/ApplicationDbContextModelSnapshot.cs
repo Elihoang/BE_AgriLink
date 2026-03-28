@@ -1044,6 +1044,74 @@ namespace AgriLink_DH.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.SalaryPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal>("GrossSalary")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)")
+                        .HasColumnName("gross_salary");
+
+                    b.Property<string>("MomoOrderId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("momo_order_id");
+
+                    b.Property<int?>("MomoResultCode")
+                        .HasColumnType("integer")
+                        .HasColumnName("momo_result_code");
+
+                    b.Property<string>("MomoTransId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("momo_trans_id");
+
+                    b.Property<decimal>("NetSalary")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)")
+                        .HasColumnName("net_salary");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("period_end");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("period_start");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("TotalAdvance")
+                        .HasPrecision(15, 2)
+                        .HasColumnType("numeric(15,2)")
+                        .HasColumnName("total_advance");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("WorkerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("worker_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkerId");
+
+                    b.ToTable("salary_payments");
+                });
+
             modelBuilder.Entity("AgriLink_DH.Domain.Models.TaskType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1291,6 +1359,16 @@ namespace AgriLink_DH.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("BankAccount")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("bank_account");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("bank_name");
+
                     b.Property<decimal?>("DefaultDailyWage")
                         .HasPrecision(15, 2)
                         .HasColumnType("numeric(15,2)")
@@ -1313,6 +1391,11 @@ namespace AgriLink_DH.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
+
+                    b.Property<string>("MomoPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("momo_phone");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
@@ -1585,6 +1668,17 @@ namespace AgriLink_DH.Api.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("AgriLink_DH.Domain.Models.SalaryPayment", b =>
+                {
+                    b.HasOne("AgriLink_DH.Domain.Models.Worker", "Worker")
+                        .WithMany("SalaryPayments")
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Worker");
+                });
+
             modelBuilder.Entity("AgriLink_DH.Domain.Models.TaskType", b =>
                 {
                     b.HasOne("AgriLink_DH.Domain.Models.Farm", "Farm")
@@ -1726,6 +1820,8 @@ namespace AgriLink_DH.Api.Migrations
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Worker", b =>
                 {
+                    b.Navigation("SalaryPayments");
+
                     b.Navigation("WorkAssignments");
 
                     b.Navigation("WorkerAdvances");

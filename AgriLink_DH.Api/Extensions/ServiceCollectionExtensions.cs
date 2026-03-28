@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserLoginLogRepository, Core.Repositories.UserLoginLogRepository>();
         services.AddScoped<IPlantPositionRepository, Core.Repositories.PlantPositionRepository>();
         services.AddScoped<IMaterialRepository, Core.Repositories.MaterialRepository>();
+        services.AddScoped<ISalaryPaymentRepository, Core.Repositories.SalaryPaymentRepository>();
         
         // Article System Repositories
         services.AddScoped<IArticleRepository, Core.Repositories.ArticleRepository>();
@@ -83,7 +84,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ArticleAuthorService>();
         services.AddScoped<ArticleCommentService>();
         services.AddScoped<ArticleLikeService>();
-        
+
+        // Salary Payment and Momo Services
+        services.AddScoped<SalaryPaymentService>();
+        services.AddScoped<IMomoService, MockMomoService>();
+
         return services;
     }
 }

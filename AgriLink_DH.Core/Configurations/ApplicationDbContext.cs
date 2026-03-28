@@ -28,6 +28,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkAssignment> WorkAssignments { get; set; }
     public DbSet<WorkerAdvance> WorkerAdvances { get; set; }
     public DbSet<MaterialUsage> MaterialUsages { get; set; }
+    public DbSet<SalaryPayment> SalaryPayments { get; set; }
     #endregion
 
     #region DbSets - Nhóm Doanh thu & Kết quả
@@ -238,6 +239,11 @@ public class ApplicationDbContext : DbContext
         // MaterialType enum
         modelBuilder.Entity<Material>()
             .Property(m => m.MaterialType)
+            .HasConversion<string>();
+
+        // SalaryPaymentStatus enum
+        modelBuilder.Entity<SalaryPayment>()
+            .Property(sp => sp.Status)
             .HasConversion<string>();
 
         // ========================================

@@ -19,4 +19,13 @@ public class CreateWorkerDto
 
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
+
+    [MaxLength(20)]
+    public string? MomoPhone { get; set; }
+
+    [MaxLength(50)]
+    public string? BankAccount { get; set; }
+
+    [MaxLength(100)]
+    public string? BankName { get; set; }
 }
