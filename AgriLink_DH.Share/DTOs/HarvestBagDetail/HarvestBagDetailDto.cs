@@ -8,4 +8,6 @@ public class HarvestBagDetailDto
     public decimal GrossWeight { get; set; }
     public decimal Deduction { get; set; }
     public decimal NetWeight { get; set; }
+    public bool IsAutoWeighed { get; set; }
+    public string? ScaleDeviceId { get; set; }
 }

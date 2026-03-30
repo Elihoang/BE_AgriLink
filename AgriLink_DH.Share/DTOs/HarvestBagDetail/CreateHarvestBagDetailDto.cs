@@ -16,4 +16,8 @@ public class CreateHarvestBagDetailDto
 
     [Range(0, double.MaxValue)]
     public decimal Deduction { get; set; } = 0.5m;
+
+    public bool IsAutoWeighed { get; set; } = false;
+    
+    public string? ScaleDeviceId { get; set; }
 }

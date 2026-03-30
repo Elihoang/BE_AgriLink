@@ -48,7 +48,9 @@ public class HarvestBagDetailService : BaseCachedService
             BagIndex = dto.BagIndex,
             GrossWeight = dto.GrossWeight,
             Deduction = dto.Deduction,
-            NetWeight = netWeight
+            NetWeight = netWeight,
+            IsAutoWeighed = dto.IsAutoWeighed,
+            ScaleDeviceId = dto.ScaleDeviceId
         };
 
         await _bagDetailRepository.AddAsync(bag);
@@ -132,7 +134,9 @@ public class HarvestBagDetailService : BaseCachedService
             BagIndex = bag.BagIndex,
             GrossWeight = bag.GrossWeight,
             Deduction = bag.Deduction,
-            NetWeight = bag.NetWeight
+            NetWeight = bag.NetWeight,
+            IsAutoWeighed = bag.IsAutoWeighed,
+            ScaleDeviceId = bag.ScaleDeviceId
         };
     }
 

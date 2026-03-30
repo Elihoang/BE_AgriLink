@@ -33,6 +33,14 @@ public class HarvestBagDetail
     [Precision(10, 2)]
     public decimal NetWeight { get; set; } // = Gross - Deduction (Lưu cứng hoặc Generated Column)
 
+    // Bluetooth Scale Tracking
+    [Column("is_auto_weighed")]
+    public bool IsAutoWeighed { get; set; } = false;
+
+    [Column("scale_device_id")]
+    [MaxLength(100)]
+    public string? ScaleDeviceId { get; set; }
+
     // Navigation Properties
     [ForeignKey(nameof(SessionId))]
     public virtual HarvestSession HarvestSession { get; set; } = null!;

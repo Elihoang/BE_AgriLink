@@ -65,6 +65,8 @@ Log.Information("[LOGGING] All logs: Logs/all/agrilink-YYYYMMDD.log");
 Log.Information("[LOGGING] Errors only: Logs/errors/error-YYYYMMDD.log");
 
 // Add services to the container.
+builder.Services.AddSignalR(); // Add Real-time mapping
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -232,6 +234,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Import the Hubs namespace if needed via global using or fully qualified
+app.MapHub<AgriLink_DH.Api.Hubs.BluetoothScaleHub>("/hubs/scale");
 
 try
 {
