@@ -1,96 +1,80 @@
-## .NET
-*.swp
-*.*~
-project.lock.json
-.DS_Store
-*.pyc
-nupkg/
+# =========================
+# Build artifacts
+# =========================
+bin/
+obj/
+out/
+publish/
 
-# Visual Studio Code
+# =========================
+# .NET
+# =========================
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# =========================
+# Visual Studio / Rider / VS Code
+# =========================
+.vs/
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Visual Studio
-.vs/
-*.rsuser
+.idea/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-*.userprefs
+*.rsuser
 
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
 
-# Visual Studio profiler
-*.psess
-*.vsp
-*.vspx
-*.sap
-
-# ReSharper
-_ReSharper*/
-*.[Rr]e[Ss]harper
-*.DotSettings.user
-
-# JetBrains Rider
-.idea/
-*.sln.iml
-
-# User-specific files
-*.suo
-*.user
-*.sln.docstates
-
-# NuGet
-*.nupkg
-**/packages/*
-!**/packages/build/
-*.nuget.props
-*.nuget.targets
-
-# Test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-*.trx
-
-# Database
-*.db
-*.db-shm
-*.db-wal
-
-# Environment files
-.env
-.env.local
-.env.*.local
-*.env
-
-# Docker
-docker-compose.override.yml
-.dockerignore
-
+# =========================
 # Logs
-Logs/
+# =========================
+logs/
 *.log
 
-# Sensitive configuration - ignore ALL appsettings files
-appsettings.json
-appsettings.*.json
+# =========================
+# Test results
+# =========================
+TestResults/
+*.trx
 
-# Keep example env file
+# =========================
+# NuGet
+# =========================
+*.nupkg
+packages/
+!packages/build/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
 !.env.example
+
+# =========================
+# App settings (QUAN TRỌNG)
+# =========================
+# Ignore config thật
+appsettings.Development.json
+appsettings.Production.json
+
+# Giữ file base cho CI/CD
+!appsettings.json
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
