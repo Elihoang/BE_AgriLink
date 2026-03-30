@@ -86,6 +86,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ArticleAuthorService>();
         services.AddScoped<ArticleCommentService>();
         services.AddScoped<ArticleLikeService>();
+        
+        // Cloudinary - Upload ảnh
+        services.AddSingleton<CloudinaryService>();
+        
 
         // Salary Payment and Momo Services
         services.AddScoped<SalaryPaymentService>();

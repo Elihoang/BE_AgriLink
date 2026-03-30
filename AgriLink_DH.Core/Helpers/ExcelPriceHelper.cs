@@ -106,7 +106,7 @@ public static class ExcelPriceHelper
                 }
 
                 // Cột tuỳ chọn (Change bỏ — backend tự tính)
-                var recordedDate = TryParseDate(GetCellString(ws, row, headers, "recordeddate"));
+                var recordedDate = GetCellDate(ws, row, headers, "recordeddate");
                 var source       = GetCellString(ws, row, headers, "source");
 
                 result.ValidRows.Add(new UpdateMarketPriceRequest
@@ -172,7 +172,7 @@ public static class ExcelPriceHelper
                 }
 
                 // Cột tuỳ chọn (Change bỏ — backend tự tính)
-                var recordedDate = TryParseDate(GetCellString(ws, row, headers, "recordeddate"));
+                var recordedDate = GetCellDate(ws, row, headers, "recordeddate");
                 var source       = GetCellString(ws, row, headers, "source");
 
                 result.ValidRows.Add(new UpdateMarketPriceRequest
@@ -321,11 +321,64 @@ public static class ExcelPriceHelper
         return decimal.TryParse(clean, out value);
     }
 
-    /// <summary>Parse ngày từ chuỗi, trả null nếu không parse được.</summary>
+    /// <summary>
+    /// Đọc ngày từ cell Excel — ưu tiên lấy DateTime native (khi user edit trong Excel),
+    /// fallback sang parse chuỗi nếu cell là text thuần.
+    /// </summary>
+    private static DateTime? GetCellDate(IXLWorksheet ws, int row, Dictionary<string, int> headers, string colKey)
+    {
+        if (!headers.TryGetValue(colKey, out var col)) return null;
+
+        var cell = ws.Cell(row, col);
+
+        // Trường hợp 1: Cell là kiểu DateTime/Date thực sự (user nhập hoặc chỉnh sửa trong Excel)
+        if (cell.DataType == XLDataType.DateTime)
+            return cell.GetDateTime().Date;
+
+        // Trường hợp 2: Cell là số (OLE Automation Date serial)
+        if (cell.DataType == XLDataType.Number)
+        {
+            try { return DateTime.FromOADate(cell.GetDouble()).Date; }
+            catch { /* không phải OLE date hợp lệ */ }
+        }
+
+        // Trường hợp 3: Cell là text — parse chuỗi
+        return TryParseDate(cell.GetString().Trim());
+    }
+
+    /// <summary>
+    /// Parse ngày từ chuỗi, hỗ trợ nhiều format:
+    /// yyyy-MM-dd | M/d/yyyy | d/M/yyyy | dd-MM-yyyy | ...
+    /// </summary>
     private static DateTime? TryParseDate(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw)) return null;
-        if (DateTime.TryParse(raw, out var dt)) return dt.Date;
+
+        // Thử các format phổ biến có thể xuất hiện trong Excel
+        var formats = new[]
+        {
+            "yyyy-MM-dd",   // 2026-02-24 (template gốc)
+            "M/d/yyyy",     // 2/24/2026  (Excel US locale sau khi edit)
+            "d/M/yyyy",     // 24/2/2026  (locale VN)
+            "MM/dd/yyyy",   // 02/24/2026
+            "dd/MM/yyyy",   // 24/02/2026
+            "dd-MM-yyyy",   // 24-02-2026
+            "MM-dd-yyyy",   // 02-24-2026
+            "yyyy/MM/dd",   // 2026/02/24
+        };
+
+        // Thử exact formats trước để tránh nhầm M/d vs d/M
+        if (DateTime.TryParseExact(raw, formats,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var dtExact))
+            return dtExact.Date;
+
+        // Fallback: TryParse tổng quát (InvariantCulture)
+        if (DateTime.TryParse(raw,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var dt))
+            return dt.Date;
+
         return null;
     }
 }

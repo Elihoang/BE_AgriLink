@@ -96,16 +96,31 @@ public class MarketPriceDbService
                 });
             }
             
-            // Regional prices (Coffee only for now)
+            // Regional prices — Coffee theo tỉnh + Pepper toàn quốc
             var regionalPrices = coffeeData.Select(c => new RegionalPriceDto
             {
                 Region = c.Region ?? "N/A",
                 RegionCode = c.RegionCode ?? "N/A",
                 CoffeePrice = c.Price,
-                PepperPrice = pepperData.FirstOrDefault(p => p.RegionCode == c.RegionCode)?.Price ?? 0,
+                PepperPrice = 0, // Pepper không theo tỉnh
                 Change = c.Change,
                 UpdatedAt = c.RecordedDate
             }).ToList();
+
+            // Thêm hàng Hồ tiêu toàn quốc (RegionCode = null)
+            var pepperNational = pepperData.FirstOrDefault(p => p.RegionCode == null);
+            if (pepperNational != null)
+            {
+                regionalPrices.Add(new RegionalPriceDto
+                {
+                    Region = "Toàn quốc",
+                    RegionCode = "NATIONAL",
+                    CoffeePrice = 0,
+                    PepperPrice = pepperNational.Price,
+                    Change = pepperNational.Change,
+                    UpdatedAt = pepperNational.RecordedDate
+                });
+            }
             
             return new MarketPriceResponseDto
             {
