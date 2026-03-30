@@ -65,14 +65,17 @@ packages/
 !.env.example
 
 # =========================
+# Scripts
+# =========================
+*.ps1
+
+# =========================
 # App settings (QUAN TRỌNG)
 # =========================
 # Ignore config thật
+appsettings.json
 appsettings.Development.json
 appsettings.Production.json
-
-# Giữ file base cho CI/CD
-!appsettings.json
 
 # =========================
 # Docker
