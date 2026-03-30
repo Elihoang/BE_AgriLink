@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Api", "AgriLink
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Tests", "AgriLink_DH.Tests\AgriLink_DH.Tests.csproj", "{E020131F-55A2-4901-BC7F-8ABE23934AF6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgriLink_DH.Infrastructure", "AgriLink_DH.Infrastructure\AgriLink_DH.Infrastructure.csproj", "{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,18 @@ Global
 		{E020131F-55A2-4901-BC7F-8ABE23934AF6}.Release|x64.Build.0 = Release|Any CPU
 		{E020131F-55A2-4901-BC7F-8ABE23934AF6}.Release|x86.ActiveCfg = Release|Any CPU
 		{E020131F-55A2-4901-BC7F-8ABE23934AF6}.Release|x86.Build.0 = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|x64.Build.0 = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Debug|x86.Build.0 = Debug|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|x64.ActiveCfg = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|x64.Build.0 = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|x86.ActiveCfg = Release|Any CPU
+		{85A5A3A4-26D7-469E-ACB2-0672C6C6C90D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -38,9 +38,22 @@ public class Worker
     [MaxLength(500)]
     public string? ImageUrl { get; set; } // URL hình ảnh nhân công
 
+    [Column("momo_phone")]
+    [MaxLength(20)]
+    public string? MomoPhone { get; set; } // SĐT MoMo riêng (nếu khác SĐT thường)
+
+    [Column("bank_account")]
+    [MaxLength(50)]
+    public string? BankAccount { get; set; }
+
+    [Column("bank_name")]
+    [MaxLength(100)]
+    public string? BankName { get; set; }
+
     // Navigation Properties
     // No Farm Navigation property needed here as it belongs to User
 
     public virtual ICollection<WorkAssignment> WorkAssignments { get; set; } = new List<WorkAssignment>();
     public virtual ICollection<WorkerAdvance> WorkerAdvances { get; set; } = new List<WorkerAdvance>();
+    public virtual ICollection<SalaryPayment> SalaryPayments { get; set; } = new List<SalaryPayment>();
 }

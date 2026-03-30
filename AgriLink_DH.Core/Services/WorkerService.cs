@@ -58,6 +58,9 @@ public class WorkerService
             DefaultDailyWage = dto.DefaultDailyWage,
             WorkerType = dto.WorkerType,
             ImageUrl = dto.ImageUrl,
+            MomoPhone = dto.MomoPhone,
+            BankAccount = dto.BankAccount,
+            BankName = dto.BankName,
             IsActive = true
         };
 
@@ -78,6 +81,9 @@ public class WorkerService
         worker.DefaultDailyWage = dto.DefaultDailyWage;
         worker.WorkerType = dto.WorkerType;
         worker.ImageUrl = dto.ImageUrl;
+        worker.MomoPhone = dto.MomoPhone;
+        worker.BankAccount = dto.BankAccount;
+        worker.BankName = dto.BankName;
         worker.IsActive = dto.IsActive;
 
         _workerRepository.Update(worker);
@@ -109,7 +115,10 @@ public class WorkerService
             WorkerTypeLabel = worker.WorkerType.ToVietnamese(),
             DefaultDailyWage = worker.DefaultDailyWage,
             IsActive = worker.IsActive,
-            ImageUrl = worker.ImageUrl
+            ImageUrl = worker.ImageUrl,
+            MomoPhone = worker.MomoPhone,
+            BankAccount = worker.BankAccount,
+            BankName = worker.BankName
         };
     }
 }

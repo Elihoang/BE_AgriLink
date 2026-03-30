@@ -1,6 +1,7 @@
 using AgriLink_DH.Core.Services;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Infrastructure.Repositories;
 
 namespace AgriLink_DH.Api.Extensions;
 
@@ -14,34 +15,36 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        // Register UnitOfWork
-        services.AddScoped<IUnitOfWork, Core.Repositories.UnitOfWork>();
+        // Register UnitOfWork (from Infrastructure)
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
-        // Register Repositories
-        services.AddScoped<IProductRepository, Core.Repositories.ProductRepository>();
-        services.AddScoped<IUserRepository, Core.Repositories.UserRepository>();
-        services.AddScoped<IFarmRepository, Core.Repositories.FarmRepository>();
-        services.AddScoped<ICropSeasonRepository, Core.Repositories.CropSeasonRepository>();
-        services.AddScoped<IWorkerRepository, Core.Repositories.WorkerRepository>();
-        services.AddScoped<ITaskTypeRepository, Core.Repositories.TaskTypeRepository>();
-        services.AddScoped<IDailyWorkLogRepository, Core.Repositories.DailyWorkLogRepository>();
-        services.AddScoped<IWorkAssignmentRepository, Core.Repositories.WorkAssignmentRepository>();
-        services.AddScoped<IWorkerAdvanceRepository, Core.Repositories.WorkerAdvanceRepository>();
-        services.AddScoped<IMaterialUsageRepository, Core.Repositories.MaterialUsageRepository>();
-        services.AddScoped<IHarvestSessionRepository, Core.Repositories.HarvestSessionRepository>();
-        services.AddScoped<IHarvestBagDetailRepository, Core.Repositories.HarvestBagDetailRepository>();
-        services.AddScoped<IFarmSaleRepository, Core.Repositories.FarmSaleRepository>();
-        services.AddScoped<IWeatherLogRepository, Core.Repositories.WeatherLogRepository>();
-        services.AddScoped<IUserLoginLogRepository, Core.Repositories.UserLoginLogRepository>();
-        services.AddScoped<IPlantPositionRepository, Core.Repositories.PlantPositionRepository>();
-        services.AddScoped<IMaterialRepository, Core.Repositories.MaterialRepository>();
+        // Register Repositories (from Infrastructure)
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFarmRepository, FarmRepository>();
+        services.AddScoped<ICropSeasonRepository, CropSeasonRepository>();
+        services.AddScoped<IWorkerRepository, WorkerRepository>();
+        services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
+        services.AddScoped<IDailyWorkLogRepository, DailyWorkLogRepository>();
+        services.AddScoped<IWorkAssignmentRepository, WorkAssignmentRepository>();
+        services.AddScoped<IWorkerAdvanceRepository, WorkerAdvanceRepository>();
+        services.AddScoped<IMaterialUsageRepository, MaterialUsageRepository>();
+        services.AddScoped<IHarvestSessionRepository, HarvestSessionRepository>();
+        services.AddScoped<IHarvestBagDetailRepository, HarvestBagDetailRepository>();
+        services.AddScoped<IFarmSaleRepository, FarmSaleRepository>();
+        services.AddScoped<IWeatherLogRepository, WeatherLogRepository>();
+        services.AddScoped<IUserLoginLogRepository, UserLoginLogRepository>();
+        services.AddScoped<IPlantPositionRepository, PlantPositionRepository>();
+        services.AddScoped<IMaterialRepository, MaterialRepository>();
+        services.AddScoped<ISalaryPaymentRepository, SalaryPaymentRepository>();
+        services.AddScoped<IMarketPriceRepository, MarketPriceRepository>();
         
         // Article System Repositories
-        services.AddScoped<IArticleRepository, Core.Repositories.ArticleRepository>();
-        services.AddScoped<IArticleCategoryRepository, Core.Repositories.ArticleCategoryRepository>();
-        services.AddScoped<IArticleAuthorRepository, Core.Repositories.ArticleAuthorRepository>();
-        services.AddScoped<IArticleCommentRepository, Core.Repositories.ArticleCommentRepository>();
-        services.AddScoped<IArticleLikeRepository, Core.Repositories.ArticleLikeRepository>();
+        services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+        services.AddScoped<IArticleAuthorRepository, ArticleAuthorRepository>();
+        services.AddScoped<IArticleCommentRepository, ArticleCommentRepository>();
+        services.AddScoped<IArticleLikeRepository, ArticleLikeRepository>();
         
         return services;
     }
@@ -87,6 +90,11 @@ public static class ServiceCollectionExtensions
         // Cloudinary - Upload ảnh
         services.AddSingleton<CloudinaryService>();
         
+
+        // Salary Payment and Momo Services
+        services.AddScoped<SalaryPaymentService>();
+        services.AddScoped<IMomoService, MockMomoService>();
+
         return services;
     }
 }

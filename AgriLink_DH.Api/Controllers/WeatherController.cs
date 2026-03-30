@@ -75,4 +75,15 @@ public class WeatherController : ControllerBase
             forecast,
             "Lấy dự báo thời tiết thành công"));
     }
+
+    /// <summary>
+    /// [NEW] Lấy danh sách các tỉnh thành hỗ trợ thời tiết (Admin only)
+    /// </summary>
+    [HttpGet("provinces")]
+    [Authorize(Roles = "Admin")]
+    public ActionResult<ApiResponse<List<ProvinceDto>>> GetProvinces()
+    {
+        var provinces = _weatherService.GetVietnameseProvinces();
+        return Ok(ApiResponse<List<ProvinceDto>>.SuccessResponse(provinces, "Lấy danh sách tỉnh thành thành công"));
+    }
 }

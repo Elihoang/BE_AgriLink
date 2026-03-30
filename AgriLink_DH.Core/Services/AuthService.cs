@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using AgriLink_DH.Core.Configurations;
 using AgriLink_DH.Core.Helpers;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
@@ -13,25 +12,25 @@ namespace AgriLink_DH.Core.Services;
 public class AuthService : BaseCachedService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUserLoginLogRepository _loginLogRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtHelper _jwtHelper;
     private readonly IConfiguration _configuration;
-    private readonly ApplicationDbContext _context;
 
     public AuthService(
         IUserRepository userRepository,
+        IUserLoginLogRepository loginLogRepository,
         IUnitOfWork unitOfWork,
         JwtHelper jwtHelper,
         RedisService redisService,
-        IConfiguration configuration,
-        ApplicationDbContext context)
+        IConfiguration configuration)
         : base(redisService)
     {
         _userRepository = userRepository;
+        _loginLogRepository = loginLogRepository;
         _unitOfWork = unitOfWork;
         _jwtHelper = jwtHelper;
         _configuration = configuration;
-        _context = context;
     }
 
     public async Task<(bool Success, string Message, UserResponseDto? User, TokenDto? Token)> RegisterAsync(
@@ -245,7 +244,7 @@ public class AuthService : BaseCachedService
             ActionType = actionType
         };
 
-        await _context.UserLoginLogs.AddAsync(loginLog);
-        await _context.SaveChangesAsync();
+        await _loginLogRepository.AddAsync(loginLog);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

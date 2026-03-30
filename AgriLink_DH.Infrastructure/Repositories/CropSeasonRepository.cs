@@ -1,0 +1,56 @@
+using AgriLink_DH.Infrastructure.Data;
+using AgriLink_DH.Domain.Common;
+using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Domain.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace AgriLink_DH.Infrastructure.Repositories;
+
+public class CropSeasonRepository : BaseRepository<CropSeason>, ICropSeasonRepository
+{
+    public CropSeasonRepository(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IEnumerable<CropSeason>> GetSeasonsByFarmIdAsync(Guid farmId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(cs => cs.Product)
+            .Include(cs => cs.Farm)
+            .Where(cs => cs.FarmId == farmId)
+            .OrderByDescending(cs => cs.StartDate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<CropSeason>> GetActiveSeasonsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(cs => cs.Product)
+            .Include(cs => cs.Farm)
+            .Where(cs => cs.Status == SeasonStatus.Active)
+            .OrderByDescending(cs => cs.StartDate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<CropSeason?> GetSeasonWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(cs => cs.Product)
+            .Include(cs => cs.Farm)
+            .FirstOrDefaultAsync(cs => cs.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Optimized: Get all seasons for a user in ONE query (no N+1)
+    /// </summary>
+    public async Task<IEnumerable<CropSeason>> GetSeasonsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(cs => cs.Product)
+            .Include(cs => cs.Farm)
+            .Where(cs => cs.Farm.OwnerUserId == userId)
+            .OrderByDescending(cs => cs.StartDate)
+            .ToListAsync(cancellationToken);
+    }
+}
+

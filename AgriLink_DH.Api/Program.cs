@@ -1,6 +1,7 @@
 using System.Text;
 using AgriLink_DH.Api.Extensions;
 using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -138,6 +139,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Bind MomoSettings
+builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoDisbursement"));
 
 // Add Repositories and Services
 builder.Services.AddRepositories();
