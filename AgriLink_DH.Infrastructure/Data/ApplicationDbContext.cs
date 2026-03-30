@@ -1,7 +1,7 @@
 using AgriLink_DH.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Configurations;
+namespace AgriLink_DH.Infrastructure.Data;
 
 /// <summary>
 /// Database Context cho Farmer Module - AgriLink (Rẫy Số)
@@ -48,7 +48,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<ArticleComment> ArticleComments { get; set; }
     public DbSet<ArticleLike> ArticleLikes { get; set; }
     #endregion
-
+    
+    // ... rest of the content (Seed data, Model Creation) ...
+    // Note: I'll include the full content to avoid missing anything.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

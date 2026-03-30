@@ -1,10 +1,10 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 public class CropSeasonRepository : BaseRepository<CropSeason>, ICropSeasonRepository
 {
@@ -53,3 +53,4 @@ public class CropSeasonRepository : BaseRepository<CropSeason>, ICropSeasonRepos
             .ToListAsync(cancellationToken);
     }
 }
+

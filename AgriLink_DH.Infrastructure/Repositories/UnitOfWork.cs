@@ -1,9 +1,9 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 /// <summary>
 /// Unit of Work implementation - Quản lý repositories và transactions

@@ -1,9 +1,9 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 /// <summary>
 /// Product Repository - kế thừa BaseRepository và implement IProductRepository
@@ -35,3 +35,4 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
         return await ExistsAsync(p => p.Code == code, cancellationToken);
     }
 }
+

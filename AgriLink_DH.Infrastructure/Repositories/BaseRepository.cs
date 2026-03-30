@@ -1,9 +1,9 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Interface;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 /// <summary>
 /// Base repository implementation với các phương thức CRUD cơ bản
@@ -98,4 +98,3 @@ public abstract class BaseRepository<T> : IRepository<T> where T : class
         return true;
     }
 }
-

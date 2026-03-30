@@ -1,9 +1,9 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
@@ -37,3 +37,4 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return await _dbSet.AnyAsync(u => u.Email == email, cancellationToken);
     }
 }
+

@@ -1,10 +1,10 @@
-using AgriLink_DH.Core.Configurations;
+using AgriLink_DH.Infrastructure.Data;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 /// <summary>
 /// ArticleComment Repository Implementation
@@ -57,3 +57,4 @@ public class ArticleCommentRepository : BaseRepository<ArticleComment>, IArticle
             .ToListAsync(cancellationToken);
     }
 }
+

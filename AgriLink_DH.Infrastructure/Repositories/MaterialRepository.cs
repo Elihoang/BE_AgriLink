@@ -1,9 +1,9 @@
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
-using AgriLink_DH.Core.Configurations; // Fix namespace for ApplicationDbContext
+using AgriLink_DH.Infrastructure.Data; // Fix namespace for ApplicationDbContext
 using Microsoft.EntityFrameworkCore;
 
-namespace AgriLink_DH.Core.Repositories;
+namespace AgriLink_DH.Infrastructure.Repositories;
 
 public class MaterialRepository : BaseRepository<Material>, IMaterialRepository // Fix inheritance
 {
@@ -26,3 +26,4 @@ public class MaterialRepository : BaseRepository<Material>, IMaterialRepository 
         return await _dbSet.AnyAsync(m => m.Name.ToLower() == name.ToLower() && m.OwnerUserId == userId);
     }
 }
+
