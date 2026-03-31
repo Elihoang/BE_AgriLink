@@ -185,6 +185,13 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    // Fix: cho phép Swashbuckle generate đúng schema cho IFormFile / multipart
+    options.MapType<IFormFile>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
 });
 
 // Add CORS
@@ -210,21 +217,15 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     KnownProxies = { }
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.MapScalarApiReference(options =>
 {
-    app.UseSwagger();
-    
-    // Use Scalar instead of SwaggerUI for modern API documentation
-    app.MapScalarApiReference(options =>
-    {
-        options
-            .WithTitle("AgriLink API")
-            .WithTheme(ScalarTheme.Purple)
-            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-            .WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
-    });
-}
+    options
+        .WithTitle("AgriLink API")
+        .WithTheme(ScalarTheme.Purple)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+        .WithOpenApiRoutePattern("/swagger/v1/swagger.json"); // hardcode path
+});
 
 app.UseHttpsRedirection();
 

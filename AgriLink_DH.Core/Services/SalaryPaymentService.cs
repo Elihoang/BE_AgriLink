@@ -90,7 +90,7 @@ public class SalaryPaymentService
         await _salaryPaymentRepository.AddAsync(payment);
         await _unitOfWork.SaveChangesAsync();
 
-        // 2. Gọi MoMo Disbursement
+        // 2. Gọi MoMo /create → nhận payUrl để FE redirect
         var momoResponse = await _momoService.SendDisbursementAsync(
             request.MomoPhone,
             request.NetSalary,
@@ -98,29 +98,25 @@ public class SalaryPaymentService
             $"Chi tra luong cho {worker.FullName} ky {request.PeriodStart:dd/MM} - {request.PeriodEnd:dd/MM}"
         );
 
-        // 3. Update kết quả MoMo
+        // 3. Update kết quả tạo payment URL
         payment.MomoTransId = momoResponse.TransId;
         payment.MomoResultCode = momoResponse.ResultCode;
-        payment.Status = momoResponse.Status == MomoDisbursementResult.Success 
-                         ? SalaryPaymentStatus.Success 
-                         : SalaryPaymentStatus.Failed;
-        payment.UpdatedAt = DateTime.UtcNow;
 
-        if (payment.Status == SalaryPaymentStatus.Success)
-        {
-            // 4. Đánh dấu các tạm ứng là đã khấu trừ
-            var workerAdvances = await _workerAdvanceRepository.GetAllAsync();
-            var relatedAdvances = workerAdvances.Where(a => a.WorkerId == request.WorkerId && !a.IsDeducted).ToList();
-            foreach (var advance in relatedAdvances)
-            {
-                advance.IsDeducted = true;
-            }
-        }
+        // resultCode==0 từ /create = "URL tạo thành công, đang chờ user thanh toán"
+        // Advance chỉ deduct khi IPN callback về với resultCode==0
+        payment.Status = momoResponse.ResultCode == 0
+            ? SalaryPaymentStatus.Processing
+            : SalaryPaymentStatus.Failed;
+
+        payment.UpdatedAt = DateTime.UtcNow;
 
         _salaryPaymentRepository.Update(payment);
         await _unitOfWork.SaveChangesAsync();
 
-        return MapToDto(payment);
+        // Trả về DTO kèm payUrl — FE dùng để redirect sang MoMo
+        var dto = MapToDto(payment);
+        dto.MomoPayUrl = momoResponse.PayUrl;
+        return dto;
     }
 
     private SalaryPaymentDto MapToDto(SalaryPayment sp)

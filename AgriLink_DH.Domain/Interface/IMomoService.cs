@@ -11,6 +11,7 @@ public class MomoDisbursementResponse
 {
     public string OrderId { get; set; } = string.Empty;
     public string TransId { get; set; } = string.Empty;
+    public string PayUrl { get; set; } = string.Empty; // URL redirect sang trang thanh toán MoMo
     public int ResultCode { get; set; }
     public string Message { get; set; } = string.Empty;
     public MomoDisbursementResult Status { get; set; }

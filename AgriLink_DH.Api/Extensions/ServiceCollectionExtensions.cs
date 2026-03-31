@@ -93,7 +93,11 @@ public static class ServiceCollectionExtensions
 
         // Salary Payment and Momo Services
         services.AddScoped<SalaryPaymentService>();
-        services.AddScoped<IMomoService, MockMomoService>();
+        services.AddHttpClient<RealMomoService>(); // inject HttpClient qua factory
+        services.AddScoped<IMomoService, RealMomoService>();
+
+        // Diagnose AI (Roboflow)
+        services.AddHttpClient(); // IHttpClientFactory cho DiagnoseController
 
         return services;
     }
