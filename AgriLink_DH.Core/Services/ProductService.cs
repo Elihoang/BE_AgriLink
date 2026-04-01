@@ -93,6 +93,19 @@ public class ProductService
         return MapToDto(product);
     }
 
+    public async Task UpdateProductImageAsync(Guid id, string imageUrl, CancellationToken cancellationToken = default)
+    {
+        var product = await _productRepository.GetByIdAsync(id, cancellationToken);
+        if (product == null)
+        {
+            throw new KeyNotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
+        }
+
+        product.ImageUrl = imageUrl;
+        _productRepository.Update(product);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<bool> DeleteProductAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var exists = await _productRepository.ExistsAsync(p => p.Id == id, cancellationToken);

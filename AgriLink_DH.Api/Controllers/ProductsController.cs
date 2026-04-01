@@ -1,4 +1,5 @@
 using AgriLink_DH.Core.Services;
+using AgriLink_DH.Core.Interfaces;
 using AgriLink_DH.Share.Common;
 using AgriLink_DH.Share.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
@@ -10,14 +11,51 @@ namespace AgriLink_DH.Api.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly ProductService _productService;
+    private readonly ICloudinaryService _cloudinaryService;
     private readonly ILogger<ProductsController> _logger;
 
     public ProductsController(
         ProductService productService,
+        ICloudinaryService cloudinaryService,
         ILogger<ProductsController> logger)
     {
         _productService = productService;
+        _cloudinaryService = cloudinaryService;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Upload ảnh cho sản phẩm cụ thể. Trả về URL của ảnh đã upload.
+    /// </summary>
+    [HttpPost("upload-image/{id:guid}")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<ApiResponse<string>>> UploadProductImage(Guid id, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(ApiResponse<string>.ErrorResponse("Vui lòng chọn file ảnh."));
+
+            // 1. Kiểm tra sản phẩm tồn tại
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product == null)
+            {
+                return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy sản phẩm."));
+            }
+
+            // 2. Upload lên Cloudinary (folder 'products')
+            var imageUrl = await _cloudinaryService.UploadImageAsync(file, "products");
+
+            // 3. Cập nhật vào DB
+            await _productService.UpdateProductImageAsync(id, imageUrl);
+
+            return Ok(ApiResponse<string>.SuccessResponse(imageUrl, "Upload ảnh sản phẩm thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi upload ảnh sản phẩm {ProductId}", id);
+            return StatusCode(500, ApiResponse<string>.ErrorResponse("Lỗi hệ thống khi upload ảnh sản phẩm."));
+        }
     }
 
     
@@ -110,13 +148,14 @@ public class ProductsController : ControllerBase
         }
     }
 
-    
-    /// Tạo mới sản phẩm
-  
+    /// <summary>
+    /// Tạo mới sản phẩm (Hỗ trợ upload ảnh trực tiếp qua Multipart Form)
+    /// </summary>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<ProductDto>>> CreateProduct([FromBody] CreateProductDto dto)
+    public async Task<ActionResult<ApiResponse<ProductDto>>> CreateProduct([FromForm] CreateProductDto dto, IFormFile? file)
     {
         try
         {
@@ -127,6 +166,12 @@ public class ProductsController : ControllerBase
                     400,
                     ModelState
                 ));
+            }
+
+            // Nếu có file kèm theo khi tạo mới, upload lên Cloudinary ngay
+            if (file != null && file.Length > 0)
+            {
+                dto.ImageUrl = await _cloudinaryService.UploadImageAsync(file, "products");
             }
 
             var product = await _productService.CreateProductAsync(dto);
@@ -154,15 +199,18 @@ public class ProductsController : ControllerBase
         }
     }
 
-    
-    /// Cập nhật thông tin sản phẩm
+    /// <summary>
+    /// Cập nhật thông tin sản phẩm (Hỗ trợ upload ảnh mới trực tiếp qua Multipart Form)
+    /// </summary>
     [HttpPut("{id:guid}")]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<ProductDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<ProductDto>>> UpdateProduct(
         Guid id,
-        [FromBody] UpdateProductDto dto)
+        [FromForm] UpdateProductDto dto,
+        IFormFile? file)
     {
         try
         {
@@ -173,6 +221,12 @@ public class ProductsController : ControllerBase
                     400,
                     ModelState
                 ));
+            }
+
+            // Nếu người dùng chọn file ảnh mới khi Update, upload lên Cloudinary trước
+            if (file != null && file.Length > 0)
+            {
+                dto.ImageUrl = await _cloudinaryService.UploadImageAsync(file, "products");
             }
 
             var product = await _productService.UpdateProductAsync(id, dto);

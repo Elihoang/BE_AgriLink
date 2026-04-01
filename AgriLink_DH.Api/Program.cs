@@ -145,6 +145,12 @@ builder.Services.AddAuthorization();
 // Bind MomoSettings
 builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoDisbursement"));
 
+// Bind RoboflowSettings
+builder.Services.Configure<RoboflowSettings>(builder.Configuration.GetSection("Roboflow"));
+
+// Bind Gemini Settings (OpenAI / Gemini API)
+builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("Gemini"));
+
 // Add Repositories and Services
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
@@ -185,16 +191,25 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    // Fix: cho phép Swashbuckle generate đúng schema cho IFormFile / multipart
+    options.MapType<IFormFile>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Format = "binary"
+    });
 });
 
 // Add CORS
 builder.Services.AddCors(options =>
 {
+    var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:5173";
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendUrl, "https://duyhoang.io.vn", "http://duyhoang.io.vn")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -210,21 +225,15 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     KnownProxies = { }
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.MapScalarApiReference(options =>
 {
-    app.UseSwagger();
-    
-    // Use Scalar instead of SwaggerUI for modern API documentation
-    app.MapScalarApiReference(options =>
-    {
-        options
-            .WithTitle("AgriLink API")
-            .WithTheme(ScalarTheme.Purple)
-            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-            .WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
-    });
-}
+    options
+        .WithTitle("AgriLink API")
+        .WithTheme(ScalarTheme.Purple)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+        .WithOpenApiRoutePattern("/swagger/v1/swagger.json"); // hardcode path
+});
 
 app.UseHttpsRedirection();
 

@@ -2,6 +2,7 @@ using AgriLink_DH.Core.Services;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Infrastructure.Repositories;
+using AgriLink_DH.Core.Interfaces;
 
 namespace AgriLink_DH.Api.Extensions;
 
@@ -79,6 +80,8 @@ public static class ServiceCollectionExtensions
         
         // Market Price Service - Quản lý giá nông sản (Database)
         services.AddScoped<MarketPriceDbService>();
+        services.AddHttpClient<MarketPriceService>();
+        services.AddScoped<MarketPriceService>();
         
         // Article System Services
         services.AddScoped<ArticleService>();
@@ -88,12 +91,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ArticleLikeService>();
         
         // Cloudinary - Upload ảnh
-        services.AddSingleton<CloudinaryService>();
+        services.AddSingleton<ICloudinaryService, CloudinaryService>();
         
 
         // Salary Payment and Momo Services
         services.AddScoped<SalaryPaymentService>();
-        services.AddScoped<IMomoService, MockMomoService>();
+        services.AddHttpClient<RealMomoService>(); // inject HttpClient qua factory
+        services.AddScoped<IMomoService, RealMomoService>();
+
+        // Diagnose AI (Roboflow)
+        services.AddHttpClient(); // IHttpClientFactory cho DiagnoseController
+
+        // Gemini AI Service
+        services.AddHttpClient("Gemini");
+        services.AddScoped<IAiService, GeminiAiService>();
 
         return services;
     }

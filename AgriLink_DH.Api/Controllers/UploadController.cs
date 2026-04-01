@@ -1,4 +1,5 @@
 using AgriLink_DH.Core.Services;
+using AgriLink_DH.Core.Interfaces;
 using AgriLink_DH.Share.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,10 @@ namespace AgriLink_DH.Api.Controllers;
 [Authorize]
 public class UploadController : ControllerBase
 {
-    private readonly CloudinaryService _cloudinaryService;
+    private readonly ICloudinaryService _cloudinaryService;
     private readonly ILogger<UploadController> _logger;
 
-    public UploadController(CloudinaryService cloudinaryService, ILogger<UploadController> logger)
+    public UploadController(ICloudinaryService cloudinaryService, ILogger<UploadController> logger)
     {
         _cloudinaryService = cloudinaryService;
         _logger = logger;

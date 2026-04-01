@@ -14,6 +14,7 @@ public class SalaryPaymentDto
     public decimal NetSalary { get; set; }
     public string? MomoOrderId { get; set; }
     public string? MomoTransId { get; set; }
+    public string? MomoPayUrl { get; set; }  // URL redirect MoMo — chỉ có lúc vừa tạo mới
     public int? MomoResultCode { get; set; }
     public SalaryPaymentStatus Status { get; set; }
     public string StatusLabel { get; set; } = string.Empty;

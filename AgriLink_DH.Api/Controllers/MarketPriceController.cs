@@ -10,13 +10,16 @@ namespace AgriLink_DH.Api.Controllers;
 [Route("api/[controller]")]
 public class MarketPriceController : ControllerBase
 {
-    private readonly MarketPriceDbService _marketPriceService;
+    private readonly MarketPriceDbService _marketPriceDbService;
+    private readonly MarketPriceService _marketPriceService;
     private readonly ILogger<MarketPriceController> _logger;
 
     public MarketPriceController(
-        MarketPriceDbService marketPriceService,
+        MarketPriceDbService marketPriceDbService,
+        MarketPriceService marketPriceService,
         ILogger<MarketPriceController> logger)
     {
+        _marketPriceDbService = marketPriceDbService;
         _marketPriceService = marketPriceService;
         _logger = logger;
     }
@@ -29,7 +32,7 @@ public class MarketPriceController : ControllerBase
     {
         try
         {
-            var prices = await _marketPriceService.GetLatestPricesAsync();
+            var prices = await _marketPriceDbService.GetLatestPricesAsync();
 
             return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(
                 prices,
@@ -40,6 +43,94 @@ public class MarketPriceController : ControllerBase
             _logger.LogError(ex, "Error getting market prices");
             return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse(
                 "Lỗi khi lấy giá thị trường", 500));
+        }
+    }
+
+    [HttpGet("api-data")]
+    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetApiData()
+    {
+        try
+        {
+            var result = await _marketPriceService.GetPricesFromTwelveDataAsync();
+            if (result == null)
+                return StatusCode(502, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Không lấy được API data", 502));
+
+            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result, "Lấy API data thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting API data");
+            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Lỗi khi lấy dữ liệu từ API", 500));
+        }
+    }
+
+    [HttpGet("regional/scraping")]
+    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetRegionalScraping()
+    {
+        try
+        {
+            var result = await _marketPriceService.GetPricesFromScrapingAsync();
+            if (result == null)
+                return StatusCode(502, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Không lấy được dữ liệu web scraping", 502));
+
+            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result, "Lấy dữ liệu web scraping thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting regional scraping data");
+            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Lỗi khi lấy dữ liệu từ web scraping", 500));
+        }
+    }
+
+    [HttpGet("regional/conversion")]
+    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetRegionalConversion()
+    {
+        try
+        {
+            var result = await _marketPriceService.GetPricesFromTwelveDataAsync();
+            if (result == null)
+                return StatusCode(502, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Không lấy được dữ liệu conversion", 502));
+
+            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result, "Lấy dữ liệu conversion từ TwelveData thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting regional conversion data");
+            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Lỗi khi lấy dữ liệu conversion", 500));
+        }
+    }
+
+    [HttpGet("regional/manual")]
+    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> GetRegionalManual()
+    {
+        try
+        {
+            var result = await _marketPriceService.GetFullManualDataAsync();
+            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result, "Lấy dữ liệu manual thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting regional manual data");
+            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Lỗi khi lấy dữ liệu manual", 500));
+        }
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<ApiResponse<MarketPriceResponseDto>>> RefreshMarketPrices()
+    {
+        try
+        {
+            await _marketPriceService.ClearCacheAsync();
+            var result = await _marketPriceService.GetMarketPricesAsync();
+            if (result == null)
+                return StatusCode(502, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Không lấy được dữ liệu sau refresh", 502));
+
+            return Ok(ApiResponse<MarketPriceResponseDto>.SuccessResponse(result, "Làm mới dữ liệu thành công"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing market prices");
+            return StatusCode(500, ApiResponse<MarketPriceResponseDto>.ErrorResponse("Lỗi khi refresh dữ liệu", 500));
         }
     }
 
@@ -54,7 +145,7 @@ public class MarketPriceController : ControllerBase
             // TODO: Add authentication/authorization for admin
             var updatedBy = User.Identity?.Name ?? "Admin";
             
-            var result = await _marketPriceService.UpdatePriceAsync(request, updatedBy);
+            var result = await _marketPriceDbService.UpdatePriceAsync(request, updatedBy);
 
             return Ok(ApiResponse<object>.SuccessResponse(
                 new 
@@ -88,7 +179,7 @@ public class MarketPriceController : ControllerBase
 
             foreach (var request in requests)
             {
-                var result = await _marketPriceService.UpdatePriceAsync(request, updatedBy);
+                var result = await _marketPriceDbService.UpdatePriceAsync(request, updatedBy);
                 results.Add(new 
                 { 
                     id = result.Id, 
@@ -123,7 +214,7 @@ public class MarketPriceController : ControllerBase
     {
         try
         {
-            var history = await _marketPriceService.GetPriceHistoryAsync(
+            var history = await _marketPriceDbService.GetPriceHistoryAsync(
                 productId, regionCode, fromDate, toDate, limit);
 
             return Ok(ApiResponse<object>.SuccessResponse(
@@ -146,7 +237,7 @@ public class MarketPriceController : ControllerBase
     {
         try
         {
-            var previousPrices = await _marketPriceService.GetPreviousDayPricesAsync();
+            var previousPrices = await _marketPriceDbService.GetPreviousDayPricesAsync();
 
             return Ok(ApiResponse<object>.SuccessResponse(
                 previousPrices,
@@ -196,7 +287,7 @@ public class MarketPriceController : ControllerBase
         {
             // Lookup productId từ DB theo code (không hardcode GUID)
             Guid coffeeId;
-            try { coffeeId = await _marketPriceService.GetProductIdByCodeAsync("CF_ROBUSTA"); }
+            try { coffeeId = await _marketPriceDbService.GetProductIdByCodeAsync("CF_ROBUSTA"); }
             catch (KeyNotFoundException ex) { return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message, 400)); }
 
             using var stream = file.OpenReadStream();
@@ -208,7 +299,7 @@ public class MarketPriceController : ControllerBase
             var saved = 0; var saveErrs = new List<string>();
             foreach (var req in pr.ValidRows)
             {
-                try   { await _marketPriceService.UpdatePriceAsync(req, updatedBy); saved++; }
+                try   { await _marketPriceDbService.UpdatePriceAsync(req, updatedBy); saved++; }
                 catch (Exception ex) { saveErrs.Add($"{req.RegionCode}: {ex.Message}"); }
             }
             return Ok(ApiResponse<object>.SuccessResponse(new
@@ -236,7 +327,7 @@ public class MarketPriceController : ControllerBase
         {
             // Lookup productId từ DB theo code (không hardcode GUID)
             Guid pepperId;
-            try { pepperId = await _marketPriceService.GetProductIdByCodeAsync("PEPPER"); }
+            try { pepperId = await _marketPriceDbService.GetProductIdByCodeAsync("PEPPER"); }
             catch (KeyNotFoundException ex) { return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message, 400)); }
 
             using var stream = file.OpenReadStream();
@@ -248,7 +339,7 @@ public class MarketPriceController : ControllerBase
             var saved = 0; var saveErrs = new List<string>();
             foreach (var req in pr.ValidRows)
             {
-                try   { await _marketPriceService.UpdatePriceAsync(req, updatedBy); saved++; }
+                try   { await _marketPriceDbService.UpdatePriceAsync(req, updatedBy); saved++; }
                 catch (Exception ex) { saveErrs.Add($"{req.RecordedDate:yyyy-MM-dd}: {ex.Message}"); }
             }
             return Ok(ApiResponse<object>.SuccessResponse(new

@@ -6,14 +6,13 @@ public class MockMomoService : IMomoService
 {
     public async Task<MomoDisbursementResponse> SendDisbursementAsync(string phone, decimal amount, string orderId, string orderInfo)
     {
-        // Giả lập xử lý thanh toán MoMo
         await Task.Delay(1000);
-
         return new MomoDisbursementResponse
         {
             OrderId = orderId,
             TransId = "MOCK_" + Guid.NewGuid().ToString("N").Substring(0, 10),
-            ResultCode = 0, // Success
+            PayUrl = $"https://test-payment.momo.vn/pay/MOCK_{orderId}", // fake URL để test FE
+            ResultCode = 0,
             Message = "Thanh toán thành công (MOCK)",
             Status = MomoDisbursementResult.Success
         };
