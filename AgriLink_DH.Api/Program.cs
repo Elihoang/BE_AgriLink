@@ -145,6 +145,12 @@ builder.Services.AddAuthorization();
 // Bind MomoSettings
 builder.Services.Configure<MomoSettings>(builder.Configuration.GetSection("MomoDisbursement"));
 
+// Bind RoboflowSettings
+builder.Services.Configure<RoboflowSettings>(builder.Configuration.GetSection("Roboflow"));
+
+// Bind Gemini Settings (OpenAI / Gemini API)
+builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("Gemini"));
+
 // Add Repositories and Services
 builder.Services.AddRepositories();
 builder.Services.AddApplicationServices();
@@ -197,11 +203,13 @@ builder.Services.AddSwaggerGen(options =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
+    var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:5173";
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendUrl, "https://duyhoang.io.vn", "http://duyhoang.io.vn")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 

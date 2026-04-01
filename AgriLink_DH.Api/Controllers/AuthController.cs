@@ -24,61 +24,89 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<ApiResponse<object>>> Register([FromBody] RegisterDto registerDto)
     {
-        // Get IP address and User-Agent
         var ipAddress = IpAddressHelper.GetClientIpAddress(HttpContext);
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
         var (success, message, user, token) = await _authService.RegisterAsync(registerDto, ipAddress, userAgent);
 
-        if (!success)
+        if (!success) return BadRequest(ApiResponse<object>.ErrorResponse(message));
+
+        if (token != null)
         {
-            return BadRequest(ApiResponse<object>.ErrorResponse(message));
+            SetRefreshTokenCookie(token.RefreshToken);
+            token.RefreshToken = string.Empty;
         }
 
-        return Ok(ApiResponse<object>.SuccessResponse(new
-        {
-            User = user,
-            Token = token
-        }, message));
+        return Ok(ApiResponse<object>.SuccessResponse(new { User = user, Token = token }, message));
     }
 
-    /// Đăng nhập
-    /// </summary>
     [HttpPost("login")]
     public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginDto loginDto)
     {
-        // Get IP address and User-Agent for login tracking
         var ipAddress = IpAddressHelper.GetClientIpAddress(HttpContext);
         var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
 
         var (success, message, user, token) = await _authService.LoginAsync(loginDto, ipAddress, userAgent);
 
-        if (!success)
+        if (!success) return BadRequest(ApiResponse<object>.ErrorResponse(message));
+
+        if (token != null)
         {
-            return BadRequest(ApiResponse<object>.ErrorResponse(message));
+            SetRefreshTokenCookie(token.RefreshToken);
+            token.RefreshToken = string.Empty;
         }
 
-        return Ok(ApiResponse<object>.SuccessResponse(new
-        {
-            User = user,
-            Token = token
-        }, message));
+        return Ok(ApiResponse<object>.SuccessResponse(new { User = user, Token = token }, message));
     }
 
     
-    /// Refresh access token
+    /// <summary>
+    /// Refresh access token using HttpOnly cookie
     /// </summary>
     [HttpPost("refresh")]
-    public async Task<ActionResult<ApiResponse<TokenDto?>>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+    public async Task<ActionResult<ApiResponse<TokenDto?>>> RefreshToken()
     {
-        var (success, message, token) = await _authService.RefreshTokenAsync(refreshTokenDto.RefreshToken);
+        // 1. Lấy AccessToken cũ từ Header (do đã có [Authorize])
+        var accessToken = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        
+        // 2. Lấy RefreshToken từ HttpOnly Cookie
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+             return Unauthorized(ApiResponse<TokenDto?>.ErrorResponse("Refresh Session đã hết hạn. Vui lòng đăng nhập lại.", 401));
+        }
+
+        var (success, message, token) = await _authService.RefreshTokenAsync(accessToken, refreshToken);
 
         if (!success || token == null)
         {
             return BadRequest(ApiResponse<TokenDto?>.ErrorResponse(message));
         }
 
+        // 3. Ghi lại cookie và ẩn refreshToken khỏi JSON
+        SetRefreshTokenCookie(token.RefreshToken);
+        token.RefreshToken = string.Empty; 
+
         return Ok(ApiResponse<TokenDto?>.SuccessResponse(token, message));
+    }
+
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false, // Đổi thành false để test trên HTTP localhost
+            SameSite = SameSiteMode.Lax, // Đổi thành Lax để browser chấp nhận trên cùng localhost
+            Expires = DateTime.UtcNow.AddDays(7),
+            Path = "/"
+        };
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+    }
+
+    private void RemoveRefreshTokenCookie()
+    {
+        Response.Cookies.Delete("refreshToken");
     }
 
     /// Đăng xuất - xóa refresh token
@@ -105,6 +133,7 @@ public class AuthController : ControllerBase
             return BadRequest(ApiResponse<object?>.ErrorResponse("Logout failed"));
         }
 
+        RemoveRefreshTokenCookie();
         return Ok(ApiResponse<object?>.SuccessResponse(null, "Logout successful"));
     }
 

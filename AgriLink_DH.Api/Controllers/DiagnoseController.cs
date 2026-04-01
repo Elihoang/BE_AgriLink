@@ -2,6 +2,7 @@ using System.Text.Json;
 using AgriLink_DH.Share.Common;
 using AgriLink_DH.Share.DTOs.Disease;
 using Microsoft.AspNetCore.Mvc;
+using AgriLink_DH.Core.Configurations;
 
 namespace AgriLink_DH.Api.Controllers;
 
@@ -16,10 +17,7 @@ public class DiagnoseController : ControllerBase
     private readonly HttpClient _httpClient;
     private readonly ILogger<DiagnoseController> _logger;
 
-    // Roboflow config
-    private const string ApiKey  = "i4CgC0ZaySLzfoYhNocv";
-    private const string ModelId = "coffee-aejli-rsyrz/1";
-    private const string BaseUrl = "https://serverless.roboflow.com"; // đúng URL từ dashboard
+    private readonly RoboflowSettings _roboflowSettings;
 
     // Map tên class → tiếng Việt + lời khuyên (Case-Insensitive)
     private static readonly Dictionary<string, (string Label, string Advice)> DiseaseMap = new(StringComparer.OrdinalIgnoreCase)
@@ -35,10 +33,11 @@ public class DiagnoseController : ControllerBase
         ["unhealthy"]       = ("Có dấu hiệu bệnh",    "Cây đang có dấu hiệu nhiễm bệnh. Cần đem mẫu lá đến chuyên gia nông nghiệp hoặc nhà thuốc BVTV để kiểm tra chính xác loại nấm/sâu bọ."),
     };
 
-    public DiagnoseController(IHttpClientFactory httpClientFactory, ILogger<DiagnoseController> logger)
+    public DiagnoseController(IHttpClientFactory httpClientFactory, ILogger<DiagnoseController> logger, Microsoft.Extensions.Options.IOptions<AgriLink_DH.Core.Configurations.RoboflowSettings> roboflowSettings)
     {
         _httpClient = httpClientFactory.CreateClient();
         _logger = logger;
+        _roboflowSettings = roboflowSettings.Value;
     }
 
     /// <summary>
@@ -62,9 +61,9 @@ public class DiagnoseController : ControllerBase
             var base64Image = Convert.ToBase64String(ms.ToArray());
 
             // Gọi Roboflow Hosted API
-            var url = $"{BaseUrl}/{ModelId}?api_key={ApiKey}&name={image.FileName}";
+            var url = $"{_roboflowSettings.BaseUrl}/{_roboflowSettings.ModelId}?api_key={_roboflowSettings.ApiKey}&name={image.FileName}";
             _logger.LogInformation("[DIAGNOSE] Calling Roboflow API → Model={ModelId} File={File} Size={Size}KB",
-                ModelId, image.FileName, image.Length / 1024);
+                _roboflowSettings.ModelId, image.FileName, image.Length / 1024);
 
             var content  = new StringContent(base64Image);
             var response = await _httpClient.PostAsync(url, content);

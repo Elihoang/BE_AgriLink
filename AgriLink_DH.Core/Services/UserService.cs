@@ -64,9 +64,9 @@ public class UserService
         var user = new User
         {
             Username = dto.Username,
-            Email = dto.Email,
+            Email = dto.Email ?? string.Empty,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            FullName = dto.FullName,
+            FullName = dto.FullName ?? string.Empty,
             PhoneNumber = dto.PhoneNumber,
             Role = dto.Role,
             ImageUrl = dto.ImageUrl,
@@ -173,8 +173,8 @@ public class UserService
         {
             Id = user.Id,
             Username = user.Username,
-            Email = user.Email,
-            FullName = user.FullName,
+            Email = user.Email ?? string.Empty,
+            FullName = user.FullName ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
             Address = user.Address,
             Role = user.Role,

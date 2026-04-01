@@ -135,54 +135,67 @@ public class AuthService : BaseCachedService
         return (true, "Đăng nhập thành công", userResponse, tokens);
     }
 
-    public async Task<(bool Success, string Message, TokenDto? Token)> RefreshTokenAsync(string refreshToken)
+    public async Task<(bool Success, string Message, TokenDto? Token)> RefreshTokenAsync(string accessToken, string refreshToken)
     {
-        if (string.IsNullOrEmpty(refreshToken))
+        if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
         {
-            return (false, "Cần có Refresh token", null);
+            return (false, "AccessToken và Refresh token là bắt buộc", null);
         }
 
         try
         {
-            var allUsers = await _userRepository.GetAllAsync();
+            // 1. Decode UserId từ Access Token (không check lifetime)
+            var principal = _jwtHelper.GetPrincipalFromExpiredToken(accessToken);
+            var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return (false, "Dữ liệu Token không hợp lệ", null);
+            }
+
+            // 2. Kiểm tra Refresh Token trong Redis
+            var storedRefreshToken = await RedisService.GetRefreshTokenAsync(userId);
             
-            User? matchedUser = null;
-            foreach (var user in allUsers)
+            if (string.IsNullOrEmpty(storedRefreshToken) || storedRefreshToken != refreshToken)
             {
-                var storedRefreshToken = await RedisService.GetRefreshTokenAsync(user.Id.ToString());
-                if (!string.IsNullOrEmpty(storedRefreshToken) && storedRefreshToken == refreshToken)
-                {
-                    matchedUser = user;
-                    break;
-                }
+                return (false, "Refresh token không khớp hoặc đã hết hạn. Vui lòng đăng nhập lại.", null);
             }
 
-            if (matchedUser == null)
+            // 3. Lấy User và kiểm tra trạng thái
+            if (!Guid.TryParse(userId, out var userGuid)) return (false, "User ID format error", null);
+            var user = await _userRepository.GetByIdAsync(userGuid);
+            if (user == null || !user.IsActive)
             {
-                return (false, "Refresh token không hợp lệ hoặc đã hết hạn", null);
+                return (false, "Tài khoản không tồn tại hoặc đã bị khóa", null);
             }
 
-            // Check if user is still active
-            if (!matchedUser.IsActive)
-            {
-                return (false, "Tài khoản đã bị khóa", null);
-            }
-
-            // Generate new token pair
-            var newTokens = _jwtHelper.GenerateTokenPair(matchedUser);
-
-            // Update refresh token in Redis
-            var refreshTokenExpiration = TimeSpan.FromDays(
-                Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
+            // 4. CHỈ TẠO MỚI ACCESS TOKEN - DUY TRÌ REFRESH TOKEN CŨ (Industry Standard for stability)
+            var newAccessToken = _jwtHelper.GenerateAccessToken(user);
+            
+            var accessTokenExpiration = DateTime.UtcNow.AddMinutes(
+                Convert.ToInt32(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "30")
             );
-            await RedisService.SetRefreshTokenAsync(matchedUser.Id.ToString(), newTokens.RefreshToken, refreshTokenExpiration);
 
-            return (true, "Làm mới token thành công", newTokens);
+            // Giữ nguyên Refresh Token cũ (có thể kéo dài thêm 7 ngày nếu muốn, hoặc giữ nguyên expiration gốc)
+            var refreshTokenExpirationDays = Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7");
+            var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpirationDays);
+
+            // Cập nhật lại expiration cho cùng 1 token trong Redis (Optional: Đảm bảo session không bị chết yểu)
+            await RedisService.SetRefreshTokenAsync(userId, refreshToken, TimeSpan.FromDays(refreshTokenExpirationDays));
+
+            var tokenDto = new TokenDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = refreshToken, // Trả lại chính cái cũ để UI không bị rối
+                AccessTokenExpiration = accessTokenExpiration,
+                RefreshTokenExpiration = refreshTokenExpirationDate
+            };
+
+            return (true, "Làm mới Access Token thành công", tokenDto);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Log error but don't expose details
-            return (false, "Làm mới token thất bại", null);
+            return (false, $"Hệ thống gặp lỗi khi làm mới session: {ex.Message}", null);
         }
     }
 
