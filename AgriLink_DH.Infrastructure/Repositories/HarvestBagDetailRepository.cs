@@ -18,5 +18,13 @@ public class HarvestBagDetailRepository : BaseRepository<HarvestBagDetail>, IHar
             .OrderBy(b => b.BagIndex)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<HarvestBagDetail>> GetDraftsBySessionIdAsync(Guid sessionId)
+    {
+        return await _dbSet
+            .Where(b => b.SessionId == sessionId && b.IsDraft)
+            .OrderBy(b => b.BagIndex)
+            .ToListAsync();
+    }
 }
 

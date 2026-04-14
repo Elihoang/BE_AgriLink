@@ -56,6 +56,44 @@ public class HarvestBagDetailsController : ControllerBase
         }
     }
 
+    [HttpPost("draft")]
+    public async Task<ActionResult<ApiResponse<HarvestBagDetailDto>>> AddDraftBag([FromBody] CreateHarvestBagDetailDto dto)
+    {
+        try
+        {
+            var bag = await _bagDetailService.AddDraftBagAsync(dto);
+            return Ok(ApiResponse<HarvestBagDetailDto>.CreatedResponse(bag, "Thêm bao nháp thành công"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<HarvestBagDetailDto>.ErrorResponse(ex.Message, 400));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi thêm bao nháp");
+            return StatusCode(500, ApiResponse<HarvestBagDetailDto>.ErrorResponse("Lỗi khi thêm bao nháp", 500));
+        }
+    }
+
+    [HttpPost("confirm-drafts/{sessionId:guid}")]
+    public async Task<ActionResult<ApiResponse<int>>> ConfirmDrafts(Guid sessionId)
+    {
+        try
+        {
+            var count = await _bagDetailService.ConfirmDraftsAsync(sessionId);
+            return Ok(ApiResponse<int>.SuccessResponse(count, $"Xác nhận {count} bao thành công"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<int>.ErrorResponse(ex.Message, 400));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi chốt bao nháp");
+            return StatusCode(500, ApiResponse<int>.ErrorResponse("Lỗi khi chốt bao nháp", 500));
+        }
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
     {

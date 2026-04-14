@@ -10,4 +10,5 @@ public class HarvestBagDetailDto
     public decimal NetWeight { get; set; }
     public bool IsAutoWeighed { get; set; }
     public string? ScaleDeviceId { get; set; }
+    public bool IsDraft { get; set; }
 }

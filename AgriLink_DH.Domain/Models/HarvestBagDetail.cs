@@ -41,6 +41,12 @@ public class HarvestBagDetail
     [MaxLength(100)]
     public string? ScaleDeviceId { get; set; }
 
+    /// <summary>
+    /// Bao đang ở trạng thái nháp (chưa được xác nhận lưu vào session)
+    /// </summary>
+    [Column("is_draft")]
+    public bool IsDraft { get; set; } = false;
+
     // Navigation Properties
     [ForeignKey(nameof(SessionId))]
     public virtual HarvestSession HarvestSession { get; set; } = null!;
