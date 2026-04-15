@@ -85,11 +85,11 @@ public class MomoCallbackController : ControllerBase
 
             if (!Verify(rawSig, signature))
             {
-                _logger.LogWarning("[MOMO IPN] ❌ Invalid signature");
+                _logger.LogWarning("[MOMO IPN] Invalid signature");
                 return BadRequest(new { message = "Invalid signature" });
             }
 
-            _logger.LogInformation("[MOMO IPN] ✅ Valid. OrderId={OrderId} ResultCode={ResultCode}",
+            _logger.LogInformation("[MOMO IPN] Valid. OrderId={OrderId} ResultCode={ResultCode}",
                 orderId, resultCode);
 
             await UpdatePaymentStatusAsync(orderId, transId, resultCode);

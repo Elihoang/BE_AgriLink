@@ -75,7 +75,7 @@ public class BluetoothScaleHub : Hub
                     ScaleDeviceId = scaleDeviceId
                 };
 
-                var newBag = await _service.AddBagAsync(dto);
+                var newBag = await _service.AddDraftBagAsync(dto);
 
                 // Send success event back to the app that called this
                 await Clients.Caller.SendAsync("OnBagLocked", newBag);

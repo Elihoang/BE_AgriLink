@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
 using PuppeteerSharp;
-
+using HtmlAgilityPack;
 namespace AgriLink_DH.Core.Services;
 
 /// <summary>
@@ -113,35 +113,34 @@ public class MarketPriceService : BaseCachedService
             var response = await httpClient.GetStringAsync(url);
             var now = DateTime.Now;
 
-            var tableRegex = new Regex(@"<table[^>]*>(.*?)</table>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            var tableMatch = tableRegex.Match(response);
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(response);
 
-            if (!tableMatch.Success)
+            // Tìm node theo XPath một cách uyển chuyển thay vì cứng nhắc chém chuỗi
+            var rows = htmlDoc.DocumentNode.SelectNodes("//table//tr");
+
+            if (rows == null || !rows.Any())
             {
-                _logger.LogWarning("ChoCaPhe: Price table not found in HTML response (Client-side rendering likely).");
+                _logger.LogWarning("ChoCaPhe: Price table/rows not found in HTML response (Client-side rendering likely).");
                 return null;
             }
 
-            var tableHtml = tableMatch.Groups[1].Value;
-            var rowMatches = Regex.Matches(tableHtml, @"<tr[^>]*>(.*?)</tr>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            if (rowMatches.Count == 0) return null;
-
             var rawItems = new List<PriceItemJs>();
-            foreach (Match row in rowMatches)
+            foreach (var row in rows)
             {
-                var cellMatches = Regex.Matches(row.Groups[1].Value, @"<td[^>]*>(.*?)</td>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                if (cellMatches.Count < 2) continue;
+                var cols = row.SelectNodes("td");
+                if (cols == null || cols.Count() < 2) continue;
 
-                string name = Regex.Replace(cellMatches[0].Groups[1].Value, "<[^>]+>", "").Trim();
-                string priceText = Regex.Replace(cellMatches[1].Groups[1].Value, "<[^>]+>", "").Trim();
-                string changeHtml = cellMatches.Count > 2 ? cellMatches[2].Groups[1].Value : "0";
+                // HtmlDecode để tránh các ký tự đặc biệt như &amp;, &nbsp; của HTML
+                string name = System.Net.WebUtility.HtmlDecode(cols[0].InnerText).Trim();
+                string priceText = cols[1].InnerText.Trim();
+                string changeHtml = cols.Count() > 2 ? cols[2].InnerHtml : "0";
                 
                 bool isNegative = changeHtml.Contains("-") || changeHtml.Contains("text-red-600") || changeHtml.Contains("lucide-arrow-down");
                 bool isPositive = changeHtml.Contains("+") || changeHtml.Contains("text-green-600") || changeHtml.Contains("lucide-arrow-up");
 
                 decimal price = decimal.TryParse(Regex.Replace(priceText, @"[^\d]", ""), out var p) ? p : 0;
-                decimal change = decimal.TryParse(Regex.Replace(Regex.Replace(changeHtml, "<[^>]+>", ""), @"[^\d]", ""), out var c) ? c : 0;
+                decimal change = decimal.TryParse(Regex.Replace(cols.Count() > 2 ? cols[2].InnerText : "0", @"[^\d]", ""), out var c) ? c : 0;
 
                 if (isNegative) change = -Math.Abs(change);
                 else if (isPositive) change = Math.Abs(change);

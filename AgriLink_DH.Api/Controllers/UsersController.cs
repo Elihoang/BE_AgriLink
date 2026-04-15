@@ -87,9 +87,9 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Cập nhật thông tin user
+    /// Cập nhật thông tin user (partial update)
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [HttpPatch("{id:guid}")]
     public async Task<ActionResult<ApiResponse<UserDto>>> Update(Guid id, [FromBody] UpdateUserDto dto)
     {
         try
