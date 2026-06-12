@@ -15,8 +15,10 @@ public class TaskType
     public Guid Id { get; set; } = Guid.NewGuid();
 
     [Column("farm_id")]
-    [Required]
-    public Guid FarmId { get; set; }
+    public Guid? FarmId { get; set; }
+
+    [Column("is_system")]
+    public bool IsSystem { get; set; } = false;
 
     [Column("name")]
     [Required]
@@ -33,5 +35,5 @@ public class TaskType
 
     // Navigation Properties
     [ForeignKey(nameof(FarmId))]
-    public virtual Farm Farm { get; set; } = null!;
+    public virtual Farm? Farm { get; set; }
 }

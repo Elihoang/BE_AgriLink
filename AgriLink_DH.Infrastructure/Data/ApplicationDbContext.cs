@@ -283,6 +283,18 @@ public class ApplicationDbContext : DbContext
             }
         );
 
+        // SEED DATA: TaskType (System Templates)
+        modelBuilder.Entity<TaskType>().HasData(
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000001"), Name = "Làm đất", DefaultUnit = "Ngày công", DefaultPrice = 250000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000002"), Name = "Xuống giống / Gieo hạt", DefaultUnit = "Lần", DefaultPrice = 100000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000003"), Name = "Tưới nước", DefaultUnit = "Giờ", DefaultPrice = 50000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000004"), Name = "Bón phân", DefaultUnit = "Lần", DefaultPrice = 150000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000005"), Name = "Làm cỏ", DefaultUnit = "Ngày công", DefaultPrice = 200000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000006"), Name = "Phun thuốc (BVTV)", DefaultUnit = "Bình", DefaultPrice = 80000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000007"), Name = "Cắt tỉa cành / Tạo tán", DefaultUnit = "Ngày công", DefaultPrice = 300000, IsSystem = true },
+            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000008"), Name = "Thu hoạch", DefaultUnit = "Ngày công", DefaultPrice = 300000, IsSystem = true }
+        );
+        
         // Material: Index on owner_user_id + name (Unique per user)
         modelBuilder.Entity<Material>()
             .HasIndex(m => new { m.OwnerUserId, m.Name })

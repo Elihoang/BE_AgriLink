@@ -4,8 +4,9 @@ namespace AgriLink_DH.Share.DTOs.TaskType;
 
 public class CreateTaskTypeDto
 {
-    [Required]
-    public Guid FarmId { get; set; }
+    public Guid? FarmId { get; set; }
+
+    public bool IsSystem { get; set; } = false;
 
     [Required]
     [MaxLength(100)]

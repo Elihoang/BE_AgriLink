@@ -11,15 +11,18 @@ public class FarmService
 {
     private readonly IFarmRepository _farmRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
+    private readonly ITaskTypeRepository _taskTypeRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public FarmService(
         IFarmRepository farmRepository, 
         ICropSeasonRepository cropSeasonRepository,
+        ITaskTypeRepository taskTypeRepository,
         IUnitOfWork unitOfWork)
     {
         _farmRepository = farmRepository;
         _cropSeasonRepository = cropSeasonRepository;
+        _taskTypeRepository = taskTypeRepository;
         _unitOfWork = unitOfWork;
     }
 

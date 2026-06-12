@@ -35,13 +35,17 @@ public class TaskTypeService
 
     public async Task<TaskTypeDto> CreateTaskTypeAsync(CreateTaskTypeDto dto)
     {
-        var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
-        if (farm == null)
-            throw new InvalidOperationException($"Không tìm thấy vườn với ID: {dto.FarmId}");
+        if (dto.FarmId.HasValue)
+        {
+            var farm = await _farmRepository.GetByIdAsync(dto.FarmId.Value);
+            if (farm == null)
+                throw new InvalidOperationException($"Không tìm thấy vườn với ID: {dto.FarmId}");
+        }
 
         var taskType = new TaskType
         {
             FarmId = dto.FarmId,
+            IsSystem = dto.IsSystem,
             Name = dto.Name,
             DefaultUnit = dto.DefaultUnit,
             DefaultPrice = dto.DefaultPrice
@@ -59,6 +63,9 @@ public class TaskTypeService
         if (taskType == null)
             throw new KeyNotFoundException($"Không tìm thấy loại công việc với ID: {id}");
 
+        if (taskType.IsSystem)
+            throw new InvalidOperationException("Không thể chỉnh sửa loại công việc chuẩn của hệ thống");
+
         taskType.Name = dto.Name;
         taskType.DefaultUnit = dto.DefaultUnit;
         taskType.DefaultPrice = dto.DefaultPrice;
@@ -75,6 +82,9 @@ public class TaskTypeService
         if (taskType == null)
             throw new KeyNotFoundException($"Không tìm thấy loại công việc với ID: {id}");
 
+        if (taskType.IsSystem)
+            throw new InvalidOperationException("Không thể xóa loại công việc chuẩn của hệ thống");
+
         _taskTypeRepository.Remove(taskType);
         await _unitOfWork.SaveChangesAsync();
 
@@ -87,6 +97,7 @@ public class TaskTypeService
         {
             Id = taskType.Id,
             FarmId = taskType.FarmId,
+            IsSystem = taskType.IsSystem,
             Name = taskType.Name,
             DefaultUnit = taskType.DefaultUnit,
             DefaultPrice = taskType.DefaultPrice
