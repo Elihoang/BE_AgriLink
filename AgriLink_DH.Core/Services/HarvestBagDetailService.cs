@@ -18,9 +18,9 @@ public class HarvestBagDetailService : BaseCachedService
         IHarvestBagDetailRepository bagDetailRepository,
         IHarvestSessionRepository harvestSessionRepository,
         ICropSeasonRepository cropSeasonRepository,
-        RedisService redisService,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork)
-        : base(redisService)
+        : base(cacheService)
     {
         _bagDetailRepository = bagDetailRepository;
         _harvestSessionRepository = harvestSessionRepository;

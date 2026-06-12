@@ -21,8 +21,8 @@ public class DailyWorkLogService : BaseCachedService
         ICropSeasonRepository cropSeasonRepository,
         IWorkerRepository workerRepository,
         IUnitOfWork unitOfWork,
-        RedisService redisService)
-        : base(redisService)
+        ICacheService cacheService)
+        : base(cacheService)
     {
         _dailyWorkLogRepository = dailyWorkLogRepository;
         _workAssignmentRepository = workAssignmentRepository;

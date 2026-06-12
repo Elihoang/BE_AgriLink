@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Share.DTOs.Weather;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +21,8 @@ public class WeatherService : BaseCachedService
         IConfiguration configuration,
         ILogger<WeatherService> logger,
         IFarmRepository farmRepository,
-        RedisService redisService)
-        : base(redisService)
+        ICacheService cacheService)
+        : base(cacheService)
     {
         _httpClient = httpClient;
         _configuration = configuration;

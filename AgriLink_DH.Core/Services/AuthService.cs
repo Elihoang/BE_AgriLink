@@ -14,23 +14,26 @@ public class AuthService : BaseCachedService
     private readonly IUserRepository _userRepository;
     private readonly IUserLoginLogRepository _loginLogRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly JwtHelper _jwtHelper;
+    private readonly ITokenGenerator _tokenGenerator;
     private readonly IConfiguration _configuration;
+    private readonly IPasswordHasher _passwordHasher;
 
     public AuthService(
         IUserRepository userRepository,
         IUserLoginLogRepository loginLogRepository,
         IUnitOfWork unitOfWork,
-        JwtHelper jwtHelper,
-        RedisService redisService,
-        IConfiguration configuration)
-        : base(redisService)
+        ITokenGenerator tokenGenerator,
+        ICacheService cacheService,
+        IConfiguration configuration,
+        IPasswordHasher passwordHasher)
+        : base(cacheService)
     {
         _userRepository = userRepository;
         _loginLogRepository = loginLogRepository;
         _unitOfWork = unitOfWork;
-        _jwtHelper = jwtHelper;
+        _tokenGenerator = tokenGenerator;
         _configuration = configuration;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<(bool Success, string Message, UserResponseDto? User, TokenDto? Token)> RegisterAsync(
@@ -51,7 +54,7 @@ public class AuthService : BaseCachedService
         }
 
         // Hash password
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+        var passwordHash = _passwordHasher.HashPassword(registerDto.Password);
 
         // Create user
         var user = new User
@@ -70,13 +73,23 @@ public class AuthService : BaseCachedService
         await _unitOfWork.SaveChangesAsync();
 
         // Generate tokens
-        var tokens = _jwtHelper.GenerateTokenPair(user);
+        var refreshToken = _tokenGenerator.GenerateRefreshToken();
+        var accessTokenExpiration = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "30"));
+        var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7"));
+        
+        var tokens = new TokenDto
+        {
+            AccessToken = _tokenGenerator.GenerateAccessToken(user),
+            RefreshToken = refreshToken,
+            AccessTokenExpiration = accessTokenExpiration,
+            RefreshTokenExpiration = refreshTokenExpirationDate
+        };
 
         // Store refresh token in Redis
         var refreshTokenExpiration = TimeSpan.FromDays(
             Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
         );
-        await RedisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
+        await CacheService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
 
         // Log registration
         await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Register, true);
@@ -110,7 +123,7 @@ public class AuthService : BaseCachedService
         }
 
         // Verify password
-        if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+        if (!_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
         {
             // Log failed login - wrong password
             await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Login, false);
@@ -118,13 +131,23 @@ public class AuthService : BaseCachedService
         }
 
         // Generate tokens
-        var tokens = _jwtHelper.GenerateTokenPair(user);
+        var refreshToken = _tokenGenerator.GenerateRefreshToken();
+        var accessTokenExpiration = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "30"));
+        var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7"));
+        
+        var tokens = new TokenDto
+        {
+            AccessToken = _tokenGenerator.GenerateAccessToken(user),
+            RefreshToken = refreshToken,
+            AccessTokenExpiration = accessTokenExpiration,
+            RefreshTokenExpiration = refreshTokenExpirationDate
+        };
 
         // Store refresh token in Redis
         var refreshTokenExpiration = TimeSpan.FromDays(
             Convert.ToInt32(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7")
         );
-        await RedisService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
+        await CacheService.SetRefreshTokenAsync(user.Id.ToString(), tokens.RefreshToken, refreshTokenExpiration);
 
         // Log successful login
         await CreateLoginLogAsync(user.Id, ipAddress ?? "Unknown", deviceInfo ?? "Unknown", LoginActionType.Login, true);
@@ -145,7 +168,7 @@ public class AuthService : BaseCachedService
         try
         {
             // 1. Decode UserId từ Access Token (không check lifetime)
-            var principal = _jwtHelper.GetPrincipalFromExpiredToken(accessToken);
+            var principal = _tokenGenerator.GetPrincipalFromExpiredToken(accessToken);
             var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
@@ -154,7 +177,7 @@ public class AuthService : BaseCachedService
             }
 
             // 2. Kiểm tra Refresh Token trong Redis
-            var storedRefreshToken = await RedisService.GetRefreshTokenAsync(userId);
+            var storedRefreshToken = await CacheService.GetRefreshTokenAsync(userId);
             
             if (string.IsNullOrEmpty(storedRefreshToken) || storedRefreshToken != refreshToken)
             {
@@ -170,7 +193,7 @@ public class AuthService : BaseCachedService
             }
 
             // 4. CHỈ TẠO MỚI ACCESS TOKEN - DUY TRÌ REFRESH TOKEN CŨ (Industry Standard for stability)
-            var newAccessToken = _jwtHelper.GenerateAccessToken(user);
+            var newAccessToken = _tokenGenerator.GenerateAccessToken(user);
             
             var accessTokenExpiration = DateTime.UtcNow.AddMinutes(
                 Convert.ToInt32(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "30")
@@ -181,7 +204,7 @@ public class AuthService : BaseCachedService
             var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpirationDays);
 
             // Cập nhật lại expiration cho cùng 1 token trong Redis (Optional: Đảm bảo session không bị chết yểu)
-            await RedisService.SetRefreshTokenAsync(userId, refreshToken, TimeSpan.FromDays(refreshTokenExpirationDays));
+            await CacheService.SetRefreshTokenAsync(userId, refreshToken, TimeSpan.FromDays(refreshTokenExpirationDays));
 
             var tokenDto = new TokenDto
             {
@@ -208,7 +231,7 @@ public class AuthService : BaseCachedService
         }
 
         // Delete refresh token from Redis
-        return await RedisService.DeleteRefreshTokenAsync(userId);
+        return await CacheService.DeleteRefreshTokenAsync(userId);
     }
 
     /// <summary>

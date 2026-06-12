@@ -1,4 +1,5 @@
 using AgriLink_DH.Share.DTOs.MarketPrice;
+using AgriLink_DH.Domain.Interface;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.Text.RegularExpressions;
@@ -20,10 +21,10 @@ public class MarketPriceService : BaseCachedService
 
     public MarketPriceService(
         IHttpClientFactory httpClientFactory,
-        RedisService redisService,
+        ICacheService cacheService,
         ILogger<MarketPriceService> logger,
         IConfiguration configuration)
-        : base(redisService)
+        : base(cacheService)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -359,7 +360,7 @@ public class MarketPriceService : BaseCachedService
     /// </summary>
     public async Task ClearCacheAsync()
     {
-        await RedisService.DeleteAsync(CACHE_KEY);
+        await CacheService.DeleteAsync(CACHE_KEY);
         _logger.LogInformation("Market price cache cleared");
     }
 }

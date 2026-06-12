@@ -1,9 +1,10 @@
 using StackExchange.Redis;
 using System.Text.Json;
+using AgriLink_DH.Domain.Interface;
 
 namespace AgriLink_DH.Core.Services;
 
-public class RedisService
+public class RedisService : ICacheService
 {
     private readonly IConnectionMultiplexer _redis;
     private readonly IDatabase _database;

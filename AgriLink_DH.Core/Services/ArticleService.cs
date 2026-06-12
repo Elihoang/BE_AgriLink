@@ -35,8 +35,8 @@ public class ArticleService : BaseCachedService
         IArticleCommentRepository commentRepository,
         IArticleLikeRepository likeRepository,
         IUnitOfWork unitOfWork,
-        RedisService redisService)
-        : base(redisService)
+        ICacheService cacheService)
+        : base(cacheService)
     {
         _articleRepository = articleRepository;
         _categoryRepository = categoryRepository;
@@ -104,7 +104,7 @@ public class ArticleService : BaseCachedService
     public async Task<IEnumerable<ArticleListItemDto>> GetPublishedArticlesAsync(CancellationToken cancellationToken = default)
     {
         // Check cache trước
-        var cachedData = await RedisService.GetAsync<List<ArticleListItemDto>>(CACHE_KEY_PUBLISHED);
+        var cachedData = await CacheService.GetAsync<List<ArticleListItemDto>>(CACHE_KEY_PUBLISHED);
         if (cachedData != null)
         {
             return cachedData;
@@ -115,7 +115,7 @@ public class ArticleService : BaseCachedService
         var result = articles.Select(MapToListItemDto).ToList();
 
         // Save vào cache 15 phút
-        await RedisService.SetAsync(CACHE_KEY_PUBLISHED, result, TimeSpan.FromMinutes(CACHE_MINUTES_LIST));
+        await CacheService.SetAsync(CACHE_KEY_PUBLISHED, result, TimeSpan.FromMinutes(CACHE_MINUTES_LIST));
 
         return result;
     }
@@ -125,7 +125,7 @@ public class ArticleService : BaseCachedService
         var cacheKey = $"{CACHE_KEY_FEATURED}:{count}";
         
         // Check cache
-        var cachedData = await RedisService.GetAsync<List<ArticleListItemDto>>(cacheKey);
+        var cachedData = await CacheService.GetAsync<List<ArticleListItemDto>>(cacheKey);
         if (cachedData != null)
         {
             return cachedData;
@@ -136,7 +136,7 @@ public class ArticleService : BaseCachedService
         var result = articles.Select(MapToListItemDto).ToList();
 
         // Cache 15 phút
-        await RedisService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CACHE_MINUTES_LIST));
+        await CacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CACHE_MINUTES_LIST));
 
         return result;
     }
@@ -180,7 +180,7 @@ public class ArticleService : BaseCachedService
         // Nếu không increment view, check cache
         if (!incrementView)
         {
-            var cachedData = await RedisService.GetAsync<ArticleDto>(cacheKey);
+            var cachedData = await CacheService.GetAsync<ArticleDto>(cacheKey);
             if (cachedData != null)
             {
                 return cachedData;
@@ -196,8 +196,8 @@ public class ArticleService : BaseCachedService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             // Invalidate cache vì ViewCount đã thay đổi
-            await RedisService.DeleteAsync(cacheKey);
-            await RedisService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_ID, article.Id));
+            await CacheService.DeleteAsync(cacheKey);
+            await CacheService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_ID, article.Id));
         }
 
         var result = MapToDto(article);
@@ -205,7 +205,7 @@ public class ArticleService : BaseCachedService
         // Cache 60 phút nếu KHÔNG increment view
         if (!incrementView)
         {
-            await RedisService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CACHE_MINUTES_DETAIL));
+            await CacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CACHE_MINUTES_DETAIL));
         }
 
         return result;
@@ -384,9 +384,9 @@ public class ArticleService : BaseCachedService
     /// </summary>
     private async Task InvalidateListCachesAsync()
     {
-        await RedisService.DeleteAsync(CACHE_KEY_PUBLISHED);
+        await CacheService.DeleteAsync(CACHE_KEY_PUBLISHED);
         // Delete featured với pattern vì có count parameter
-        await RedisService.DeleteByPatternAsync($"{CACHE_KEY_FEATURED}:*");
+        await CacheService.DeleteByPatternAsync($"{CACHE_KEY_FEATURED}:*");
     }
 
     /// <summary>
@@ -394,8 +394,8 @@ public class ArticleService : BaseCachedService
     /// </summary>
     private async Task InvalidateArticleCacheAsync(Guid id, string slug)
     {
-        await RedisService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_ID, id));
-        await RedisService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_SLUG, slug));
+        await CacheService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_ID, id));
+        await CacheService.DeleteAsync(string.Format(CACHE_KEY_ARTICLE_BY_SLUG, slug));
         // Invalidate lists luôn vì article có thể nằm trong published/featured
         await InvalidateListCachesAsync();
     }

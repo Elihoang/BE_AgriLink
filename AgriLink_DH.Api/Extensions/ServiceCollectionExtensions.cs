@@ -59,8 +59,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AuthService>();
         services.AddScoped<FarmService>();
         services.AddScoped<CropSeasonService>();
-        services.AddScoped<RedisService>();
+        // Register Redis as ICacheService (interface binding)
+        services.AddScoped<ICacheService, RedisService>();
         services.AddScoped<Core.Helpers.JwtHelper>();
+        services.AddScoped<ITokenGenerator, Core.Helpers.JwtHelper>();
+        services.AddScoped<IPasswordHasher, Core.Helpers.PasswordHasher>();
         services.AddScoped<WorkerService>();
         services.AddScoped<TaskTypeService>();
         services.AddScoped<DailyWorkLogService>();
