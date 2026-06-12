@@ -3,6 +3,7 @@ using System;
 using AgriLink_DH.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgriLink_DH.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260612032015_MakeTaskTypeHybrid")]
+    partial class MakeTaskTypeHybrid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1161,72 +1164,6 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("FarmId");
 
                     b.ToTable("task_types");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000001"),
-                            DefaultPrice = 250000m,
-                            DefaultUnit = "Ngày công",
-                            IsSystem = true,
-                            Name = "Làm đất"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000002"),
-                            DefaultPrice = 100000m,
-                            DefaultUnit = "Lần",
-                            IsSystem = true,
-                            Name = "Xuống giống / Gieo hạt"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000003"),
-                            DefaultPrice = 50000m,
-                            DefaultUnit = "Giờ",
-                            IsSystem = true,
-                            Name = "Tưới nước"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000004"),
-                            DefaultPrice = 150000m,
-                            DefaultUnit = "Lần",
-                            IsSystem = true,
-                            Name = "Bón phân"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000005"),
-                            DefaultPrice = 200000m,
-                            DefaultUnit = "Ngày công",
-                            IsSystem = true,
-                            Name = "Làm cỏ"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000006"),
-                            DefaultPrice = 80000m,
-                            DefaultUnit = "Bình",
-                            IsSystem = true,
-                            Name = "Phun thuốc (BVTV)"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000007"),
-                            DefaultPrice = 300000m,
-                            DefaultUnit = "Ngày công",
-                            IsSystem = true,
-                            Name = "Cắt tỉa cành / Tạo tán"
-                        },
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-000000000008"),
-                            DefaultPrice = 300000m,
-                            DefaultUnit = "Ngày công",
-                            IsSystem = true,
-                            Name = "Thu hoạch"
-                        });
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.User", b =>
