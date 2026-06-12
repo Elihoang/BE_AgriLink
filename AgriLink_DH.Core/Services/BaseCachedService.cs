@@ -1,108 +1,124 @@
+using AgriLink_DH.Domain.Interface;
+
 namespace AgriLink_DH.Core.Services;
 
 /// <summary>
-/// Base class cho các services có sử dụng Redis caching
-/// Cung cấp helper methods chung cho cache-aside pattern
+/// Abstract base class for services that use Redis caching.
+/// Implements the Cache-Aside Pattern with graceful degradation —
+/// if Redis is unavailable or times out, the call falls back to the
+/// data source transparently without propagating exceptions.
 /// </summary>
 public abstract class BaseCachedService
 {
-    protected readonly RedisService RedisService;
+    private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(30);
 
-    protected BaseCachedService(RedisService redisService)
+    protected readonly ICacheService CacheService;
+
+    protected BaseCachedService(ICacheService cacheService)
     {
-        RedisService = redisService;
+        CacheService = cacheService;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Cache-Read Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Cache-Aside Pattern: Get from cache or fetch from source
+    /// Returns a single object from cache; on miss, fetches from <paramref name="fetchAsync"/>,
+    /// stores the result, and returns it. Redis failures are silently swallowed.
     /// </summary>
-    /// <typeparam name="T">Type of data to cache</typeparam>
-    /// <param name="cacheKey">Redis cache key</param>
-    /// <param name="fetchDataFunc">Function to fetch data if cache miss</param>
-    /// <param name="expiration">Cache expiration time (optional)</param>
-    /// <returns>Cached or fresh data</returns>
     protected async Task<T?> GetOrSetCacheAsync<T>(
-        string cacheKey,
-        Func<Task<T?>> fetchDataFunc,
-        TimeSpan? expiration = null) where T : class
+        string         cacheKey,
+        Func<Task<T?>> fetchAsync,
+        TimeSpan?      expiration = null) where T : class
     {
-        // 1. Try get from cache
-        var cachedData = await RedisService.GetAsync<T>(cacheKey);
-        if (cachedData != null)
+        // 1. Try cache first
+        try
         {
-            return cachedData;
+            var cached = await CacheService.GetAsync<T>(cacheKey);
+            if (cached is not null)
+                return cached;
+        }
+        catch
+        {
+            // Redis unavailable — fall through to data source
         }
 
-        // 2. Cache miss - fetch from source
-        var freshData = await fetchDataFunc();
-        if (freshData == null)
-        {
+        // 2. Cache miss — query data source
+        var data = await fetchAsync();
+        if (data is null)
             return null;
-        }
 
-        // 3. Save to cache
-        await RedisService.SetAsync(cacheKey, freshData, expiration);
+        // 3. Populate cache (best-effort — never throws)
+        try { await CacheService.SetAsync(cacheKey, data, expiration ?? DefaultExpiration); }
+        catch { /* ignore */ }
 
-        return freshData;
+        return data;
     }
 
     /// <summary>
-    /// Cache-Aside Pattern for Lists: Get from cache or fetch from source
+    /// Returns a collection from cache; on miss, fetches from <paramref name="fetchAsync"/>,
+    /// stores the result, and returns it. Redis failures are silently swallowed.
     /// </summary>
     protected async Task<IEnumerable<T>> GetOrSetCacheListAsync<T>(
-        string cacheKey,
-        Func<Task<IEnumerable<T>>> fetchDataFunc,
-        TimeSpan? expiration = null)
+        string                     cacheKey,
+        Func<Task<IEnumerable<T>>> fetchAsync,
+        TimeSpan?                  expiration = null)
     {
-        // Try get from cache
-        var cachedData = await RedisService.GetAsync<List<T>>(cacheKey);
-        if (cachedData != null)
+        // 1. Try cache first
+        try
         {
-            return cachedData;
+            var cached = await CacheService.GetAsync<List<T>>(cacheKey);
+            if (cached is not null)
+                return cached;
+        }
+        catch
+        {
+            // Redis unavailable — fall through to data source
         }
 
-        // Cache miss - fetch from source
-        var freshData = await fetchDataFunc();
-        var dataList = freshData.ToList();
+        // 2. Cache miss — query data source
+        var dataList = (await fetchAsync()).ToList();
 
-        // Save to cache
-        await RedisService.SetAsync(cacheKey, dataList, expiration);
+        // 3. Populate cache (best-effort — never throws)
+        try { await CacheService.SetAsync(cacheKey, dataList, expiration ?? DefaultExpiration); }
+        catch { /* ignore */ }
 
         return dataList;
     }
 
-    /// <summary>
-    /// Invalidate (delete) a single cache key
-    /// </summary>
+    // ─────────────────────────────────────────────────────────────────────────
+    // Cache-Invalidation Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>Removes a single cache entry. Silently ignores Redis errors.</summary>
     protected async Task InvalidateCacheAsync(string cacheKey)
     {
-        await RedisService.DeleteAsync(cacheKey);
+        try { await CacheService.DeleteAsync(cacheKey); }
+        catch { /* ignore */ }
     }
 
-    /// <summary>
-    /// Invalidate multiple cache keys
-    /// </summary>
+    /// <summary>Removes multiple cache entries in sequence. Silently ignores Redis errors.</summary>
     protected async Task InvalidateMultipleCachesAsync(params string[] cacheKeys)
     {
         foreach (var key in cacheKeys)
-        {
-            await RedisService.DeleteAsync(key);
-        }
+            await InvalidateCacheAsync(key);
     }
 
     /// <summary>
-    /// Invalidate cache keys matching a pattern (e.g., "prefix:*")
+    /// Removes all cache entries whose keys match <paramref name="pattern"/> (e.g. <c>prefix:*</c>).
+    /// Silently ignores Redis errors.
     /// </summary>
     protected async Task InvalidateCacheByPatternAsync(string pattern)
     {
-        await RedisService.DeleteByPatternAsync(pattern);
+        try { await CacheService.DeleteByPatternAsync(pattern); }
+        catch { /* ignore */ }
     }
 
-    /// <summary>
-    /// Check if cache key exists
-    /// </summary>
+    /// <summary>Returns <c>true</c> if the cache key exists; <c>false</c> on any Redis error.</summary>
     protected async Task<bool> CacheExistsAsync(string cacheKey)
     {
-        return await RedisService.ExistsAsync(cacheKey);
+        try { return await CacheService.ExistsAsync(cacheKey); }
+        catch { return false; }
     }
 }

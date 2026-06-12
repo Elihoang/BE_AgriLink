@@ -98,6 +98,8 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = false, // Đổi thành false để test trên HTTP localhost
             SameSite = SameSiteMode.Lax, // Đổi thành Lax để browser chấp nhận trên cùng localhost
+           //   Secure = true, // Phải là true khi dùng SameSite=None
+            // SameSite = SameSiteMode.None, // Bắt buộc là None để Frontend ở domain/port khác nhận được cookie 
             Expires = DateTime.UtcNow.AddDays(7),
             Path = "/"
         };

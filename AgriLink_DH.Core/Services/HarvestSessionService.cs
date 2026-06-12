@@ -17,9 +17,9 @@ public class HarvestSessionService : BaseCachedService
     public HarvestSessionService(
         IHarvestSessionRepository harvestSessionRepository,
         ICropSeasonRepository cropSeasonRepository,
-        RedisService redisService,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork)
-        : base(redisService)
+        : base(cacheService)
     {
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;

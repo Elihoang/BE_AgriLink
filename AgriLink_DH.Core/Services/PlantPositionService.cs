@@ -23,9 +23,9 @@ public class PlantPositionService : BaseCachedService
         IPlantPositionRepository plantPositionRepository,
         ICropSeasonRepository cropSeasonRepository,
         IFarmRepository farmRepository,
-        RedisService redisService,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork)
-        : base(redisService)
+        : base(cacheService)
     {
         _plantPositionRepository = plantPositionRepository;
         _cropSeasonRepository = cropSeasonRepository;

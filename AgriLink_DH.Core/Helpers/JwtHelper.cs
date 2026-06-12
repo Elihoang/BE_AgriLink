@@ -8,9 +8,11 @@ using AgriLink_DH.Share.DTOs.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
+using AgriLink_DH.Domain.Interface;
+
 namespace AgriLink_DH.Core.Helpers;
 
-public class JwtHelper
+public class JwtHelper : ITokenGenerator
 {
     private readonly IConfiguration _configuration;
 
@@ -69,7 +71,7 @@ public class JwtHelper
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private string GenerateRefreshToken()
+    public string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
