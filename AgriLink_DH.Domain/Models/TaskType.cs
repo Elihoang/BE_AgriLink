@@ -1,39 +1,50 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Đơn giá Công việc Mẫu - Giúp nhập liệu nhanh
 /// </summary>
-[Table("task_types")]
-public class TaskType
+public class TaskType : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("farm_id")]
-    public Guid? FarmId { get; set; }
+    public Guid? FarmId { get; private set; }
 
-    [Column("is_system")]
-    public bool IsSystem { get; set; } = false;
+    public bool IsSystem { get; private set; } = false;
 
-    [Column("name")]
-    [Required]
-    [MaxLength(100)]
-    public string Name { get; set; } = string.Empty; // "Làm cành", "Hái khoán", "Bón phân"
+    public string Name { get; private set; } = string.Empty; // "Làm cành", "Hái khoán", "Bón phân"
 
-    [Column("default_unit")]
-    [MaxLength(20)]
-    public string? DefaultUnit { get; set; } // 'CONG' (Ngày), 'KG', 'GOC' (Gốc)
-
-    [Column("default_price")]
-    [Precision(15, 2)]
-    public decimal? DefaultPrice { get; set; } // Giá gợi ý. VD: 350000 hoặc 1200
+    public string? DefaultUnit { get; private set; } // 'CONG' (Ngày), 'KG', 'GOC' (Gốc)
+    
+    public decimal? DefaultPrice { get; private set; } // Giá gợi ý. VD: 350000 hoặc 1200
 
     // Navigation Properties
-    [ForeignKey(nameof(FarmId))]
-    public virtual Farm? Farm { get; set; }
+    public virtual Farm? Farm { get; private set; }
+
+    protected TaskType() { }
+
+    public TaskType(string name, Guid? farmId = null, bool isSystem = false, string? defaultUnit = null, decimal? defaultPrice = null)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tên loại công việc không được để trống", nameof(name));
+            
+        Name = name.Trim();
+        FarmId = farmId;
+        IsSystem = isSystem;
+        DefaultUnit = defaultUnit?.Trim();
+        DefaultPrice = defaultPrice;
+    }
+
+    public void UpdateDetails(string name, string? defaultUnit, decimal? defaultPrice)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tên loại công việc không được để trống", nameof(name));
+
+        if (IsSystem)
+            throw new InvalidOperationException("Không thể sửa loại công việc của hệ thống");
+
+        Name = name.Trim();
+        DefaultUnit = defaultUnit?.Trim();
+        DefaultPrice = defaultPrice;
+    }
 }

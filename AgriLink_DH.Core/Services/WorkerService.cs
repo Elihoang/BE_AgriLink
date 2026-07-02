@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.Worker;
 using AgriLink_DH.Share.Extensions;
@@ -12,17 +13,20 @@ public class WorkerService
     private readonly IFarmRepository _farmRepository;
     private readonly IWorkAssignmentRepository _workAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly WorkerValidator _validator;
 
     public WorkerService(
         IWorkerRepository workerRepository,
         IFarmRepository farmRepository,
         IWorkAssignmentRepository workAssignmentRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        WorkerValidator validator)
     {
         _workerRepository = workerRepository;
         _farmRepository = farmRepository;
         _workAssignmentRepository = workAssignmentRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<WorkerDto>> GetWorkersBySeasonIdAsync(Guid seasonId)
@@ -51,18 +55,8 @@ public class WorkerService
 
     public async Task<WorkerDto> CreateWorkerAsync(CreateWorkerDto dto)
     {
-        var worker = new Worker
-        {
-            FullName = dto.FullName,
-            Phone = dto.Phone,
-            DefaultDailyWage = dto.DefaultDailyWage,
-            WorkerType = dto.WorkerType,
-            ImageUrl = dto.ImageUrl,
-            MomoPhone = dto.MomoPhone,
-            BankAccount = dto.BankAccount,
-            BankName = dto.BankName,
-            IsActive = true
-        };
+        var worker = new Worker(dto.FullName, dto.WorkerType, dto.Phone, dto.DefaultDailyWage, dto.ImageUrl);
+        worker.UpdatePaymentInfo(dto.MomoPhone, dto.BankAccount, dto.BankName);
 
         await _workerRepository.AddAsync(worker);
         await _unitOfWork.SaveChangesAsync();
@@ -73,18 +67,14 @@ public class WorkerService
     public async Task<WorkerDto> UpdateWorkerAsync(Guid id, UpdateWorkerDto dto)
     {
         var worker = await _workerRepository.GetByIdAsync(id);
-        if (worker == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhân công với ID: {id}");
+        _validator.ValidateUpdate(worker, id);
 
-        worker.FullName = dto.FullName;
-        worker.Phone = dto.Phone;
-        worker.DefaultDailyWage = dto.DefaultDailyWage;
-        worker.WorkerType = dto.WorkerType;
-        worker.ImageUrl = dto.ImageUrl;
-        worker.MomoPhone = dto.MomoPhone;
-        worker.BankAccount = dto.BankAccount;
-        worker.BankName = dto.BankName;
-        worker.IsActive = dto.IsActive;
+        worker.UpdateBasicInfo(dto.FullName, dto.Phone, dto.ImageUrl);
+        worker.UpdateEmploymentInfo(dto.WorkerType, dto.DefaultDailyWage);
+        worker.UpdatePaymentInfo(dto.MomoPhone, dto.BankAccount, dto.BankName);
+        
+        if (dto.IsActive) worker.Activate();
+        else worker.Deactivate();
 
         _workerRepository.Update(worker);
         await _unitOfWork.SaveChangesAsync();
@@ -95,8 +85,7 @@ public class WorkerService
     public async Task<bool> DeleteWorkerAsync(Guid id)
     {
         var worker = await _workerRepository.GetByIdAsync(id);
-        if (worker == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhân công với ID: {id}");
+        _validator.ValidateDelete(worker, id);
 
         _workerRepository.Remove(worker);
         await _unitOfWork.SaveChangesAsync();

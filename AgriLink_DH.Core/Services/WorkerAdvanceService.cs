@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.WorkerAdvance;
 
@@ -11,17 +12,20 @@ public class WorkerAdvanceService
     private readonly IWorkerRepository _workerRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly WorkerAdvanceValidator _validator;
 
     public WorkerAdvanceService(
         IWorkerAdvanceRepository workerAdvanceRepository,
         IWorkerRepository workerRepository,
         ICropSeasonRepository cropSeasonRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        WorkerAdvanceValidator validator)
     {
         _workerAdvanceRepository = workerAdvanceRepository;
         _workerRepository = workerRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<WorkerAdvanceDto>> GetAdvancesByUserIdAsync(Guid userId)
@@ -62,29 +66,20 @@ public class WorkerAdvanceService
     public async Task<WorkerAdvanceDto> CreateAdvanceAsync(CreateWorkerAdvanceDto dto)
     {
         var worker = await _workerRepository.GetByIdAsync(dto.WorkerId);
-        if (worker == null)
-            throw new InvalidOperationException($"Không tìm thấy nhân công với ID: {dto.WorkerId}");
-
         var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
-        var advance = new WorkerAdvance
-        {
-            WorkerId = dto.WorkerId,
-            SeasonId = dto.SeasonId,
-            Amount = dto.Amount,
-            AdvanceDate = dto.AdvanceDate.ToUniversalTime(),
-            IsDeducted = false,
-            Note = dto.Note
-        };
+        _validator.ValidateCreate(worker, season);
+
+        var advance = new WorkerAdvance(dto.WorkerId, dto.SeasonId, dto.Amount, dto.AdvanceDate.ToUniversalTime(), dto.Note);
 
         await _workerAdvanceRepository.AddAsync(advance);
         await _unitOfWork.SaveChangesAsync();
 
-        advance.Worker = worker;
-        advance.CropSeason = season;
-        return MapToDto(advance);
+        var resultDto = MapToDto(advance);
+        resultDto.WorkerName = worker.FullName;
+        resultDto.SeasonName = season.Name;
+        resultDto.WorkerImageUrl = worker.ImageUrl;
+        return resultDto;
     }
 
     public async Task<WorkerAdvanceDto> UpdateAdvanceAsync(Guid id, UpdateWorkerAdvanceDto dto)
@@ -93,10 +88,7 @@ public class WorkerAdvanceService
         if (advance == null)
             throw new KeyNotFoundException($"Không tìm thấy khoản ứng lương với ID: {id}");
 
-        advance.Amount = dto.Amount;
-        advance.AdvanceDate = dto.AdvanceDate.ToUniversalTime();
-        advance.IsDeducted = dto.IsDeducted;
-        advance.Note = dto.Note;
+        advance.UpdateDetails(dto.Amount, dto.AdvanceDate.ToUniversalTime(), dto.IsDeducted, dto.Note);
 
         _workerAdvanceRepository.Update(advance);
         await _unitOfWork.SaveChangesAsync();
@@ -107,11 +99,7 @@ public class WorkerAdvanceService
     public async Task<bool> DeleteAdvanceAsync(Guid id)
     {
         var advance = await _workerAdvanceRepository.GetByIdAsync(id);
-        if (advance == null)
-            throw new KeyNotFoundException($"Không tìm thấy khoản ứng lương với ID: {id}");
-
-        if (advance.IsDeducted)
-            throw new InvalidOperationException("Không thể xóa khoản ứng đã được trừ vào lương!");
+        _validator.ValidateDelete(advance);
 
         _workerAdvanceRepository.Remove(advance);
         await _unitOfWork.SaveChangesAsync();
@@ -125,7 +113,7 @@ public class WorkerAdvanceService
         if (advance == null)
             throw new KeyNotFoundException($"Không tìm thấy khoản ứng lương với ID: {id}");
 
-        advance.IsDeducted = true;
+        advance.MarkAsDeducted();
         _workerAdvanceRepository.Update(advance);
         await _unitOfWork.SaveChangesAsync();
 

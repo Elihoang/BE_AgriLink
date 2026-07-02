@@ -2,6 +2,7 @@ using AgriLink_DH.Core.Services;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.PlantPosition;
 using System.Text.Json;
@@ -14,6 +15,7 @@ public class PlantPositionService : BaseCachedService
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IFarmRepository _farmRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly PlantPositionValidator _validator;
 
     private const string CACHE_KEY_FARM_PREFIX = "plant_positions:farm:";
     private const string CACHE_KEY_SEASON_PREFIX = "plant_positions:season:";
@@ -24,13 +26,15 @@ public class PlantPositionService : BaseCachedService
         ICropSeasonRepository cropSeasonRepository,
         IFarmRepository farmRepository,
         ICacheService cacheService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        PlantPositionValidator validator)
         : base(cacheService)
     {
         _plantPositionRepository = plantPositionRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _farmRepository = farmRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     /// <summary>
@@ -82,35 +86,11 @@ public class PlantPositionService : BaseCachedService
     /// </summary>
     public async Task<PlantPositionDto> AddPlantAsync(CreatePlantPositionDto dto)
     {
-        // Validate farm exists (REQUIRED)
-        var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
-        if (farm == null)
-            throw new InvalidOperationException($"Không tìm thấy rẫy với ID: {dto.FarmId}");
+        await _validator.ValidateAddPlantAsync(dto);
 
-        // Validate season if provided (OPTIONAL)
-        if (dto.SeasonId.HasValue)
-        {
-            var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId.Value);
-            if (season == null)
-                throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
-        }
-
-        // Check position exists in farm
-        if (await _plantPositionRepository.PositionExistsAsync(dto.FarmId, dto.RowNumber, dto.ColumnNumber))
-            throw new InvalidOperationException($"Vị trí hàng {dto.RowNumber}, cột {dto.ColumnNumber} đã có cây trong rẫy này");
-
-        var position = new PlantPosition
-        {
-            FarmId = dto.FarmId,
-            SeasonId = dto.SeasonId,
-            RowNumber = dto.RowNumber,
-            ColumnNumber = dto.ColumnNumber,
-            ProductId = dto.ProductId,
-            PlantDate = dto.PlantDate ?? DateTime.UtcNow,
-            HealthStatus = PlantHealthStatus.Healthy,
-            EstimatedYield = dto.EstimatedYield,
-            Note = dto.Note
-        };
+        var position = new PlantPosition(dto.FarmId, dto.RowNumber, dto.ColumnNumber, dto.ProductId, dto.PlantDate ?? DateTime.UtcNow);
+        if (dto.SeasonId.HasValue) position.AssignToSeason(dto.SeasonId.Value);
+        position.UpdateDetails(dto.ProductId, dto.PlantDate ?? DateTime.UtcNow, dto.EstimatedYield, dto.Note);
 
         await _plantPositionRepository.AddAsync(position);
         await _unitOfWork.SaveChangesAsync();
@@ -130,19 +110,15 @@ public class PlantPositionService : BaseCachedService
     public async Task<PlantPositionDto> UpdatePlantAsync(Guid id, UpdatePlantPositionDto dto)
     {
         var position = await _plantPositionRepository.GetByIdAsync(id);
-        if (position == null)
-            throw new KeyNotFoundException($"Không tìm thấy vị trí cây với ID: {id}");
+        _validator.ValidateUpdatePlant(position, id);
 
-        position.ProductId = dto.ProductId;
+        position.UpdateDetails(dto.ProductId, position.PlantDate, dto.EstimatedYield, dto.Note);
         
         // Update health status if provided
         if (dto.HealthStatus.HasValue)
         {
-            position.HealthStatus = dto.HealthStatus.Value;
+            position.UpdateHealth(dto.HealthStatus.Value, dto.Note);
         }
-        
-        position.EstimatedYield = dto.EstimatedYield;
-        position.Note = dto.Note;
 
         _plantPositionRepository.Update(position);
         await _unitOfWork.SaveChangesAsync();
@@ -162,8 +138,7 @@ public class PlantPositionService : BaseCachedService
     public async Task<bool> RemovePlantAsync(Guid id)
     {
         var position = await _plantPositionRepository.GetByIdAsync(id);
-        if (position == null)
-            throw new KeyNotFoundException($"Không tìm thấy vị trí cây với ID: {id}");
+        _validator.ValidateRemovePlant(position, id);
 
         var seasonId = position.SeasonId;
 
@@ -185,10 +160,7 @@ public class PlantPositionService : BaseCachedService
     /// </summary>
     public async Task<int> BulkCreatePlantsAsync(Guid farmId, List<CreatePlantPositionDto> dtos)
     {
-        // Validate farm
-        var farm = await _farmRepository.GetByIdAsync(farmId);
-        if (farm == null)
-            throw new InvalidOperationException($"Không tìm thấy rẫy với ID: {farmId}");
+        await _validator.ValidateBulkCreatePlantsAsync(farmId);
 
         var positions = new List<PlantPosition>();
 
@@ -198,18 +170,10 @@ public class PlantPositionService : BaseCachedService
             if (await _plantPositionRepository.PositionExistsAsync(farmId, dto.RowNumber, dto.ColumnNumber))
                 continue; // Skip duplicate
 
-            positions.Add(new PlantPosition
-            {
-                FarmId = farmId,
-                SeasonId = dto.SeasonId, // Optional
-                RowNumber = dto.RowNumber,
-                ColumnNumber = dto.ColumnNumber,
-                ProductId = dto.ProductId,
-                PlantDate = dto.PlantDate ?? DateTime.UtcNow,
-                HealthStatus = PlantHealthStatus.Healthy,
-                EstimatedYield = dto.EstimatedYield,
-                Note = dto.Note
-            });
+            var pos = new PlantPosition(farmId, dto.RowNumber, dto.ColumnNumber, dto.ProductId, dto.PlantDate ?? DateTime.UtcNow);
+            if (dto.SeasonId.HasValue) pos.AssignToSeason(dto.SeasonId.Value);
+            pos.UpdateDetails(dto.ProductId, dto.PlantDate ?? DateTime.UtcNow, dto.EstimatedYield, dto.Note);
+            positions.Add(pos);
         }
 
         foreach (var position in positions)

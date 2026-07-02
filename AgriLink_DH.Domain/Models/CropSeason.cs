@@ -1,73 +1,93 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
+
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Niên vụ - Trái tim của hệ thống. Tách bạch chi phí Xen canh
 /// </summary>
-[Table("crop_seasons")]
-public class CropSeason
+public class CropSeason : SoftDeletableEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("farm_id")]
-    [Required]
-    public Guid FarmId { get; set; }
+    public Guid FarmId { get; private set; }
 
-    [Column("product_id")]
-    [Required]
-    public Guid ProductId { get; set; } // QUAN TRỌNG: Vụ này của cây gì?
+    public Guid ProductId { get; private set; } // QUAN TRỌNG: Vụ này của cây gì?
 
-    [Column("name")]
-    [Required]
-    [MaxLength(100)]
-    public string Name { get; set; } = string.Empty; // "Vụ Cà 2025", "Vụ Tiêu 2025"
+    public string Name { get; private set; } = string.Empty; // "Vụ Cà 2025", "Vụ Tiêu 2025"
 
-    [Column("start_date")]
-    public DateTime? StartDate { get; set; }
+    public DateTime? StartDate { get; private set; }
 
-    [Column("end_date")]
-    public DateTime? EndDate { get; set; }
+    public DateTime? EndDate { get; private set; }
 
-    [Column("status")]
-    [MaxLength(20)]
-    public SeasonStatus Status { get; set; } = SeasonStatus.Active;
+    public SeasonStatus Status { get; private set; } = SeasonStatus.Active;
 
     // Growth Stage Tracking
-    [Column("current_stage")]
-    [MaxLength(100)]
-    public string? CurrentStage { get; set; } // "Ra bông", "Đậu trái", etc.
+    public string? CurrentStage { get; private set; } // "Ra bông", "Đậu trái", etc.
     
-    [Column("stage_changed_at")]
-    public DateTime? StageChangedAt { get; set; }
+    public DateTime? StageChangedAt { get; private set; }
     
-    [Column("stage_notes")]
-    public string? StageNotes { get; set; }
+    public string? StageNotes { get; private set; }
 
-    [Column("note")]
-    public string? Note { get; set; }
+    public string? Note { get; private set; }
+
+    // Soft Delete inherited from SoftDeletableEntity
 
     // Navigation Properties
-    [ForeignKey(nameof(FarmId))]
-    public virtual Farm Farm { get; set; } = null!;
+    public virtual Farm Farm { get; private set; } = null!;
 
-    [ForeignKey(nameof(ProductId))]
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product Product { get; private set; } = null!;
 
-    public virtual ICollection<DailyWorkLog> DailyWorkLogs { get; set; } = new List<DailyWorkLog>();
-    public virtual ICollection<WorkerAdvance> WorkerAdvances { get; set; } = new List<WorkerAdvance>();
-    public virtual ICollection<MaterialUsage> MaterialUsages { get; set; } = new List<MaterialUsage>();
-    public virtual ICollection<HarvestSession> HarvestSessions { get; set; } = new List<HarvestSession>();
-    public virtual ICollection<FarmSale> FarmSales { get; set; } = new List<FarmSale>();
+    public virtual ICollection<DailyWorkLog> DailyWorkLogs { get; private set; } = new List<DailyWorkLog>();
+    public virtual ICollection<WorkerAdvance> WorkerAdvances { get; private set; } = new List<WorkerAdvance>();
+    public virtual ICollection<MaterialUsage> MaterialUsages { get; private set; } = new List<MaterialUsage>();
+    public virtual ICollection<HarvestSession> HarvestSessions { get; private set; } = new List<HarvestSession>();
+    public virtual ICollection<FarmSale> FarmSales { get; private set; } = new List<FarmSale>();
 
-    // Soft Delete
-    [Column("is_deleted")]
-    public bool IsDeleted { get; set; } = false;
+    protected CropSeason() { }
 
-    [Column("deleted_at")]
-    public DateTime? DeletedAt { get; set; }
+    public CropSeason(Guid farmId, Guid productId, string name, DateTime? startDate = null, DateTime? endDate = null, string? note = null)
+    {
+        if (farmId == Guid.Empty) throw new ArgumentException("FarmId không hợp lệ", nameof(farmId));
+        if (productId == Guid.Empty) throw new ArgumentException("ProductId không hợp lệ", nameof(productId));
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Tên niên vụ không được để trống", nameof(name));
+
+        FarmId = farmId;
+        ProductId = productId;
+        Name = name.Trim();
+        StartDate = startDate;
+        EndDate = endDate;
+        Note = note?.Trim();
+        Status = SeasonStatus.Active;
+    }
+
+    public void UpdateDetails(string name, DateTime? startDate, DateTime? endDate, string? note)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Tên niên vụ không được để trống", nameof(name));
+
+        Name = name.Trim();
+        StartDate = startDate;
+        EndDate = endDate;
+        Note = note?.Trim();
+    }
+
+    public void ChangeStatus(SeasonStatus newStatus)
+    {
+        Status = newStatus;
+        if (newStatus == SeasonStatus.Closed && !EndDate.HasValue)
+        {
+            EndDate = DateTime.UtcNow;
+        }
+    }
+
+    public void UpdateGrowthStage(string stage, string? notes = null)
+    {
+        if (string.IsNullOrWhiteSpace(stage)) throw new ArgumentException("Giai đoạn sinh trưởng không được để trống", nameof(stage));
+
+        CurrentStage = stage.Trim();
+        StageChangedAt = DateTime.UtcNow;
+        StageNotes = notes?.Trim();
+    }
+
+    // SoftDelete and Restore are inherited
 }

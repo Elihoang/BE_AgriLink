@@ -3,6 +3,7 @@ using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Infrastructure.Repositories;
 using AgriLink_DH.Core.Interfaces;
+using AgriLink_DH.Core.Validations;
 
 namespace AgriLink_DH.Api.Extensions;
 
@@ -108,6 +109,29 @@ public static class ServiceCollectionExtensions
         // Gemini AI Service
         services.AddHttpClient("Gemini");
         services.AddScoped<IAiService, GeminiAiService>();
+
+        // Validations
+        services.AddScoped<MaterialValidator>();
+        services.AddScoped<ArticleCategoryValidator>();
+        services.AddScoped<WorkerAdvanceValidator>();
+        services.AddScoped<ArticleValidator>();
+        services.AddScoped<FarmValidator>();
+        services.AddScoped<CropSeasonValidator>();
+        services.AddScoped<WorkerValidator>();
+        services.AddScoped<TaskTypeValidator>();
+        services.AddScoped<SalaryPaymentValidator>();
+        services.AddScoped<ProductValidator>();
+        services.AddScoped<PlantPositionValidator>();
+        services.AddScoped<MaterialUsageValidator>();
+        services.AddScoped<HarvestBagDetailValidator>();
+        services.AddScoped<UserValidator>();
+        services.AddScoped<MarketPriceDbValidator>();
+        services.AddScoped<WeatherLogValidator>();
+        services.AddScoped<ArticleAuthorValidator>();
+        services.AddScoped<DailyWorkLogValidator>();
+        services.AddScoped<ArticleCommentValidator>();
+        services.AddScoped<ArticleLikeValidator>();
+        services.AddScoped<FarmSaleValidator>();
 
         return services;
     }

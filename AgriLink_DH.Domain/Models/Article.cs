@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
+
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
@@ -8,195 +8,199 @@ namespace AgriLink_DH.Domain.Models;
 /// Bài viết tri thức nông nghiệp
 /// Chứa hướng dẫn kỹ thuật, kiến thức chuyên môn, tin tức thị trường,...
 /// </summary>
-[Table("articles")]
-public class Article
+public class Article : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid CategoryId { get; private set; }
+    public virtual ArticleCategory? Category { get; private set; }
+
+    public Guid AuthorId { get; private set; }
+    public virtual ArticleAuthor? Author { get; private set; }
+
+    public string Title { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
+    public string? Content { get; private set; }
+    public string? ThumbnailUrl { get; private set; }
+
+    public string? Tags { get; private set; } // JSON
+    public string? Hashtags { get; private set; } // JSON
+
+    public int ReadTime { get; private set; } = 5;
+    public string? AudioUrl { get; private set; }
+    public int? AudioDuration { get; private set; }
+    public string? VideoUrl { get; private set; }
+
+    public int ViewCount { get; private set; } = 0;
+    public int LikeCount { get; private set; } = 0;
+    public int CommentCount { get; private set; } = 0;
+    public int ShareCount { get; private set; } = 0;
+
+    public ArticleStatus Status { get; private set; } = ArticleStatus.Draft;
+    public bool IsFeatured { get; private set; } = false;
+    public bool AllowComments { get; private set; } = true;
+
+    public DateTime? PublishedAt { get; private set; }
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; private set; }
+
+    public Guid? CreatedBy { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
+
+    public string? SeoMetadata { get; private set; } // JSON
+
+    public virtual ICollection<ArticleComment> Comments { get; private set; } = new List<ArticleComment>();
+    public virtual ICollection<ArticleLike> Likes { get; private set; } = new List<ArticleLike>();
+
+    protected Article() { }
 
     /// <summary>
-    /// Foreign Key đến ArticleCategory
+    /// Hàm khởi tạo chuẩn Rich Domain Model
     /// </summary>
-    [Column("category_id")]
-    [Required]
-    public Guid CategoryId { get; set; }
+    public Article(string title, string slug, Guid categoryId, Guid authorId, Guid? createdBy = null)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Tiêu đề không được để trống", nameof(title));
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Slug không được để trống", nameof(slug));
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("Danh mục không hợp lệ", nameof(categoryId));
+        if (authorId == Guid.Empty)
+            throw new ArgumentException("Tác giả không hợp lệ", nameof(authorId));
 
-    /// <summary>
-    /// Navigation property đến ArticleCategory
-    /// </summary>
-    [ForeignKey("CategoryId")]
-    public virtual ArticleCategory? Category { get; set; }
+        Title = title.Trim();
+        Slug = slug.Trim();
+        CategoryId = categoryId;
+        AuthorId = authorId;
+        Status = ArticleStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        CreatedBy = createdBy;
+        AllowComments = true;
+    }
 
-    /// <summary>
-    /// Foreign Key đến ArticleAuthor
-    /// </summary>
-    [Column("author_id")]
-    [Required]
-    public Guid AuthorId { get; set; }
+    // --- BEHAVIORS ---
 
-    /// <summary>
-    /// Navigation property đến ArticleAuthor
-    /// </summary>
-    [ForeignKey("AuthorId")]
-    public virtual ArticleAuthor? Author { get; set; }
+    public void UpdateContent(string title, string slug, string? description, string? content, string? thumbnailUrl, int readTime, Guid? updatedBy = null)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Tiêu đề không được để trống", nameof(title));
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Slug không được để trống", nameof(slug));
 
-    /// <summary>
-    /// Tiêu đề bài viết
-    /// </summary>
-    [Column("title")]
-    [Required]
-    [MaxLength(300)]
-    public string Title { get; set; } = string.Empty;
+        Title = title.Trim();
+        Slug = slug.Trim();
+        Description = description?.Trim();
+        Content = content;
+        ThumbnailUrl = thumbnailUrl?.Trim();
+        ReadTime = readTime > 0 ? readTime : 1;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Slug URL-friendly (toi-uu-hoa-nang-suat-ca-phe-robusta-mua-kho-2024)
-    /// </summary>
-    [Column("slug")]
-    [Required]
-    [MaxLength(300)]
-    public string Slug { get; set; } = string.Empty;
+    public void ChangeCategory(Guid categoryId, Guid? updatedBy = null)
+    {
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("Danh mục không hợp lệ", nameof(categoryId));
 
-    /// <summary>
-    /// Mô tả ngắn/Tóm tắt
-    /// </summary>
-    [Column("description")]
-    [MaxLength(1000)]
-    public string? Description { get; set; }
+        CategoryId = categoryId;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Nội dung bài viết đầy đủ (HTML hoặc Markdown)
-    /// </summary>
-    [Column("content")]
-    public string? Content { get; set; }
+    public void ChangeAuthor(Guid authorId, Guid? updatedBy = null)
+    {
+        if (authorId == Guid.Empty)
+            throw new ArgumentException("Tác giả không hợp lệ", nameof(authorId));
 
-    /// <summary>
-    /// URL ảnh thumbnail/cover
-    /// </summary>
-    [Column("thumbnail_url")]
-    [MaxLength(500)]
-    public string? ThumbnailUrl { get; set; }
+        AuthorId = authorId;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Tags phân loại (JSON array)
-    /// </summary>
-    [Column("tags")]
-    [MaxLength(500)]
-    public string? Tags { get; set; } // JSON: ["Kỹ thuật canh tác","Cà phê Robusta"]
+    public void UpdateMedia(string? audioUrl, int? audioDuration, string? videoUrl)
+    {
+        AudioUrl = audioUrl?.Trim();
+        AudioDuration = audioDuration;
+        VideoUrl = videoUrl?.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Hashtags (JSON array)
-    /// </summary>
-    [Column("hashtags")]
-    [MaxLength(500)]
-    public string? Hashtags { get; set; } // JSON: ["#CaPheRobusta","#KyThuatCanhTac","#MuaKho2024"]
+    public void UpdateTags(string? tagsJson, string? hashtagsJson)
+    {
+        Tags = tagsJson;
+        Hashtags = hashtagsJson;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Thời gian đọc ước tính (phút)
-    /// </summary>
-    [Column("read_time")]
-    public int ReadTime { get; set; } = 5;
+    public void UpdateSeo(string? seoMetadata)
+    {
+        SeoMetadata = seoMetadata;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// URL file audio (nếu hỗ trợ nghe bài)
-    /// </summary>
-    [Column("audio_url")]
-    [MaxLength(500)]
-    public string? AudioUrl { get; set; }
+    public void Publish(Guid? publishedBy = null)
+    {
+        if (Status != ArticleStatus.Published)
+        {
+            Status = ArticleStatus.Published;
+            PublishedAt = DateTime.UtcNow;
+            UpdatedBy = publishedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
 
-    /// <summary>
-    /// Thời lượng audio (giây)
-    /// </summary>
-    [Column("audio_duration")]
-    public int? AudioDuration { get; set; }
+    public void RevertToDraft(Guid? updatedBy = null)
+    {
+        Status = ArticleStatus.Draft;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// URL video liên quan (nếu có)
-    /// </summary>
-    [Column("video_url")]
-    [MaxLength(500)]
-    public string? VideoUrl { get; set; }
+    public void SetFeatured(bool isFeatured, Guid? updatedBy = null)
+    {
+        IsFeatured = isFeatured;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Số lượt xem
-    /// </summary>
-    [Column("view_count")]
-    public int ViewCount { get; set; } = 0;
+    public void SetAllowComments(bool allowComments, Guid? updatedBy = null)
+    {
+        AllowComments = allowComments;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    /// <summary>
-    /// Số lượt thích
-    /// </summary>
-    [Column("like_count")]
-    public int LikeCount { get; set; } = 0;
+    // --- METRICS UPDATE ---
 
-    /// <summary>
-    /// Số lượt bình luận
-    /// </summary>
-    [Column("comment_count")]
-    public int CommentCount { get; set; } = 0;
+    public void IncrementViewCount()
+    {
+        ViewCount++;
+    }
 
-    /// <summary>
-    /// Số lượt chia sẻ
-    /// </summary>
-    [Column("share_count")]
-    public int ShareCount { get; set; } = 0;
+    public void IncrementLikeCount()
+    {
+        LikeCount++;
+    }
 
-    /// <summary>
-    /// Trạng thái xuất bản
-    /// </summary>
-    [Column("status")]
-    public ArticleStatus Status { get; set; } = ArticleStatus.Draft;
+    public void DecrementLikeCount()
+    {
+        if (LikeCount > 0)
+            LikeCount--;
+    }
 
-    /// <summary>
-    /// Bài viết nổi bật
-    /// </summary>
-    [Column("is_featured")]
-    public bool IsFeatured { get; set; } = false;
+    public void IncrementCommentCount()
+    {
+        CommentCount++;
+    }
 
-    /// <summary>
-    /// Cho phép bình luận
-    /// </summary>
-    [Column("allow_comments")]
-    public bool AllowComments { get; set; } = true;
+    public void DecrementCommentCount()
+    {
+        if (CommentCount > 0)
+            CommentCount--;
+    }
 
-    /// <summary>
-    /// Ngày xuất bản
-    /// </summary>
-    [Column("published_at")]
-    public DateTime? PublishedAt { get; set; }
-
-    /// <summary>
-    /// Thời gian tạo
-    /// </summary>
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Thời gian cập nhật
-    /// </summary>
-    [Column("updated_at")]
-    public DateTime? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Người tạo (User ID)
-    /// </summary>
-    [Column("created_by")]
-    public Guid? CreatedBy { get; set; }
-
-    /// <summary>
-    /// Người cập nhật cuối (User ID)
-    /// </summary>
-    [Column("updated_by")]
-    public Guid? UpdatedBy { get; set; }
-
-    /// <summary>
-    /// Metadata SEO (JSON)
-    /// </summary>
-    [Column("seo_metadata")]
-    [MaxLength(2000)]
-    public string? SeoMetadata { get; set; } // JSON: {"title":"","description":"","keywords":""}
-
-    // Navigation Properties
-    public virtual ICollection<ArticleComment> Comments { get; set; } = new List<ArticleComment>();
-    public virtual ICollection<ArticleLike> Likes { get; set; } = new List<ArticleLike>();
+    public void IncrementShareCount()
+    {
+        ShareCount++;
+    }
 }

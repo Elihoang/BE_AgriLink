@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.DailyWorkLog;
 using AgriLink_DH.Share.DTOs.WorkAssignment;
@@ -14,6 +15,7 @@ public class DailyWorkLogService : BaseCachedService
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IWorkerRepository _workerRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly DailyWorkLogValidator _validator;
 
     public DailyWorkLogService(
         IDailyWorkLogRepository dailyWorkLogRepository,
@@ -21,7 +23,8 @@ public class DailyWorkLogService : BaseCachedService
         ICropSeasonRepository cropSeasonRepository,
         IWorkerRepository workerRepository,
         IUnitOfWork unitOfWork,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        DailyWorkLogValidator validator)
         : base(cacheService)
     {
         _dailyWorkLogRepository = dailyWorkLogRepository;
@@ -29,6 +32,7 @@ public class DailyWorkLogService : BaseCachedService
         _cropSeasonRepository = cropSeasonRepository;
         _workerRepository = workerRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     private const string CACHE_KEY_PREFIX = "worklogs:";
@@ -107,18 +111,10 @@ public class DailyWorkLogService : BaseCachedService
 
     public async Task<DailyWorkLogDto> CreateLogAsync(CreateDailyWorkLogDto dto)
     {
-        var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
+        await _validator.ValidateCreateLogAsync(dto);
+        var season = (await _cropSeasonRepository.GetByIdAsync(dto.SeasonId))!;
 
-        var log = new DailyWorkLog
-        {
-            SeasonId = dto.SeasonId,
-            WorkDate = dto.WorkDate.ToUniversalTime(),
-            TaskTypeId = dto.TaskTypeId,
-            Note = dto.Note,
-            TotalCost = 0
-        };
+        var log = new DailyWorkLog(dto.SeasonId, dto.WorkDate.ToUniversalTime(), dto.TaskTypeId, dto.Note);
 
         await _dailyWorkLogRepository.AddAsync(log);
         await _unitOfWork.SaveChangesAsync();
@@ -131,12 +127,9 @@ public class DailyWorkLogService : BaseCachedService
     public async Task<DailyWorkLogDto> UpdateLogAsync(Guid id, UpdateDailyWorkLogDto dto)
     {
         var log = await _dailyWorkLogRepository.GetWithAssignmentsAsync(id);
-        if (log == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhật ký làm việc với ID: {id}");
+        _validator.ValidateUpdateLog(log, id);
 
-        log.WorkDate = dto.WorkDate.ToUniversalTime();
-        log.TaskTypeId = dto.TaskTypeId;
-        log.Note = dto.Note;
+        log.UpdateDetails(dto.WorkDate.ToUniversalTime(), dto.TaskTypeId, dto.Note);
 
         _dailyWorkLogRepository.Update(log);
         await _unitOfWork.SaveChangesAsync();
@@ -152,8 +145,7 @@ public class DailyWorkLogService : BaseCachedService
     public async Task<bool> DeleteLogAsync(Guid id)
     {
         var log = await _dailyWorkLogRepository.GetByIdAsync(id);
-        if (log == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhật ký làm việc với ID: {id}");
+        _validator.ValidateDeleteLog(log, id);
 
         _dailyWorkLogRepository.Remove(log);
         await _unitOfWork.SaveChangesAsync();
@@ -178,34 +170,21 @@ public class DailyWorkLogService : BaseCachedService
     /// </summary>
     public async Task<WorkAssignmentDto> AddAssignmentAsync(CreateWorkAssignmentDto dto)
     {
-        var log = await _dailyWorkLogRepository.GetByIdAsync(dto.LogId);
-        if (log == null)
-            throw new InvalidOperationException($"Không tìm thấy nhật ký làm việc với ID: {dto.LogId}");
-
-        var worker = await _workerRepository.GetByIdAsync(dto.WorkerId);
-        if (worker == null)
-            throw new InvalidOperationException($"Không tìm thấy nhân công với ID: {dto.WorkerId}");
+        await _validator.ValidateAddAssignmentAsync(dto);
+        var log = (await _dailyWorkLogRepository.GetByIdAsync(dto.LogId))!;
+        var worker = (await _workerRepository.GetByIdAsync(dto.WorkerId))!;
 
         // Thành tiền = Số lượng * Đơn giá
         // Công nhật: Số lượng = 1 (ngày), Đơn giá = 250k
         // Khoán: Số lượng = 50 (gốc), Đơn giá = 5k
         var totalAmount = dto.Quantity * dto.UnitPrice;
 
-        var assignment = new WorkAssignment
-        {
-            LogId = dto.LogId,
-            WorkerId = dto.WorkerId,
-            PaymentMethod = dto.PaymentMethod,
-            Quantity = dto.Quantity,
-            UnitPrice = dto.UnitPrice,
-            TotalAmount = totalAmount,
-            Note = dto.Note
-        };
+        var assignment = new WorkAssignment(dto.LogId, dto.WorkerId, dto.PaymentMethod, dto.Quantity, dto.UnitPrice, dto.Note);
 
         await _workAssignmentRepository.AddAsync(assignment);
         
         // Cập nhật tổng chi phí của nhật ký (Auto Sum)
-        log.TotalCost += assignment.TotalAmount;
+        log.AddCost(assignment.TotalAmount);
         _dailyWorkLogRepository.Update(log);
 
         await _unitOfWork.SaveChangesAsync();
@@ -213,8 +192,9 @@ public class DailyWorkLogService : BaseCachedService
         var farmId = await GetFarmIdBySeasonId(log.SeasonId);
         if(farmId != Guid.Empty) await InvalidateFarmCacheAsync(farmId);
 
-        assignment.Worker = worker; // Populate for DTO
-        return MapAssignmentToDto(assignment);
+        // Cannot assign to Worker directly since it has private setter, DTO mapping might need to fetch it or rely on EF Core
+        // assignment.Worker = worker; // Removed
+        return MapAssignmentToDto(assignment, worker);
     }
 
     /// <summary>
@@ -222,40 +202,32 @@ public class DailyWorkLogService : BaseCachedService
     /// </summary>
     public async Task<IEnumerable<WorkAssignmentDto>> AddMultipleAssignmentsAsync(CreateMultipleAssignmentsDto dto)
     {
-        var log = await _dailyWorkLogRepository.GetByIdAsync(dto.LogId);
-        if (log == null)
-            throw new InvalidOperationException($"Không tìm thấy nhật ký làm việc với ID: {dto.LogId}");
+        await _validator.ValidateAddMultipleAssignmentsAsync(dto);
+        var log = (await _dailyWorkLogRepository.GetByIdAsync(dto.LogId))!;
 
         var createdAssignments = new List<WorkAssignment>();
+        var workersDict = new Dictionary<Guid, Worker>();
         decimal totalAddedCost = 0;
 
         foreach (var assignmentDto in dto.Assignments)
         {
-            var worker = await _workerRepository.GetByIdAsync(assignmentDto.WorkerId);
-            if (worker == null)
-                throw new InvalidOperationException($"Không tìm thấy nhân công với ID: {assignmentDto.WorkerId}");
+            var worker = (await _workerRepository.GetByIdAsync(assignmentDto.WorkerId))!;
 
             var totalAmount = assignmentDto.Quantity * assignmentDto.UnitPrice;
 
-            var assignment = new WorkAssignment
-            {
-                LogId = dto.LogId,
-                WorkerId = assignmentDto.WorkerId,
-                PaymentMethod = assignmentDto.PaymentMethod,
-                Quantity = assignmentDto.Quantity,
-                UnitPrice = assignmentDto.UnitPrice,
-                TotalAmount = totalAmount,
-                Note = assignmentDto.Note
-            };
+            // Keep worker in dictionary for mapping later
+            workersDict[worker.Id] = worker;
 
-            assignment.Worker = worker; // Populate for DTO
+            var assignment = new WorkAssignment(dto.LogId, assignmentDto.WorkerId, assignmentDto.PaymentMethod, assignmentDto.Quantity, assignmentDto.UnitPrice, assignmentDto.Note);
+
+            // assignment.Worker = worker; // Removed
             await _workAssignmentRepository.AddAsync(assignment);
             createdAssignments.Add(assignment);
-            totalAddedCost += totalAmount;
+            totalAddedCost += assignment.TotalAmount;
         }
 
         // Cập nhật tổng chi phí một lần duy nhất
-        log.TotalCost += totalAddedCost;
+        log.AddCost(totalAddedCost);
         _dailyWorkLogRepository.Update(log);
 
         await _unitOfWork.SaveChangesAsync();
@@ -264,20 +236,19 @@ public class DailyWorkLogService : BaseCachedService
         var farmId = await GetFarmIdBySeasonId(log.SeasonId);
         if (farmId != Guid.Empty) await InvalidateFarmCacheAsync(farmId);
 
-        return createdAssignments.Select(MapAssignmentToDto);
+        return createdAssignments.Select(a => MapAssignmentToDto(a, workersDict.GetValueOrDefault(a.WorkerId)));
     }
 
     public async Task<bool> RemoveAssignmentAsync(Guid assignmentId)
     {
         var assignment = await _workAssignmentRepository.GetByIdAsync(assignmentId);
-        if (assignment == null)
-            throw new KeyNotFoundException($"Không tìm thấy chấm công với ID: {assignmentId}");
+        _validator.ValidateRemoveAssignment(assignment, assignmentId);
 
-        var log = await _dailyWorkLogRepository.GetByIdAsync(assignment.LogId);
+        var log = await _dailyWorkLogRepository.GetByIdAsync(assignment!.LogId);
         if (log != null)
         {
             // Trừ tiền ra khỏi tổng chi phí
-            log.TotalCost -= assignment.TotalAmount;
+            log.SubtractCost(assignment.TotalAmount);
             _dailyWorkLogRepository.Update(log);
         }
 
@@ -299,27 +270,18 @@ public class DailyWorkLogService : BaseCachedService
     public async Task<WorkAssignmentDto> UpdateAssignmentAsync(Guid assignmentId, UpdateWorkAssignmentDto dto)
     {
         var assignment = await _workAssignmentRepository.GetByIdAsync(assignmentId);
-        if (assignment == null)
-            throw new KeyNotFoundException($"Không tìm thấy chấm công với ID: {assignmentId}");
+        await _validator.ValidateUpdateAssignmentAsync(assignment, assignmentId);
 
-        var log = await _dailyWorkLogRepository.GetByIdAsync(assignment.LogId);
-        if (log == null)
-            throw new InvalidOperationException("Không tìm thấy nhật ký làm việc tương ứng");
+        var log = (await _dailyWorkLogRepository.GetByIdAsync(assignment!.LogId))!;
 
         // 1. Trừ tiền cũ khỏi Log
-        log.TotalCost -= assignment.TotalAmount;
+        log.SubtractCost(assignment.TotalAmount);
 
         // 2. Cập nhật thông tin mới
-        var newTotalAmount = dto.Quantity * dto.UnitPrice;
-
-        assignment.PaymentMethod = dto.PaymentMethod;
-        assignment.Quantity = dto.Quantity;
-        assignment.UnitPrice = dto.UnitPrice;
-        assignment.TotalAmount = newTotalAmount;
-        assignment.Note = dto.Note;
+        assignment.UpdateDetails(dto.PaymentMethod, dto.Quantity, dto.UnitPrice, dto.Note);
 
         // 3. Cộng tiền mới vào Log
-        log.TotalCost += newTotalAmount;
+        log.AddCost(assignment.TotalAmount);
 
         _workAssignmentRepository.Update(assignment);
         _dailyWorkLogRepository.Update(log);
@@ -329,13 +291,14 @@ public class DailyWorkLogService : BaseCachedService
         var farmId = await GetFarmIdBySeasonId(log.SeasonId);
         if (farmId != Guid.Empty) await InvalidateFarmCacheAsync(farmId);
 
+        Worker? assignedWorker = null;
         // Populate worker info for DTO
         if (assignment.Worker == null)
         {
-            assignment.Worker = await _workerRepository.GetByIdAsync(assignment.WorkerId);
+            assignedWorker = await _workerRepository.GetByIdAsync(assignment.WorkerId);
         }
 
-        return MapAssignmentToDto(assignment);
+        return MapAssignmentToDto(assignment, assignedWorker ?? assignment.Worker);
     }
 
     private static DailyWorkLogDto MapToDto(DailyWorkLog log)
@@ -359,11 +322,9 @@ public class DailyWorkLogService : BaseCachedService
     public async Task<bool> SoftDeleteDailyWorkLogAsync(Guid id)
     {
         var log = await _dailyWorkLogRepository.GetByIdAsync(id);
-        if (log == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhật ký làm việc với ID: {id}");
+        _validator.ValidateDeleteLog(log, id);
 
-        log.IsDeleted = true;
-        log.DeletedAt = DateTime.UtcNow;
+        log.SoftDelete();
 
         _dailyWorkLogRepository.Update(log);
         await _unitOfWork.SaveChangesAsync();
@@ -374,11 +335,9 @@ public class DailyWorkLogService : BaseCachedService
     public async Task<bool> RestoreDailyWorkLogAsync(Guid id)
     {
         var log = await _dailyWorkLogRepository.GetByIdAsync(id);
-        if (log == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhật ký làm việc với ID: {id}");
+        _validator.ValidateDeleteLog(log, id);
 
-        log.IsDeleted = false;
-        log.DeletedAt = null;
+        log.Restore();
 
         _dailyWorkLogRepository.Update(log);
         await _unitOfWork.SaveChangesAsync();
@@ -389,13 +348,18 @@ public class DailyWorkLogService : BaseCachedService
 
     private static WorkAssignmentDto MapAssignmentToDto(WorkAssignment assignment)
     {
+        return MapAssignmentToDto(assignment, assignment.Worker);
+    }
+
+    private static WorkAssignmentDto MapAssignmentToDto(WorkAssignment assignment, Worker? worker)
+    {
         return new WorkAssignmentDto
         {
             Id = assignment.Id,
             LogId = assignment.LogId,
             WorkerId = assignment.WorkerId,
-            WorkerName = assignment.Worker?.FullName ?? "Unknown",
-            WorkerImageUrl = assignment.Worker?.ImageUrl,
+            WorkerName = worker?.FullName ?? "Unknown",
+            WorkerImageUrl = worker?.ImageUrl,
             PaymentMethod = assignment.PaymentMethod,
             PaymentMethodLabel = assignment.PaymentMethod.ToVietnamese(),
             Quantity = assignment.Quantity,

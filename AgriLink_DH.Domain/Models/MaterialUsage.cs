@@ -1,63 +1,68 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Vật tư: Phân/Thuốc - Nhật ký sử dụng vật tư
 /// </summary>
-[Table("material_usages")]
-public class MaterialUsage
+public class MaterialUsage : SoftDeletableEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("season_id")]
-    [Required]
-    public Guid SeasonId { get; set; } // Bón cho cây nào?
+    public Guid SeasonId { get; private set; } // Bón cho cây nào?
 
-    [Column("usage_date")]
-    public DateTime UsageDate { get; set; } = DateTime.UtcNow.Date;
+    public DateTime UsageDate { get; private set; } = DateTime.UtcNow.Date;
 
-    [Column("material_name")]
-    [MaxLength(150)]
-    public string? MaterialName { get; set; } // "NPK 16-16-8 Đầu Trâu"
+    public string? MaterialName { get; private set; } // "NPK 16-16-8 Đầu Trâu"
+    public decimal Quantity { get; private set; } // 5.5
 
-    [Column("quantity")]
-    [Precision(10, 2)]
-    public decimal Quantity { get; set; } // 5.5
+    public string? Unit { get; private set; } // "Bao", "Lít", "Chai"
+    public decimal UnitPrice { get; private set; } // Giá mua vào
+    public decimal TotalCost { get; private set; } // Thành tiền
 
-    [Column("unit")]
-    [MaxLength(20)]
-    public string? Unit { get; set; } // "Bao", "Lít", "Chai"
-
-    [Column("unit_price")]
-    [Precision(15, 2)]
-    public decimal UnitPrice { get; set; } // Giá mua vào
-
-    [Column("total_cost")]
-    [Precision(15, 2)]
-    public decimal TotalCost { get; set; } // Thành tiền
-
-    [Column("note")]
-    public string? Note { get; set; }
+    public string? Note { get; private set; }
 
     // Navigation Properties
-    [ForeignKey(nameof(SeasonId))]
-    public virtual CropSeason CropSeason { get; set; } = null!;
+    public virtual CropSeason CropSeason { get; private set; } = null!;
 
-    [Column("material_id")]
-    public Guid? MaterialId { get; set; }
+    public Guid? MaterialId { get; private set; }
 
-    [ForeignKey(nameof(MaterialId))]
-    public virtual Material? Material { get; set; }
+    public virtual Material? Material { get; private set; }
 
-    // Soft Delete
-    [Column("is_deleted")]
-    public bool IsDeleted { get; set; } = false;
+    // Soft Delete inherited from SoftDeletableEntity
 
-    [Column("deleted_at")]
-    public DateTime? DeletedAt { get; set; }
+    protected MaterialUsage() { }
+
+    public MaterialUsage(Guid seasonId, DateTime usageDate, decimal quantity, decimal unitPrice, Guid? materialId = null, string? materialName = null, string? unit = null, string? note = null)
+    {
+        if (seasonId == Guid.Empty) throw new ArgumentException("SeasonId không hợp lệ", nameof(seasonId));
+        if (quantity < 0) throw new ArgumentException("Số lượng không được âm", nameof(quantity));
+        if (unitPrice < 0) throw new ArgumentException("Đơn giá không được âm", nameof(unitPrice));
+
+        SeasonId = seasonId;
+        UsageDate = usageDate.Date;
+        MaterialId = materialId;
+        MaterialName = materialName?.Trim();
+        Quantity = quantity;
+        Unit = unit?.Trim();
+        UnitPrice = unitPrice;
+        TotalCost = quantity * unitPrice;
+        Note = note?.Trim();
+    }
+
+    public void UpdateDetails(DateTime usageDate, decimal quantity, decimal unitPrice, Guid? materialId, string? materialName, string? unit, string? note)
+    {
+        if (quantity < 0) throw new ArgumentException("Số lượng không được âm", nameof(quantity));
+        if (unitPrice < 0) throw new ArgumentException("Đơn giá không được âm", nameof(unitPrice));
+
+        UsageDate = usageDate.Date;
+        MaterialId = materialId;
+        MaterialName = materialName?.Trim();
+        Quantity = quantity;
+        Unit = unit?.Trim();
+        UnitPrice = unitPrice;
+        TotalCost = quantity * unitPrice;
+        Note = note?.Trim();
+    }
+
+    // SoftDelete and Restore are inherited
 }

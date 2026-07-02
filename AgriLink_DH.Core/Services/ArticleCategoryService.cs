@@ -1,6 +1,7 @@
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.ArticleCategory;
 
@@ -13,13 +14,16 @@ public class ArticleCategoryService
 {
     private readonly IArticleCategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ArticleCategoryValidator _validator;
 
     public ArticleCategoryService(
         IArticleCategoryRepository categoryRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ArticleCategoryValidator validator)
     {
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<ArticleCategoryDto>> GetAllCategoriesAsync(CancellationToken cancellationToken = default)
@@ -48,16 +52,10 @@ public class ArticleCategoryService
 
     public async Task<ArticleCategoryDto> CreateCategoryAsync(CreateArticleCategoryDto dto, CancellationToken cancellationToken = default)
     {
-        // Kiểm tra trùng code
-        var exists = await _categoryRepository.ExistsByCodeAsync(dto.Code, cancellationToken);
-        if (exists)
-        {
-            throw new InvalidOperationException($"Danh mục với mã '{dto.Code}' đã tồn tại");
-        }
+        await _validator.ValidateCreateAsync(dto, cancellationToken);
 
         var category = new ArticleCategory
         {
-            Id = Guid.NewGuid(),
             Name = dto.Name,
             Code = dto.Code,
             Description = dto.Description,
@@ -77,20 +75,7 @@ public class ArticleCategoryService
     public async Task<ArticleCategoryDto> UpdateCategoryAsync(Guid id, UpdateArticleCategoryDto dto, CancellationToken cancellationToken = default)
     {
         var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
-        if (category == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy danh mục với ID: {id}");
-        }
-
-        // Kiểm tra trùng code nếu thay đổi
-        if (dto.Code != category.Code)
-        {
-            var exists = await _categoryRepository.ExistsByCodeAsync(dto.Code, cancellationToken);
-            if (exists)
-            {
-                throw new InvalidOperationException($"Danh mục với mã '{dto.Code}' đã tồn tại");
-            }
-        }
+        await _validator.ValidateUpdateAsync(category, id, dto, cancellationToken);
 
         category.Name = dto.Name;
         category.Code = dto.Code;
@@ -109,11 +94,7 @@ public class ArticleCategoryService
 
     public async Task<bool> DeleteCategoryAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var exists = await _categoryRepository.ExistsAsync(c => c.Id == id, cancellationToken);
-        if (!exists)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy danh mục với ID: {id}");
-        }
+        await _validator.ValidateDeleteAsync(id, cancellationToken);
 
         var result = await _categoryRepository.RemoveByIdAsync(id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.Product;
 
@@ -12,11 +13,16 @@ public class ProductService
 {
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ProductValidator _validator;
 
-    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork)
+    public ProductService(
+        IProductRepository productRepository, 
+        IUnitOfWork unitOfWork,
+        ProductValidator validator)
     {
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync(CancellationToken cancellationToken = default)
@@ -39,24 +45,9 @@ public class ProductService
 
     public async Task<ProductDto> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default)
     {
-        // Kiểm tra trùng code nếu có
-        if (!string.IsNullOrEmpty(dto.Code))
-        {
-            var exists = await _productRepository.ExistsByCodeAsync(dto.Code, cancellationToken);
-            if (exists)
-            {
-                throw new InvalidOperationException($"Mã sản phẩm '{dto.Code}' đã tồn tại");
-            }
-        }
+        await _validator.ValidateCreateAsync(dto, cancellationToken);
 
-        var product = new Product
-        {
-            Id = Guid.NewGuid(),
-            Name = dto.Name,
-            Unit = dto.Unit,
-            Code = dto.Code,
-            ImageUrl = dto.ImageUrl
-        };
+        var product = new Product(dto.Name, dto.Unit, dto.Code, dto.ImageUrl);
 
         await _productRepository.AddAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -67,25 +58,9 @@ public class ProductService
     public async Task<ProductDto> UpdateProductAsync(Guid id, UpdateProductDto dto, CancellationToken cancellationToken = default)
     {
         var product = await _productRepository.GetByIdAsync(id, cancellationToken);
-        if (product == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
-        }
+        await _validator.ValidateUpdateAsync(product, dto, id, cancellationToken);
 
-        // Kiểm tra trùng code nếu thay đổi code
-        if (!string.IsNullOrEmpty(dto.Code) && dto.Code != product.Code)
-        {
-            var exists = await _productRepository.ExistsByCodeAsync(dto.Code, cancellationToken);
-            if (exists)
-            {
-                throw new InvalidOperationException($"Mã sản phẩm '{dto.Code}' đã tồn tại");
-            }
-        }
-
-        product.Name = dto.Name;
-        product.Unit = dto.Unit;
-        product.Code = dto.Code;
-        product.ImageUrl = dto.ImageUrl;
+        product.UpdateDetails(dto.Name, dto.Unit, dto.Code, dto.ImageUrl);
 
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -96,12 +71,9 @@ public class ProductService
     public async Task UpdateProductImageAsync(Guid id, string imageUrl, CancellationToken cancellationToken = default)
     {
         var product = await _productRepository.GetByIdAsync(id, cancellationToken);
-        if (product == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
-        }
+        _validator.ValidateUpdateImage(product, id);
 
-        product.ImageUrl = imageUrl;
+        product.UpdateDetails(product.Name, product.Unit, product.Code, imageUrl);
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
@@ -109,10 +81,7 @@ public class ProductService
     public async Task<bool> DeleteProductAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var exists = await _productRepository.ExistsAsync(p => p.Id == id, cancellationToken);
-        if (!exists)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy sản phẩm với ID: {id}");
-        }
+        _validator.ValidateDelete(exists, id);
 
         var result = await _productRepository.RemoveByIdAsync(id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

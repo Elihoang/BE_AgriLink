@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.ArticleAuthor;
 using System.Text.Json;
@@ -13,13 +14,16 @@ public class ArticleAuthorService
 {
     private readonly IArticleAuthorRepository _authorRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ArticleAuthorValidator _validator;
 
     public ArticleAuthorService(
         IArticleAuthorRepository authorRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ArticleAuthorValidator validator)
     {
         _authorRepository = authorRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<ArticleAuthorDto>> GetAllAuthorsAsync(CancellationToken cancellationToken = default)
@@ -54,32 +58,22 @@ public class ArticleAuthorService
 
     public async Task<ArticleAuthorDto> CreateAuthorAsync(CreateArticleAuthorDto dto, CancellationToken cancellationToken = default)
     {
-        // Kiểm tra trùng email nếu có
-        if (!string.IsNullOrEmpty(dto.Email))
-        {
-            var existingAuthor = await _authorRepository.GetByEmailAsync(dto.Email, cancellationToken);
-            if (existingAuthor != null)
-            {
-                throw new InvalidOperationException($"Email '{dto.Email}' đã được sử dụng bởi tác giả khác");
-            }
-        }
+        await _validator.ValidateCreateAuthorAsync(dto, cancellationToken);
 
-        var author = new ArticleAuthor
-        {
-            Id = Guid.NewGuid(),
-            Name = dto.Name,
-            Title = dto.Title,
-            Organization = dto.Organization,
-            Email = dto.Email,
-            Phone = dto.Phone,
-            AvatarUrl = dto.AvatarUrl,
-            Bio = dto.Bio,
-            IsVerified = dto.IsVerified,
-            Specialties = dto.Specialties != null ? JsonSerializer.Serialize(dto.Specialties) : null,
-            SocialLinks = dto.SocialLinks != null ? JsonSerializer.Serialize(dto.SocialLinks) : null,
-            IsActive = dto.IsActive,
-            CreatedAt = DateTime.UtcNow
-        };
+        var author = new ArticleAuthor(dto.Name, dto.Title, dto.Organization, dto.Email, dto.Phone);
+        
+        author.UpdateProfile(
+            dto.Bio, 
+            dto.AvatarUrl, 
+            dto.SocialLinks != null ? JsonSerializer.Serialize(dto.SocialLinks) : null,
+            dto.Specialties != null ? JsonSerializer.Serialize(dto.Specialties) : null
+        );
+
+        if (dto.IsVerified) 
+            author.Verify();
+
+        if (!dto.IsActive) 
+            author.Deactivate();
 
         await _authorRepository.AddAsync(author, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -90,33 +84,23 @@ public class ArticleAuthorService
     public async Task<ArticleAuthorDto> UpdateAuthorAsync(Guid id, UpdateArticleAuthorDto dto, CancellationToken cancellationToken = default)
     {
         var author = await _authorRepository.GetByIdAsync(id, cancellationToken);
-        if (author == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy tác giả với ID: {id}");
-        }
+        await _validator.ValidateUpdateAuthorAsync(author, dto, id, cancellationToken);
 
-        // Kiểm tra trùng email nếu thay đổi
-        if (!string.IsNullOrEmpty(dto.Email) && dto.Email != author.Email)
-        {
-            var existingAuthor = await _authorRepository.GetByEmailAsync(dto.Email, cancellationToken);
-            if (existingAuthor != null)
-            {
-                throw new InvalidOperationException($"Email '{dto.Email}' đã được sử dụng bởi tác giả khác");
-            }
-        }
+        author!.UpdateBasicInfo(dto.Name, dto.Title, dto.Organization);
+        author.UpdateContactInfo(dto.Email, dto.Phone);
+        
+        author.UpdateProfile(
+            dto.Bio, 
+            dto.AvatarUrl,
+            dto.SocialLinks != null ? JsonSerializer.Serialize(dto.SocialLinks) : null,
+            dto.Specialties != null ? JsonSerializer.Serialize(dto.Specialties) : null
+        );
 
-        author.Name = dto.Name;
-        author.Title = dto.Title;
-        author.Organization = dto.Organization;
-        author.Email = dto.Email;
-        author.Phone = dto.Phone;
-        author.AvatarUrl = dto.AvatarUrl;
-        author.Bio = dto.Bio;
-        author.IsVerified = dto.IsVerified;
-        author.Specialties = dto.Specialties != null ? JsonSerializer.Serialize(dto.Specialties) : null;
-        author.SocialLinks = dto.SocialLinks != null ? JsonSerializer.Serialize(dto.SocialLinks) : null;
-        author.IsActive = dto.IsActive;
-        author.UpdatedAt = DateTime.UtcNow;
+        if (dto.IsVerified) author.Verify();
+        else author.RevokeVerification();
+
+        if (dto.IsActive) author.Activate();
+        else author.Deactivate();
 
         _authorRepository.Update(author);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -127,10 +111,7 @@ public class ArticleAuthorService
     public async Task<bool> DeleteAuthorAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var exists = await _authorRepository.ExistsAsync(a => a.Id == id, cancellationToken);
-        if (!exists)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy tác giả với ID: {id}");
-        }
+        _validator.ValidateDeleteAuthor(exists, id);
 
         var result = await _authorRepository.RemoveByIdAsync(id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

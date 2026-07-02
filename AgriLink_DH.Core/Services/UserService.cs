@@ -1,6 +1,7 @@
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.User;
 using BCrypt.Net;
@@ -12,15 +13,18 @@ public class UserService
     private readonly IUserRepository _userRepository;
     private readonly IUserLoginLogRepository _loginLogRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserValidator _validator;
 
     public UserService(
         IUserRepository userRepository,
         IUserLoginLogRepository loginLogRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        UserValidator validator)
     {
         _userRepository = userRepository;
         _loginLogRepository = loginLogRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<UserDto>> GetAllAsync()
@@ -49,17 +53,7 @@ public class UserService
 
     public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
     {
-        // Check username exists
-        if (await _userRepository.ExistsByUsernameAsync(dto.Username))
-        {
-            throw new InvalidOperationException($"Tên đăng nhập '{dto.Username}' đã tồn tại");
-        }
-
-        // Check email exists
-        if (!string.IsNullOrEmpty(dto.Email) && await _userRepository.ExistsByEmailAsync(dto.Email))
-        {
-            throw new InvalidOperationException($"Email '{dto.Email}' đã được sử dụng");
-        }
+        await _validator.ValidateCreateUserAsync(dto);
 
         var user = new User
         {
@@ -83,22 +77,15 @@ public class UserService
     public async Task<UserDto> UpdateUserAsync(Guid id, UpdateUserDto dto)
     {
         var user = await _userRepository.GetByIdAsync(id);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy người dùng với ID: {id}");
-        }
+        await _validator.ValidateUpdateUserAsync(user, dto, id);
 
-        // Check email if changed
-        if (!string.IsNullOrEmpty(dto.Email) && dto.Email != user.Email)
+        // Update email if changed
+        if (!string.IsNullOrEmpty(dto.Email) && dto.Email != user!.Email)
         {
-            if (await _userRepository.ExistsByEmailAsync(dto.Email))
-            {
-                throw new InvalidOperationException($"Email '{dto.Email}' đã được sử dụng");
-            }
             user.Email = dto.Email;
         }
 
-        user.FullName = dto.FullName;
+        user!.FullName = dto.FullName;
         user.PhoneNumber = dto.PhoneNumber;
         user.Address = dto.Address;
         user.ImageUrl = dto.ImageUrl;
@@ -112,18 +99,9 @@ public class UserService
     public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy người dùng với ID: {userId}");
-        }
+        _validator.ValidateChangePassword(user, currentPassword, userId);
 
-        // Verify current password
-        if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
-        {
-            throw new InvalidOperationException("Mật khẩu hiện tại không đúng");
-        }
-
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user!.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
 
@@ -133,12 +111,9 @@ public class UserService
     public async Task<bool> ToggleActiveStatusAsync(Guid userId, bool isActive)
     {
         var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy người dùng với ID: {userId}");
-        }
+        _validator.ValidateToggleActiveStatus(user, userId);
 
-        user.IsActive = isActive;
+        user!.IsActive = isActive;
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync();
 

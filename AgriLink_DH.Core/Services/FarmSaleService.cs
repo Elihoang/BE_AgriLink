@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.FarmSale;
 
@@ -10,15 +11,18 @@ public class FarmSaleService
     private readonly IFarmSaleRepository _farmSaleRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly FarmSaleValidator _validator;
 
     public FarmSaleService(
         IFarmSaleRepository farmSaleRepository,
         ICropSeasonRepository cropSeasonRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        FarmSaleValidator validator)
     {
         _farmSaleRepository = farmSaleRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<FarmSaleDto>> GetBySeasonAsync(Guid seasonId)
@@ -40,35 +44,30 @@ public class FarmSaleService
 
     public async Task<FarmSaleDto> CreateSaleAsync(CreateFarmSaleDto dto)
     {
-        var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
+        await _validator.ValidateCreateSaleAsync(dto.SeasonId);
+        var season = (await _cropSeasonRepository.GetByIdAsync(dto.SeasonId))!;
 
-        var revenue = dto.Quantity * dto.UnitPrice;
-
-        var sale = new FarmSale
-        {
-            SeasonId = dto.SeasonId,
-            SaleDate = dto.SaleDate.ToUniversalTime(),
-            QuantitySold = dto.Quantity,
-            PricePerKg = dto.UnitPrice,
-            TotalRevenue = revenue,
-            BuyerName = dto.BuyerName,
-            Note = dto.Note
-        };
+        var sale = new FarmSale(
+            dto.SeasonId,
+            dto.SaleDate.ToUniversalTime(),
+            dto.BuyerName,
+            dto.Quantity,
+            dto.UnitPrice,
+            dto.Note
+        );
 
         await _farmSaleRepository.AddAsync(sale);
         await _unitOfWork.SaveChangesAsync();
 
-        sale.CropSeason = season;
-        return MapToDto(sale);
+        var resultDto = MapToDto(sale);
+        resultDto.SeasonName = season.Name;
+        return resultDto;
     }
 
     public async Task<bool> DeleteSaleAsync(Guid id)
     {
         var sale = await _farmSaleRepository.GetByIdAsync(id);
-        if (sale == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu bán hàng với ID: {id}");
+        _validator.ValidateDeleteSale(sale, id);
 
         _farmSaleRepository.Remove(sale);
         await _unitOfWork.SaveChangesAsync();
@@ -79,11 +78,9 @@ public class FarmSaleService
     public async Task<bool> SoftDeleteSaleAsync(Guid id)
     {
         var sale = await _farmSaleRepository.GetByIdAsync(id);
-        if (sale == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu bán hàng với ID: {id}");
+        _validator.ValidateDeleteSale(sale, id);
 
-        sale.IsDeleted = true;
-        sale.DeletedAt = DateTime.UtcNow;
+        sale.SoftDelete();
 
         _farmSaleRepository.Update(sale);
         await _unitOfWork.SaveChangesAsync();
@@ -94,11 +91,9 @@ public class FarmSaleService
     public async Task<bool> RestoreSaleAsync(Guid id)
     {
         var sale = await _farmSaleRepository.GetByIdAsync(id);
-        if (sale == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu bán hàng với ID: {id}");
+        _validator.ValidateDeleteSale(sale, id);
 
-        sale.IsDeleted = false;
-        sale.DeletedAt = null;
+        sale.Restore();
 
         _farmSaleRepository.Update(sale);
         await _unitOfWork.SaveChangesAsync();

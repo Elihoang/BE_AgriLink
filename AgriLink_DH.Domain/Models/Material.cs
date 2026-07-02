@@ -1,57 +1,104 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
+
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
-[Table("materials")]
-public class Material
+public class Material : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; }
 
-    [Column("owner_user_id")]
-    [Required]
-    public Guid OwnerUserId { get; set; }
+    public Guid OwnerUserId { get; private set; }
 
-    [ForeignKey(nameof(OwnerUserId))]
-    public User? Owner { get; set; }
+    public User? Owner { get; private set; }
 
-    [Column("name")]
-    [Required]
-    [MaxLength(200)]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
-    [Column("unit")]
-    [MaxLength(50)]
-    public string Unit { get; set; } = string.Empty; // kg, lít, bao, chai...
+    public string Unit { get; private set; } = string.Empty; // kg, lít, bao, chai...
 
-    [Column("quantity_in_stock", TypeName = "decimal(18,2)")]
-    public decimal QuantityInStock { get; set; } = 0; // Số lượng tồn kho
+    public decimal QuantityInStock { get; private set; } = 0; // Số lượng tồn kho
 
-    [Column("cost_per_unit", TypeName = "decimal(18,2)")]
-    public decimal CostPerUnit { get; set; } = 0; // Đơn giá ước tính (để tính chi phí khi xuất kho)
+    public decimal CostPerUnit { get; private set; } = 0; // Đơn giá ước tính (để tính chi phí khi xuất kho)
 
-    [Column("note")]
-    [MaxLength(500)]
-    public string? Note { get; set; }
+    public string? Note { get; private set; }
 
-    [Column("image_url")]
-    public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; private set; }
 
-    [Column("material_type")]
-    public MaterialType MaterialType { get; set; } = MaterialType.Other;
+    public MaterialType MaterialType { get; private set; } = MaterialType.Other;
 
-    [Column("expiry_date")]
-    public DateTime? ExpiryDate { get; set; }
+    public DateTime? ExpiryDate { get; private set; }
 
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
-    [Column("updated_at")]
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; private set; }
+
+    protected Material() { }
+
+    public Material(Guid ownerUserId, string name, string unit, MaterialType materialType, decimal costPerUnit = 0, string? note = null, string? imageUrl = null, DateTime? expiryDate = null)
+    {
+        if (ownerUserId == Guid.Empty) throw new ArgumentException("OwnerUserId không hợp lệ", nameof(ownerUserId));
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Tên vật tư không được để trống", nameof(name));
+        if (string.IsNullOrWhiteSpace(unit)) throw new ArgumentException("Đơn vị tính không được để trống", nameof(unit));
+        if (costPerUnit < 0) throw new ArgumentException("Đơn giá không được âm", nameof(costPerUnit));
+
+        OwnerUserId = ownerUserId;
+        Name = name.Trim();
+        Unit = unit.Trim();
+        MaterialType = materialType;
+        CostPerUnit = costPerUnit;
+        Note = note?.Trim();
+        ImageUrl = imageUrl?.Trim();
+        ExpiryDate = expiryDate;
+        QuantityInStock = 0;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(string name, string unit, MaterialType materialType, decimal costPerUnit, string? note, string? imageUrl, DateTime? expiryDate)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Tên vật tư không được để trống", nameof(name));
+        if (string.IsNullOrWhiteSpace(unit)) throw new ArgumentException("Đơn vị tính không được để trống", nameof(unit));
+        if (costPerUnit < 0) throw new ArgumentException("Đơn giá không được âm", nameof(costPerUnit));
+
+        Name = name.Trim();
+        Unit = unit.Trim();
+        MaterialType = materialType;
+        CostPerUnit = costPerUnit;
+        Note = note?.Trim();
+        ImageUrl = imageUrl?.Trim();
+        ExpiryDate = expiryDate;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Import(decimal quantity, decimal? newCostPerUnit = null)
+    {
+        if (quantity <= 0) throw new ArgumentException("Số lượng nhập phải lớn hơn 0", nameof(quantity));
+
+        // Nếu có giá mới, tính giá bình quân gia quyền
+        if (newCostPerUnit.HasValue && newCostPerUnit.Value >= 0)
+        {
+            var totalOldValue = QuantityInStock * CostPerUnit;
+            var totalNewValue = quantity * newCostPerUnit.Value;
+            var newTotalQuantity = QuantityInStock + quantity;
+            
+            CostPerUnit = (totalOldValue + totalNewValue) / newTotalQuantity;
+        }
+
+        QuantityInStock += quantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Consume(decimal quantity)
+    {
+        if (quantity <= 0) throw new ArgumentException("Số lượng xuất phải lớn hơn 0", nameof(quantity));
+        if (QuantityInStock < quantity) throw new InvalidOperationException($"Không đủ số lượng trong kho. Hiện có: {QuantityInStock}");
+
+        QuantityInStock -= quantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void AdjustStock(decimal newQuantity)
+    {
+        if (newQuantity < 0) throw new ArgumentException("Số lượng tồn kho không được âm", nameof(newQuantity));
+        QuantityInStock = newQuantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
-
-
-

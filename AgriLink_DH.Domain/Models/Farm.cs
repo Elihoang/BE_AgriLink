@@ -1,74 +1,80 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Hồ sơ Vườn/Rẫy - Tài sản đất đai của nông dân
 /// </summary>
-[Table("farms")]
-public class Farm
+public class Farm : SoftDeletableEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("owner_user_id")]
-    [Required]
-    public Guid OwnerUserId { get; set; } // Link tới bảng Users (Tài khoản App)
+    public Guid OwnerUserId { get; private set; } // Link tới bảng Users (Tài khoản App)
 
-    [Column("name")]
-    [Required]
-    [MaxLength(100)]
-    public string Name { get; set; } = string.Empty; // "Rẫy Đắk Mil", "Vườn Sau Nhà"
+    public string Name { get; private set; } = string.Empty; // "Rẫy Đắk Mil", "Vườn Sau Nhà"
+    
+    public decimal? AreaSize { get; private set; } // Diện tích (Hecta). VD: 2.5
 
-    [Column("area_size")]
-    [Precision(10, 2)]
-    public decimal? AreaSize { get; set; } // Diện tích (Hecta). VD: 2.5
-
-    [Column("address_gps")]
-    [MaxLength(255)]
-    public string? AddressGps { get; set; } 
+    public string? AddressGps { get; private set; } 
 
     /// <summary>
     /// Vĩ độ (Latitude) - Người dùng chọn trên map
     /// </summary>
-    [Column("latitude")]
-    [Precision(10, 7)]
-    public decimal? Latitude { get; set; } // VD: 12.6667000 (Đắk Lắk)
+    public decimal? Latitude { get; private set; } // VD: 12.6667000 (Đắk Lắk)
 
     /// <summary>
     /// Kinh độ (Longitude) - Người dùng chọn trên map
     /// </summary>
-    [Column("longitude")]
-    [Precision(10, 7)]
-    public decimal? Longitude { get; set; } // VD: 108.0500000 (Đắk Lắk)
+    public decimal? Longitude { get; private set; } // VD: 108.0500000 (Đắk Lắk)
 
-    [Column("google_maps_url")]
-    [MaxLength(500)]
-    public string? GoogleMapsUrl { get; set; } // Link gốc Google Maps
+    public string? GoogleMapsUrl { get; private set; } // Link gốc Google Maps
 
-    [Column("image_url")]
-    [MaxLength(500)]
-    public string? ImageUrl { get; set; } // URL hình ảnh trang trại
+    public string? ImageUrl { get; private set; } // URL hình ảnh trang trại
 
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+
+    // Soft Delete inherited from SoftDeletableEntity
 
     // Navigation Properties
-    [ForeignKey("OwnerUserId")]
-    public virtual User? Owner { get; set; }
+    public virtual User? Owner { get; private set; }
 
-    public virtual ICollection<CropSeason> CropSeasons { get; set; } = new List<CropSeason>();
-    public virtual ICollection<TaskType> TaskTypes { get; set; } = new List<TaskType>();
-    public virtual ICollection<Worker> Workers { get; set; } = new List<Worker>();
-    public virtual ICollection<WeatherLog> WeatherLogs { get; set; } = new List<WeatherLog>();
+    public virtual ICollection<CropSeason> CropSeasons { get; private set; } = new List<CropSeason>();
+    public virtual ICollection<TaskType> TaskTypes { get; private set; } = new List<TaskType>();
+    public virtual ICollection<Worker> Workers { get; private set; } = new List<Worker>();
+    public virtual ICollection<WeatherLog> WeatherLogs { get; private set; } = new List<WeatherLog>();
 
-    // Soft Delete
-    [Column("is_deleted")]
-    public bool IsDeleted { get; set; } = false;
+    protected Farm() { }
 
-    [Column("deleted_at")]
-    public DateTime? DeletedAt { get; set; }
+    public Farm(Guid ownerUserId, string name, decimal? areaSize = null, string? addressGps = null, decimal? latitude = null, decimal? longitude = null, string? googleMapsUrl = null, string? imageUrl = null)
+    {
+        if (ownerUserId == Guid.Empty)
+            throw new ArgumentException("Chủ vườn không hợp lệ", nameof(ownerUserId));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tên vườn không được để trống", nameof(name));
+
+        OwnerUserId = ownerUserId;
+        Name = name.Trim();
+        AreaSize = areaSize;
+        AddressGps = addressGps?.Trim();
+        Latitude = latitude;
+        Longitude = longitude;
+        GoogleMapsUrl = googleMapsUrl?.Trim();
+        ImageUrl = imageUrl?.Trim();
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(string name, decimal? areaSize, string? addressGps, decimal? latitude, decimal? longitude, string? googleMapsUrl, string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tên vườn không được để trống", nameof(name));
+
+        Name = name.Trim();
+        AreaSize = areaSize;
+        AddressGps = addressGps?.Trim();
+        Latitude = latitude;
+        Longitude = longitude;
+        GoogleMapsUrl = googleMapsUrl?.Trim();
+        if (imageUrl != null) ImageUrl = imageUrl.Trim();
+    }
+
+    // SoftDelete and Restore are inherited
 }

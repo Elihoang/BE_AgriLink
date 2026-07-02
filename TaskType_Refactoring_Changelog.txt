@@ -1,0 +1,46 @@
+CHANGELOG: TÁI CẤU TRÚC TASKTYPE (MÔ HÌNH HYBRID GLOBAL + CUSTOM)
+Ngày thực hiện: 12/06/2026
+
+1. MỤC TIÊU
+- Chuyển đổi bảng TaskType (Danh mục Loại công việc) từ việc bị gán cứng vào từng Nông trại (Farm) sang mô hình Hybrid.
+- Hỗ trợ công việc do Hệ thống định nghĩa chung (Global) và công việc Nông trại tự định nghĩa (Custom).
+
+2. DANH SÁCH FILE ĐÃ SỬA ĐỔI Ở BACKEND
+- AgriLink_DH.Domain/Models/TaskType.cs:
+  + Chuyển cột `FarmId` thành dạng nullable (`Guid?`).
+  + Thêm cột `IsSystem` (boolean, mặc định false).
+
+- AgriLink_DH.Share/DTOs/TaskType/...:
+  + TaskTypeDto.cs: Cập nhật `FarmId` (nullable) và thêm `IsSystem`.
+  + CreateTaskTypeDto.cs: Cập nhật `FarmId` (nullable) và thêm `IsSystem`.
+
+- AgriLink_DH.Infrastructure/Repositories/TaskTypeRepository.cs:
+  + Sửa hàm `GetByFarmIdAsync`: Cập nhật logic truy vấn để lấy cả công việc của Farm VÀ công việc của Hệ thống (`t.FarmId == farmId || t.IsSystem`).
+
+- AgriLink_DH.Core/Services/TaskTypeService.cs:
+  + Sửa hàm `CreateTaskTypeAsync`: Hỗ trợ bỏ qua check Farm tồn tại khi tạo task hệ thống.
+  + Sửa hàm `UpdateTaskTypeAsync` & `DeleteTaskTypeAsync`: Thêm logic chốt chặn an toàn (Báo lỗi InvalidOperationException nếu ai đó gọi API cố tình sửa/xóa công việc của Hệ thống).
+  + Sửa hàm `MapToDto`: Trả về trường `IsSystem` cho FE sử dụng.
+
+3. HỦY BỎ CLONING & CHUYỂN HOÀN TOÀN SANG HYBRID (ROLLBACK)
+- AgriLink_DH.Core/Services/FarmService.cs: Đã xóa vòng lặp tự động Clone các System Tasks khi tạo Nông trại mới.
+- AgriLink_DH.Infrastructure/Repositories/TaskTypeRepository.cs: Cập nhật hàm `GetByFarmIdAsync` để trả về cả Công việc của Farm và Công việc của Hệ thống (`t.FarmId == farmId || t.IsSystem == true`).
+
+4. ĐỒNG BỘ GIAO DIỆN BẢNG (UI STANDARDIZATION)
+- Đã tạo Component dùng chung: `CustomTable.jsx` (để quy chuẩn màu nền xám, font chữ hoa in đậm cho tất cả các Header của Table).
+- Đã thay thế thành công thẻ `Table` của Mantine thành `CustomTable` tại hơn 10 trang lớn nhỏ:
+   + TaskTypeTable (Bảng Công việc)
+   + WorkerTable (Bảng Nhân công)
+   + WorkerAdvanceTable (Bảng Ứng lương)
+   + CropSeasonTable (Bảng Niên vụ)
+   + WeatherLogTable (Bảng Thời tiết)
+   + ContentTable (Bảng Bài viết)
+   + TaskScheduleCreateModal / TaskScheduleDetailModal (Modal Lên lịch)
+   + TaskHistoryLogList / TaskHistoryWorkerStats (Bảng Lịch sử & Thống kê)
+   + SalaryPaymentsPage (Bảng Thanh toán Lương)
+
+5. CẬP NHẬT DATABASE
+- Vẫn giữ nguyên Migration `MakeTaskTypeHybrid`. Cấu trúc DB hoàn toàn phù hợp để hỗ trợ Template Cloning mà không cần phải xóa đi làm lại.
+
+6. DANH SÁCH FILE ĐÃ SỬA ĐỔI Ở FRONTEND
+- (Không bắt buộc) Frontend không cần phải can thiệp nhiều. Vì các Task nhân bản trả về đều có `IsSystem = false`, nên biểu tượng Ổ khóa sẽ tự động ẩn đi và các nút Sửa/Xóa hiển thị lại bình thường cho Chủ Nông trại thao tác.

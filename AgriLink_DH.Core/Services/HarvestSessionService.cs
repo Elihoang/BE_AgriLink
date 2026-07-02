@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.HarvestSession;
 
@@ -10,6 +11,7 @@ public class HarvestSessionService : BaseCachedService
     private readonly IHarvestSessionRepository _harvestSessionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly HarvestSessionValidator _validator;
 
     private const string CACHE_KEY_USER_PREFIX = "harvest_sessions:user:";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30); // Cache 30 phút
@@ -18,12 +20,14 @@ public class HarvestSessionService : BaseCachedService
         IHarvestSessionRepository harvestSessionRepository,
         ICropSeasonRepository cropSeasonRepository,
         ICacheService cacheService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        HarvestSessionValidator validator)
         : base(cacheService)
     {
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<HarvestSessionDto>> GetBySeasonAsync(Guid seasonId)
@@ -58,18 +62,10 @@ public class HarvestSessionService : BaseCachedService
 
     public async Task<HarvestSessionDto> CreateSessionAsync(CreateHarvestSessionDto dto)
     {
+        await _validator.ValidateCreateAsync(dto.SeasonId);
         var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
-        var session = new HarvestSession
-        {
-            SeasonId = dto.SeasonId,
-            HarvestDate = dto.HarvestDate.ToUniversalTime(),
-            StorageLocation = dto.StorageLocation,
-            TotalBags = 0,
-            TotalWeight = 0
-        };
+        var session = new HarvestSession(dto.SeasonId, dto.HarvestDate.ToUniversalTime(), dto.StorageLocation);
 
         await _harvestSessionRepository.AddAsync(session);
         await _unitOfWork.SaveChangesAsync();
@@ -80,25 +76,18 @@ public class HarvestSessionService : BaseCachedService
             await InvalidateUserCacheAsync(season.Farm.OwnerUserId);
         }
 
-        session.CropSeason = season;
-        return MapToDto(session);
+        var resultDto = MapToDto(session);
+        resultDto.SeasonName = season.Name;
+        return resultDto;
     }
 
     public async Task<HarvestSessionDto> CreateSessionWithBagsAsync(CreateHarvestSessionWithDetailsDto dto)
     {
+        await _validator.ValidateCreateAsync(dto.SeasonId);
         var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
         // Tạo Session
-        var session = new HarvestSession
-        {
-            SeasonId = dto.SeasonId,
-            HarvestDate = dto.HarvestDate.ToUniversalTime(),
-            StorageLocation = dto.StorageLocation,
-            TotalBags = 0,
-            TotalWeight = 0
-        };
+        var session = new HarvestSession(dto.SeasonId, dto.HarvestDate.ToUniversalTime(), dto.StorageLocation);
 
         // Thêm các bao (nếu có)
         if (dto.Bags != null && dto.Bags.Any())
@@ -109,23 +98,19 @@ public class HarvestSessionService : BaseCachedService
             {
                 var netWeight = bagInput.GrossWeight - bagInput.Deduction;
                 
-                var bag = new HarvestBagDetail
-                {
-                    SessionId = session.Id, // ID đã được tạo từ Guid.NewGuid()
-                    BagIndex = bagInput.BagIndex,
-                    GrossWeight = bagInput.GrossWeight,
-                    Deduction = bagInput.Deduction,
-                    NetWeight = netWeight
-                };
+                var bag = new HarvestBagDetail(
+                    session.Id,
+                    bagInput.BagIndex,
+                    bagInput.GrossWeight,
+                    bagInput.Deduction
+                );
                 
                 bags.Add(bag);
                 
-                // Cập nhật tổng
-                session.TotalBags += 1;
-                session.TotalWeight += netWeight;
+                // Add to collection and update total
+                session.HarvestBagDetails.Add(bag);
+                session.AddBag(bag.NetWeight);
             }
-            
-            session.HarvestBagDetails = bags;
         }
 
         await _harvestSessionRepository.AddAsync(session);
@@ -137,15 +122,15 @@ public class HarvestSessionService : BaseCachedService
             await InvalidateUserCacheAsync(season.Farm.OwnerUserId);
         }
 
-        session.CropSeason = season;
-        return MapToDto(session);
+        var resultDto = MapToDto(session);
+        resultDto.SeasonName = season.Name;
+        return resultDto;
     }
 
     public async Task<bool> DeleteSessionAsync(Guid id)
     {
         var session = await _harvestSessionRepository.GetByIdAsync(id);
-        if (session == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu thu hoạch với ID: {id}");
+        _validator.ValidateDelete(session, id);
 
         // Get userId before delete
         var season = session.CropSeason ?? await _cropSeasonRepository.GetSeasonWithDetailsAsync(session.SeasonId);
@@ -166,11 +151,9 @@ public class HarvestSessionService : BaseCachedService
     public async Task<bool> SoftDeleteSessionAsync(Guid id)
     {
         var session = await _harvestSessionRepository.GetByIdAsync(id);
-        if (session == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu thu hoạch với ID: {id}");
+        _validator.ValidateDelete(session, id);
 
-        session.IsDeleted = true;
-        session.DeletedAt = DateTime.UtcNow;
+        session.SoftDelete();
 
         _harvestSessionRepository.Update(session);
         await _unitOfWork.SaveChangesAsync();
@@ -181,11 +164,9 @@ public class HarvestSessionService : BaseCachedService
     public async Task<bool> RestoreSessionAsync(Guid id)
     {
         var session = await _harvestSessionRepository.GetByIdAsync(id);
-        if (session == null)
-            throw new KeyNotFoundException($"Không tìm thấy phiếu thu hoạch với ID: {id}");
+        _validator.ValidateDelete(session, id);
 
-        session.IsDeleted = false;
-        session.DeletedAt = null;
+        session.Restore();
 
         _harvestSessionRepository.Update(session);
         await _unitOfWork.SaveChangesAsync();

@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Share.DTOs.WeatherLog;
@@ -11,15 +12,18 @@ public class WeatherLogService
     private readonly IWeatherLogRepository _weatherLogRepository;
     private readonly IFarmRepository _farmRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly WeatherLogValidator _validator;
 
     public WeatherLogService(
         IWeatherLogRepository weatherLogRepository,
         IFarmRepository farmRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        WeatherLogValidator validator)
     {
         _weatherLogRepository = weatherLogRepository;
         _farmRepository = farmRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<WeatherLogDto>> GetByFarmAsync(Guid farmId)
@@ -42,9 +46,8 @@ public class WeatherLogService
 
     public async Task<WeatherLogDto> CreateLogAsync(CreateWeatherLogDto dto)
     {
-        var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
-        if (farm == null)
-            throw new InvalidOperationException($"Không tìm thấy vườn với ID: {dto.FarmId}");
+        await _validator.ValidateCreateLogAsync(dto.FarmId);
+        var farm = (await _farmRepository.GetByIdAsync(dto.FarmId))!;
 
         var log = new WeatherLog
         {
@@ -65,8 +68,7 @@ public class WeatherLogService
     public async Task<bool> DeleteLogAsync(Guid id)
     {
         var log = await _weatherLogRepository.GetByIdAsync(id);
-        if (log == null)
-            throw new KeyNotFoundException($"Không tìm thấy nhật ký thời tiết với ID: {id}");
+        _validator.ValidateDeleteLog(log, id);
 
         _weatherLogRepository.Remove(log);
         await _unitOfWork.SaveChangesAsync();
