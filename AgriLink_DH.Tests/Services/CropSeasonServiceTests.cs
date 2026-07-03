@@ -1,4 +1,5 @@
 using AgriLink_DH.Core.Services;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
@@ -16,6 +17,8 @@ public class CropSeasonServiceTests
     private readonly Mock<IFarmRepository> _mockFarmRepository;
     private readonly Mock<IProductRepository> _mockProductRepository;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly IUnitOfWork _mockUnitOfWorkObj; // Optional if not needed
+    private readonly CropSeasonValidator _validator;
     private readonly CropSeasonService _service;
 
     public CropSeasonServiceTests()
@@ -25,11 +28,18 @@ public class CropSeasonServiceTests
         _mockProductRepository = new Mock<IProductRepository>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
 
+        _validator = new CropSeasonValidator(
+            _mockCropRepository.Object,
+            _mockFarmRepository.Object,
+            _mockProductRepository.Object
+        );
+
         _service = new CropSeasonService(
             _mockCropRepository.Object,
             _mockFarmRepository.Object,
             _mockProductRepository.Object,
-            _mockUnitOfWork.Object
+            _mockUnitOfWork.Object,
+            _validator
         );
     }
 
@@ -37,11 +47,11 @@ public class CropSeasonServiceTests
     public async Task GetAllSeasonsAsync_ShouldReturnAllSeasons()
     {
         // Arrange
-        var seasons = new List<CropSeason>
-        {
-            new CropSeason { Id = Guid.NewGuid(), Name = "Season 1", Status = SeasonStatus.Active },
-            new CropSeason { Id = Guid.NewGuid(), Name = "Season 2", Status = SeasonStatus.Closed }
-        };
+        var season1 = new CropSeason(Guid.NewGuid(), Guid.NewGuid(), "Season 1");
+        var season2 = new CropSeason(Guid.NewGuid(), Guid.NewGuid(), "Season 2");
+        season2.ChangeStatus(SeasonStatus.Closed);
+        
+        var seasons = new List<CropSeason> { season1, season2 };
 
         _mockCropRepository.Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(seasons);
@@ -71,10 +81,10 @@ public class CropSeasonServiceTests
         };
 
         _mockFarmRepository.Setup(repo => repo.GetByIdAsync(farmId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Farm { Id = farmId, Name = "Test Farm" });
+            .ReturnsAsync(new Farm(Guid.NewGuid(), "Test Farm"));
 
         _mockProductRepository.Setup(repo => repo.GetByIdAsync(productId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Product { Id = productId, Name = "Test Product" });
+            .ReturnsAsync(new Product("Test Product"));
 
         _mockCropRepository.Setup(repo => repo.AddAsync(It.IsAny<CropSeason>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((CropSeason season, CancellationToken ct) => season);

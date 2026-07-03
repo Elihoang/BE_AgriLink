@@ -1,6 +1,7 @@
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.ArticleComment;
 
@@ -14,15 +15,18 @@ public class ArticleCommentService
     private readonly IArticleCommentRepository _commentRepository;
     private readonly IArticleRepository _articleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ArticleCommentValidator _validator;
 
     public ArticleCommentService(
         IArticleCommentRepository commentRepository,
         IArticleRepository articleRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ArticleCommentValidator validator)
     {
         _commentRepository = commentRepository;
         _articleRepository = articleRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<ArticleCommentDto>> GetCommentsByArticleIdAsync(Guid articleId, CancellationToken cancellationToken = default)
@@ -51,31 +55,11 @@ public class ArticleCommentService
 
     public async Task<ArticleCommentDto> CreateCommentAsync(CreateArticleCommentDto dto, Guid userId, CancellationToken cancellationToken = default)
     {
-        // Validate Article exists and allows comments
-        var article = await _articleRepository.GetByIdAsync(dto.ArticleId, cancellationToken);
-        if (article == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bài viết với ID: {dto.ArticleId}");
-        }
-
-        if (!article.AllowComments)
-        {
-            throw new InvalidOperationException("Bài viết này không cho phép bình luận");
-        }
-
-        // If it's a reply, validate parent comment exists
-        if (dto.ParentCommentId.HasValue)
-        {
-            var parentComment = await _commentRepository.GetByIdAsync(dto.ParentCommentId.Value, cancellationToken);
-            if (parentComment == null)
-            {
-                throw new KeyNotFoundException($"Không tìm thấy bình luận cha với ID: {dto.ParentCommentId}");
-            }
-        }
+        await _validator.ValidateCreateCommentAsync(dto, cancellationToken);
+        var article = (await _articleRepository.GetByIdAsync(dto.ArticleId, cancellationToken))!;
 
         var comment = new ArticleComment
         {
-            Id = Guid.NewGuid(),
             ArticleId = dto.ArticleId,
             UserId = userId,
             ParentCommentId = dto.ParentCommentId,
@@ -87,7 +71,7 @@ public class ArticleCommentService
         await _commentRepository.AddAsync(comment, cancellationToken);
 
         // Increment article comment count
-        article.CommentCount++;
+        article.IncrementCommentCount();
         _articleRepository.Update(article);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -98,18 +82,9 @@ public class ArticleCommentService
     public async Task<ArticleCommentDto> UpdateCommentAsync(Guid id, UpdateArticleCommentDto dto, Guid userId, CancellationToken cancellationToken = default)
     {
         var comment = await _commentRepository.GetByIdAsync(id, cancellationToken);
-        if (comment == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bình luận với ID: {id}");
-        }
+        _validator.ValidateUpdateComment(comment, id, userId);
 
-        // Verify user owns the comment
-        if (comment.UserId != userId)
-        {
-            throw new UnauthorizedAccessException("Bạn không có quyền sửa bình luận này");
-        }
-
-        comment.Content = dto.Content;
+        comment!.Content = dto.Content;
         comment.UpdatedAt = DateTime.UtcNow;
 
         _commentRepository.Update(comment);
@@ -121,28 +96,19 @@ public class ArticleCommentService
     public async Task<bool> DeleteCommentAsync(Guid id, Guid userId, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var comment = await _commentRepository.GetByIdAsync(id, cancellationToken);
-        if (comment == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bình luận với ID: {id}");
-        }
-
-        // Verify user owns the comment or is admin
-        if (comment.UserId != userId && !isAdmin)
-        {
-            throw new UnauthorizedAccessException("Bạn không có quyền xóa bình luận này");
-        }
+        _validator.ValidateDeleteComment(comment, id, userId, isAdmin);
 
         // Soft delete by changing status
-        comment.Status = CommentStatus.Deleted;
+        comment!.Status = CommentStatus.Deleted;
         comment.UpdatedAt = DateTime.UtcNow;
 
         _commentRepository.Update(comment);
 
         // Decrement article comment count
         var article = await _articleRepository.GetByIdAsync(comment.ArticleId, cancellationToken);
-        if (article != null && article.CommentCount > 0)
+        if (article != null)
         {
-            article.CommentCount--;
+            article.DecrementCommentCount();
             _articleRepository.Update(article);
         }
 
@@ -154,12 +120,9 @@ public class ArticleCommentService
     public async Task<bool> HideCommentAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var comment = await _commentRepository.GetByIdAsync(id, cancellationToken);
-        if (comment == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bình luận với ID: {id}");
-        }
+        _validator.ValidateHideComment(comment, id);
 
-        comment.Status = CommentStatus.Hidden;
+        comment!.Status = CommentStatus.Hidden;
         comment.UpdatedAt = DateTime.UtcNow;
 
         _commentRepository.Update(comment);

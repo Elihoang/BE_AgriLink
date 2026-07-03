@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
-using Microsoft.EntityFrameworkCore;
+
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
@@ -9,80 +8,105 @@ namespace AgriLink_DH.Domain.Models;
 /// Vị trí từng cây trong rẫy - giống như sơ đồ ghế rạp chiếu phim
 /// Mỗi record = 1 cây cụ thể tại vị trí (row, col)
 /// </summary>
-[Table("plant_positions")]
-public class PlantPosition
+public class PlantPosition : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// Vị trí cây thuộc rẫy nào - REQUIRED
     /// Rẫy có sơ đồ cố định, cây ở vị trí này suốt đời
     /// </summary>
-    [Required]
-    [Column("farm_id")]
-    public Guid FarmId { get; set; }
+    public Guid FarmId { get; private set; }
 
     /// <summary>
     /// Vụ mùa hiện tại đang sử dụng vị trí này - OPTIONAL
     /// Null = vị trí trống hoặc cây chưa gắn vào vụ nào
     /// </summary>
-    [Column("season_id")]
-    public Guid? SeasonId { get; set; }
+    public Guid? SeasonId { get; private set; }
 
     /// <summary>
     /// Số hàng (row) - VD: hàng 1, 2, 3...
     /// </summary>
-    [Column("row_number")]
-    public int RowNumber { get; set; }
+    public int RowNumber { get; private set; }
 
     /// <summary>
     /// Số cột (column) - VD: cột 1, 2, 3...
     /// </summary>
-    [Column("column_number")]
-    public int ColumnNumber { get; set; }
+    public int ColumnNumber { get; private set; }
 
     /// <summary>
     /// Loại cây - Foreign Key tới bảng Products
     /// VD: ProductId của "Cà phê Arabica", "Sầu riêng Monthong"
     /// </summary>
-    [Required]
-    [Column("product_id")]
-    public Guid ProductId { get; set; }
+    public Guid ProductId { get; private set; }
 
     /// <summary>
     /// Ngày trồng cây này
     /// </summary>
-    [Column("plant_date")]
-    public DateTime? PlantDate { get; set; }
+    public DateTime? PlantDate { get; private set; }
 
     /// <summary>
     /// Tình trạng sức khỏe
     /// </summary>
-    [Column("health_status")]
-    public PlantHealthStatus HealthStatus { get; set; } = PlantHealthStatus.Healthy;
+    public PlantHealthStatus HealthStatus { get; private set; } = PlantHealthStatus.Healthy;
 
     /// <summary>
     /// Năng suất ước tính (kg/năm) của cây này
     /// </summary>
-    [Column("estimated_yield")]
-    [Precision(10, 2)]
-    public decimal? EstimatedYield { get; set; }
+    public decimal? EstimatedYield { get; private set; }
 
     /// <summary>
     /// Ghi chú: "Cây này bệnh vàng lá", "Thay cây mới 15/3"...
     /// </summary>
-    [Column("note")]
-    public string? Note { get; set; }
+    public string? Note { get; private set; }
 
     // Navigation properties
-    [ForeignKey(nameof(FarmId))]
-    public virtual Farm Farm { get; set; } = null!;
+    public virtual Farm Farm { get; private set; } = null!;
 
-    [ForeignKey(nameof(SeasonId))]
-    public virtual CropSeason? CropSeason { get; set; }
+    public virtual CropSeason? CropSeason { get; private set; }
 
-    [ForeignKey(nameof(ProductId))]
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product Product { get; private set; } = null!;
+
+    protected PlantPosition() { }
+
+    public PlantPosition(Guid farmId, int rowNumber, int columnNumber, Guid productId, DateTime? plantDate = null)
+    {
+        if (farmId == Guid.Empty) throw new ArgumentException("FarmId không hợp lệ", nameof(farmId));
+        if (productId == Guid.Empty) throw new ArgumentException("ProductId không hợp lệ", nameof(productId));
+        if (rowNumber < 0) throw new ArgumentException("RowNumber không hợp lệ", nameof(rowNumber));
+        if (columnNumber < 0) throw new ArgumentException("ColumnNumber không hợp lệ", nameof(columnNumber));
+
+        FarmId = farmId;
+        RowNumber = rowNumber;
+        ColumnNumber = columnNumber;
+        ProductId = productId;
+        PlantDate = plantDate;
+        HealthStatus = PlantHealthStatus.Healthy;
+    }
+
+    public void UpdateHealth(PlantHealthStatus newStatus, string? note = null)
+    {
+        HealthStatus = newStatus;
+        if (note != null) Note = note.Trim();
+    }
+
+    public void UpdateDetails(Guid productId, DateTime? plantDate, decimal? estimatedYield, string? note)
+    {
+        if (productId == Guid.Empty) throw new ArgumentException("ProductId không hợp lệ", nameof(productId));
+        
+        ProductId = productId;
+        PlantDate = plantDate;
+        EstimatedYield = estimatedYield;
+        Note = note?.Trim();
+    }
+
+    public void AssignToSeason(Guid seasonId)
+    {
+        if (seasonId == Guid.Empty) throw new ArgumentException("SeasonId không hợp lệ", nameof(seasonId));
+        SeasonId = seasonId;
+    }
+
+    public void RemoveFromSeason()
+    {
+        SeasonId = null;
+    }
 }

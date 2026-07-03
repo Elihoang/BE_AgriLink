@@ -1,45 +1,45 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Sổ Ứng Lương - Quản lý công nợ với thợ
 /// </summary>
-[Table("worker_advances")]
-public class WorkerAdvance
+public class WorkerAdvance : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
-
-    [Column("worker_id")]
-    [Required]
-    public Guid WorkerId { get; set; }
-
-    [Column("season_id")]
-    [Required]
-    public Guid SeasonId { get; set; } // Hạch toán vào vụ hiện tại
-
-    [Column("amount")]
-    [Required]
-    [Precision(15, 2)]
-    public decimal Amount { get; set; } // Số tiền ứng: 500,000
-
-    [Column("advance_date")]
-    public DateTime AdvanceDate { get; set; } = DateTime.UtcNow.Date;
-
-    [Column("is_deducted")]
-    public bool IsDeducted { get; set; } = false; // True: Đã trừ vào lương, False: Chưa trừ
-
-    [Column("note")]
-    public string? Note { get; set; }
+    public Guid WorkerId { get; private set; }
+    public Guid SeasonId { get; private set; } // Hạch toán vào vụ hiện tại
+    public decimal Amount { get; private set; } // Số tiền ứng: 500,000
+    public DateTime AdvanceDate { get; private set; } = DateTime.UtcNow.Date;
+    public bool IsDeducted { get; private set; } = false; // True: Đã trừ vào lương, False: Chưa trừ
+    public string? Note { get; private set; }
 
     // Navigation Properties
-    [ForeignKey(nameof(WorkerId))]
-    public virtual Worker Worker { get; set; } = null!;
+    public virtual Worker Worker { get; private set; } = null!;
+    public virtual CropSeason CropSeason { get; private set; } = null!;
 
-    [ForeignKey(nameof(SeasonId))]
-    public virtual CropSeason CropSeason { get; set; } = null!;
+    protected WorkerAdvance() { }
+
+    public WorkerAdvance(Guid workerId, Guid seasonId, decimal amount, DateTime advanceDate, string? note = null)
+    {
+        WorkerId = workerId;
+        SeasonId = seasonId;
+        Amount = amount;
+        AdvanceDate = advanceDate.Date;
+        IsDeducted = false;
+        Note = note;
+    }
+
+    public void UpdateDetails(decimal amount, DateTime advanceDate, bool isDeducted, string? note)
+    {
+        Amount = amount;
+        AdvanceDate = advanceDate.Date;
+        IsDeducted = isDeducted;
+        Note = note;
+    }
+
+    public void MarkAsDeducted()
+    {
+        IsDeducted = true;
+    }
 }

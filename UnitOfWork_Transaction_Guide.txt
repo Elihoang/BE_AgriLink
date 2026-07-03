@@ -1,0 +1,37 @@
+=== TÀI LIỆU GIẢI THÍCH: UNIT OF WORK & TRANSACTION TRONG DỰ ÁN AGRILINK ===
+
+1. CƠ CHẾ LƯU DỮ LIỆU HIỆN TẠI (UNIT OF WORK)
+Trong dự án này, anh đang áp dụng Design Pattern có tên là "Unit of Work" (UoW).
+- Các class như `UserRepository`, `FarmRepository` chỉ chịu trách nhiệm thao tác "nháp" trên bộ nhớ RAM (Tracking).
+  VD: _repository.Add(entity) => Chỉ báo cho hệ thống biết là "tôi muốn thêm data này", NHƯNG CHƯA ĐƯA XUỐNG DATABASE.
+- Chỉ khi nào anh gọi `_unitOfWork.SaveChangesAsync()`, hệ thống mới thực sự mở kết nối tới Database, đóng gói TẤT CẢ các thao tác "nháp" nãy giờ vào chung 1 hộp (Implicit Transaction) và đẩy xuống Database cùng 1 lúc.
+
+=> Lợi ích: Tối ưu hiệu năng cực tốt. Kể cả anh có insert 1 dòng hay 100 dòng thì nó cũng chỉ mở DB đúng 1 lần. 
+
+2. SỰ KHÁC BIỆT: "SAVE CHANGES ASYNC" (IMPLICIT) vs "SYSTEM TRANSACTION" (EXPLICIT)
+
+[Cơ chế 1]: Implicit Transaction (Giao dịch ngầm định - CÁCH DỰ ÁN ĐANG DÙNG NHIỀU NHẤT)
+- Khi gọi `_unitOfWork.SaveChangesAsync()`, Entity Framework Core (EF Core) tự động âm thầm tạo ra một Transaction.
+- Nếu lưu thành công 100%, nó tự Commit.
+- Nếu lưu bị lỗi (đứt mạng, sai khóa ngoại...), nó tự Rollback toàn bộ.
+- Phù hợp cho: Các nghiệp vụ lưu dữ liệu thông thường trong 1 database (Insert 1 user, update 1 farm, thêm 1 hóa đơn...). 99% các logic bình thường chỉ cần dùng cái này.
+
+[Cơ chế 2]: Explicit System Transaction (Giao dịch thủ công - CÓ TRONG HỆ THỐNG NHƯNG HIẾM DÙNG)
+- Là khi anh tự tay viết code:
+  await _unitOfWork.BeginTransactionAsync();
+  try {
+      ... làm gì đó ...
+      await _unitOfWork.SaveChangesAsync();
+      ... làm cái khác nữa ...
+      await _unitOfWork.SaveChangesAsync();
+      await _unitOfWork.CommitTransactionAsync();
+  } catch {
+      await _unitOfWork.RollbackTransactionAsync();
+  }
+- Phù hợp cho: 
+  + Các nghiệp vụ siêu phức tạp, ví dụ: Anh phải gọi SaveChanges() lần 1 để lấy ID của đơn hàng sinh ra từ DB, SAU ĐÓ anh lấy ID đó gửi API cho MOMO, nếu MOMO trả về thành công thì anh mới tạo Hóa Đơn và gọi SaveChanges() lần 2. 
+  + Quản lý lock chống đụng độ dữ liệu (Concurrency Control) khi có hàng ngàn người giành nhau mua 1 món hàng.
+
+3. KẾT LUẬN & LỜI KHUYÊN DÀNH CHO DỰ ÁN CỦA ANH
+- ĐỪNG SỢ việc gọi `_unitOfWork.SaveChangesAsync()` chỉ để lưu 1 record. Vì như đã giải thích ở mục 1, chi phí mở Transaction ngầm định của EF Core cho 1 record là vô cùng nhỏ, tốc độ phản hồi tính bằng millisecond (phần nghìn giây), không hề gây chậm hệ thống.
+- Hãy cứ tiếp tục giữ mô hình hiện tại: Repository chỉ Add/Update, Service chịu trách nhiệm gọi _unitOfWork.SaveChangesAsync() ở cuối luồng xử lý. Mô hình này rất sạch sẽ và đúng chuẩn!

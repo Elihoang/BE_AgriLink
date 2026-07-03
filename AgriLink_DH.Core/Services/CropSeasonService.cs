@@ -1,6 +1,7 @@
 using AgriLink_DH.Domain.Common;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.CropSeason;
 using AgriLink_DH.Share.Extensions;
@@ -13,17 +14,20 @@ public class CropSeasonService
     private readonly IFarmRepository _farmRepository;
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CropSeasonValidator _validator;
 
     public CropSeasonService(
         ICropSeasonRepository cropSeasonRepository,
         IFarmRepository farmRepository,
         IProductRepository productRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        CropSeasonValidator validator)
     {
         _cropSeasonRepository = cropSeasonRepository;
         _farmRepository = farmRepository;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<CropSeasonDto>> GetAllSeasonsAsync()
@@ -63,64 +67,41 @@ public class CropSeasonService
 
     public async Task<CropSeasonDto> CreateSeasonAsync(CreateCropSeasonDto dto)
     {
+        await _validator.ValidateCreateAsync(dto);
+
         var farm = await _farmRepository.GetByIdAsync(dto.FarmId);
-        if (farm == null)
-        {
-            throw new InvalidOperationException($"Không tìm thấy vườn với ID: {dto.FarmId}");
-        }
-
         var product = await _productRepository.GetByIdAsync(dto.ProductId);
-        if (product == null)
-        {
-            throw new InvalidOperationException($"Không tìm thấy sản phẩm với ID: {dto.ProductId}");
-        }
 
-        var season = new CropSeason
-        {
-            FarmId = dto.FarmId,
-            ProductId = dto.ProductId,
-            Name = dto.Name,
-            StartDate = dto.StartDate.HasValue
-                ? DateTime.SpecifyKind(dto.StartDate.Value, DateTimeKind.Utc)
-                : null,
-            EndDate = dto.EndDate.HasValue
-                ? DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc)
-                : null,
-            Status = SeasonStatus.Active,
-            Note = dto.Note
-        };
+        var startDate = dto.StartDate.HasValue ? DateTime.SpecifyKind(dto.StartDate.Value, DateTimeKind.Utc) : (DateTime?)null;
+        var endDate = dto.EndDate.HasValue ? DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc) : (DateTime?)null;
+
+        var season = new CropSeason(dto.FarmId, dto.ProductId, dto.Name, startDate, endDate, dto.Note);
 
         await _cropSeasonRepository.AddAsync(season);
         await _unitOfWork.SaveChangesAsync();
 
-        season.Farm = farm;
-        season.Product = product;
-
-        return MapToDto(season);
+        // Entity Framework Core will automatically resolve Navigation Properties when we return the DTO
+        // However we need to manually map them to the DTO here if they are not tracked yet
+        var dtoResult = MapToDto(season);
+        dtoResult.FarmName = farm.Name;
+        dtoResult.ProductName = product.Name;
+        return dtoResult;
     }
 
     public async Task<CropSeasonDto> UpdateSeasonAsync(Guid id, UpdateCropSeasonDto dto)
     {
         var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(id);
-        if (season == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy vụ mùa với ID: {id}");
-        }
+        _validator.ValidateUpdate(season, id);
 
-        season.Name = dto.Name;
-        season.StartDate = dto.StartDate.HasValue 
-            ? DateTime.SpecifyKind(dto.StartDate.Value, DateTimeKind.Utc) 
-            : null;
-        season.EndDate = dto.EndDate.HasValue
-            ? DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc)
-            : null;
+        var startDate = dto.StartDate.HasValue ? DateTime.SpecifyKind(dto.StartDate.Value, DateTimeKind.Utc) : (DateTime?)null;
+        var endDate = dto.EndDate.HasValue ? DateTime.SpecifyKind(dto.EndDate.Value, DateTimeKind.Utc) : (DateTime?)null;
+
+        season.UpdateDetails(dto.Name, startDate, endDate, dto.Note);
         
         if (dto.Status.HasValue)
         {
-            season.Status = dto.Status.Value;
+            season.ChangeStatus(dto.Status.Value);
         }
-        
-        season.Note = dto.Note;
 
         _cropSeasonRepository.Update(season);
         await _unitOfWork.SaveChangesAsync();
@@ -131,10 +112,7 @@ public class CropSeasonService
     public async Task<bool> DeleteSeasonAsync(Guid id)
     {
         var season = await _cropSeasonRepository.GetByIdAsync(id);
-        if (season == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy vụ mùa với ID: {id}");
-        }
+        _validator.ValidateDelete(season, id);
 
         _cropSeasonRepository.Remove(season);
         await _unitOfWork.SaveChangesAsync();
@@ -148,14 +126,9 @@ public class CropSeasonService
     public async Task<CropSeasonDto> UpdateStageAsync(Guid id, UpdateStageDto dto)
     {
         var season = await _cropSeasonRepository.GetSeasonWithDetailsAsync(id);
-        if (season == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy vụ mùa với ID: {id}");
-        }
+        _validator.ValidateUpdateStage(season, id);
 
-        season.CurrentStage = dto.Stage;
-        season.StageChangedAt = DateTime.UtcNow;
-        season.StageNotes = dto.StageNotes;
+        season.UpdateGrowthStage(dto.Stage, dto.StageNotes);
 
         _cropSeasonRepository.Update(season);
         await _unitOfWork.SaveChangesAsync();

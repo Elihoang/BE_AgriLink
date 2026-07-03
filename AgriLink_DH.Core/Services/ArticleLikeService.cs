@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.ArticleLike;
 
@@ -13,15 +14,18 @@ public class ArticleLikeService
     private readonly IArticleLikeRepository _likeRepository;
     private readonly IArticleRepository _articleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ArticleLikeValidator _validator;
 
     public ArticleLikeService(
         IArticleLikeRepository likeRepository,
         IArticleRepository articleRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ArticleLikeValidator validator)
     {
         _likeRepository = likeRepository;
         _articleRepository = articleRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<bool> HasUserLikedArticleAsync(Guid articleId, Guid userId, CancellationToken cancellationToken = default)
@@ -42,23 +46,11 @@ public class ArticleLikeService
 
     public async Task<ArticleLikeDto> LikeArticleAsync(LikeArticleDto dto, Guid userId, CancellationToken cancellationToken = default)
     {
-        // Check if article exists
-        var article = await _articleRepository.GetByIdAsync(dto.ArticleId, cancellationToken);
-        if (article == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bài viết với ID: {dto.ArticleId}");
-        }
-
-        // Check if user already liked
-        var existingLike = await _likeRepository.GetByArticleAndUserAsync(dto.ArticleId, userId, cancellationToken);
-        if (existingLike != null)
-        {
-            throw new InvalidOperationException("Bạn đã thích bài viết này rồi");
-        }
+        await _validator.ValidateLikeArticleAsync(dto, userId, cancellationToken);
+        var article = (await _articleRepository.GetByIdAsync(dto.ArticleId, cancellationToken))!;
 
         var like = new ArticleLike
         {
-            Id = Guid.NewGuid(),
             ArticleId = dto.ArticleId,
             UserId = userId,
             CreatedAt = DateTime.UtcNow
@@ -67,7 +59,7 @@ public class ArticleLikeService
         await _likeRepository.AddAsync(like, cancellationToken);
 
         // Increment article like count
-        article.LikeCount++;
+        article.IncrementLikeCount();
         _articleRepository.Update(article);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -78,18 +70,15 @@ public class ArticleLikeService
     public async Task<bool> UnlikeArticleAsync(Guid articleId, Guid userId, CancellationToken cancellationToken = default)
     {
         var like = await _likeRepository.GetByArticleAndUserAsync(articleId, userId, cancellationToken);
-        if (like == null)
-        {
-            throw new InvalidOperationException("Bạn chưa thích bài viết này");
-        }
+        _validator.ValidateUnlikeArticle(like);
 
-        await _likeRepository.RemoveByIdAsync(like.Id, cancellationToken);
+        await _likeRepository.RemoveByIdAsync(like!.Id, cancellationToken);
 
         // Decrement article like count
         var article = await _articleRepository.GetByIdAsync(articleId, cancellationToken);
-        if (article != null && article.LikeCount > 0)
+        if (article != null)
         {
-            article.LikeCount--;
+            article.DecrementLikeCount();
             _articleRepository.Update(article);
         }
 

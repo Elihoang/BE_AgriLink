@@ -4,6 +4,7 @@ using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.Article;
+using AgriLink_DH.Core.Validations;
 using System.Text.Json;
 
 namespace AgriLink_DH.Core.Services;
@@ -19,6 +20,7 @@ public class ArticleService : BaseCachedService
     private readonly IArticleCommentRepository _commentRepository;
     private readonly IArticleLikeRepository _likeRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ArticleValidator _validator;
 
     // Cache keys & expiration
     private const string CACHE_KEY_PUBLISHED = "articles:published";
@@ -35,7 +37,8 @@ public class ArticleService : BaseCachedService
         IArticleCommentRepository commentRepository,
         IArticleLikeRepository likeRepository,
         IUnitOfWork unitOfWork,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        ArticleValidator validator)
         : base(cacheService)
     {
         _articleRepository = articleRepository;
@@ -44,6 +47,7 @@ public class ArticleService : BaseCachedService
         _commentRepository = commentRepository;
         _likeRepository = likeRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     /// <summary>
@@ -213,19 +217,7 @@ public class ArticleService : BaseCachedService
 
     public async Task<ArticleDto> CreateArticleAsync(CreateArticleDto dto, Guid createdByUserId, CancellationToken cancellationToken = default)
     {
-        // Validate Category exists
-        var category = await _categoryRepository.GetByIdAsync(dto.CategoryId, cancellationToken);
-        if (category == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy danh mục với ID: {dto.CategoryId}");
-        }
-
-        // Validate Author exists
-        var author = await _authorRepository.GetByIdAsync(dto.AuthorId, cancellationToken);
-        if (author == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy tác giả với ID: {dto.AuthorId}");
-        }
+        await _validator.ValidateCreateAsync(dto, cancellationToken);
 
         // Generate slug
         var slug = ArticleHelper.GenerateSlug(dto.Title);
@@ -235,29 +227,23 @@ public class ArticleService : BaseCachedService
             slug = $"{slug}-{Guid.NewGuid().ToString()[..8]}";
         }
 
-        var article = new Article
+        var article = new Article(dto.Title, slug, dto.CategoryId, dto.AuthorId, createdByUserId);
+        
+        article.UpdateContent(dto.Title, slug, dto.Description, dto.Content, dto.ThumbnailUrl, dto.ReadTime, createdByUserId);
+        
+        article.UpdateTags(
+            dto.Tags != null ? JsonSerializer.Serialize(dto.Tags) : null,
+            dto.Hashtags != null ? JsonSerializer.Serialize(dto.Hashtags) : null
+        );
+        
+        article.UpdateMedia(dto.AudioUrl, dto.AudioDuration, dto.VideoUrl);
+        article.SetFeatured(dto.IsFeatured, createdByUserId);
+        article.SetAllowComments(dto.AllowComments, createdByUserId);
+
+        if (dto.PublishImmediately)
         {
-            Id = Guid.NewGuid(),
-            CategoryId = dto.CategoryId,
-            AuthorId = dto.AuthorId,
-            Title = dto.Title,
-            Slug = slug,
-            Description = dto.Description,
-            Content = dto.Content,
-            ThumbnailUrl = dto.ThumbnailUrl,
-            Tags = dto.Tags != null ? JsonSerializer.Serialize(dto.Tags) : null,
-            Hashtags = dto.Hashtags != null ? JsonSerializer.Serialize(dto.Hashtags) : null,
-            ReadTime = dto.ReadTime,
-            AudioUrl = dto.AudioUrl,
-            AudioDuration = dto.AudioDuration,
-            VideoUrl = dto.VideoUrl,
-            Status = dto.PublishImmediately ? ArticleStatus.Published : ArticleStatus.Draft,
-            IsFeatured = dto.IsFeatured,
-            AllowComments = dto.AllowComments,
-            PublishedAt = dto.PublishImmediately ? DateTime.UtcNow : null,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = createdByUserId
-        };
+            article.Publish(createdByUserId);
+        }
 
         await _articleRepository.AddAsync(article, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -273,60 +259,42 @@ public class ArticleService : BaseCachedService
     public async Task<ArticleDto> UpdateArticleAsync(Guid id, UpdateArticleDto dto, Guid updatedByUserId, CancellationToken cancellationToken = default)
     {
         var article = await _articleRepository.GetByIdAsync(id, cancellationToken);
-        if (article == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bài viết với ID: {id}");
-        }
-
-        // Validate Category exists
-        var category = await _categoryRepository.GetByIdAsync(dto.CategoryId, cancellationToken);
-        if (category == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy danh mục với ID: {dto.CategoryId}");
-        }
-
-        // Validate Author exists
-        var author = await _authorRepository.GetByIdAsync(dto.AuthorId, cancellationToken);
-        if (author == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy tác giả với ID: {dto.AuthorId}");
-        }
+        await _validator.ValidateUpdateAsync(article, id, dto, cancellationToken);
 
         // Check if title changed, regenerate slug
+        var newSlug = article.Slug;
         if (article.Title != dto.Title)
         {
-            var newSlug = ArticleHelper.GenerateSlug(dto.Title);
+            newSlug = ArticleHelper.GenerateSlug(dto.Title);
             var slugExists = await _articleRepository.SlugExistsAsync(newSlug, id, cancellationToken);
             if (slugExists)
             {
                 newSlug = $"{newSlug}-{Guid.NewGuid().ToString()[..8]}";
             }
-            article.Slug = newSlug;
         }
 
-        article.CategoryId = dto.CategoryId;
-        article.AuthorId = dto.AuthorId;
-        article.Title = dto.Title;
-        article.Description = dto.Description;
-        article.Content = dto.Content;
-        article.ThumbnailUrl = dto.ThumbnailUrl;
-        article.Tags = dto.Tags != null ? JsonSerializer.Serialize(dto.Tags) : null;
-        article.Hashtags = dto.Hashtags != null ? JsonSerializer.Serialize(dto.Hashtags) : null;
-        article.ReadTime = dto.ReadTime;
-        article.AudioUrl = dto.AudioUrl;
-        article.AudioDuration = dto.AudioDuration;
-        article.VideoUrl = dto.VideoUrl;
-        article.IsFeatured = dto.IsFeatured;
-        article.AllowComments = dto.AllowComments;
-        article.UpdatedAt = DateTime.UtcNow;
-        article.UpdatedBy = updatedByUserId;
+        article.UpdateContent(dto.Title, newSlug, dto.Description, dto.Content, dto.ThumbnailUrl, dto.ReadTime, updatedByUserId);
+        article.ChangeCategory(dto.CategoryId, updatedByUserId);
+        article.ChangeAuthor(dto.AuthorId, updatedByUserId);
+        
+        article.UpdateTags(
+            dto.Tags != null ? JsonSerializer.Serialize(dto.Tags) : null,
+            dto.Hashtags != null ? JsonSerializer.Serialize(dto.Hashtags) : null
+        );
+        
+        article.UpdateMedia(dto.AudioUrl, dto.AudioDuration, dto.VideoUrl);
+        article.SetFeatured(dto.IsFeatured, updatedByUserId);
+        article.SetAllowComments(dto.AllowComments, updatedByUserId);
 
-        // Handle status change to Published
-        if (article.Status != ArticleStatus.Published && dto.Status == ArticleStatus.Published)
+        // Handle status change
+        if (dto.Status == ArticleStatus.Published)
         {
-            article.PublishedAt = DateTime.UtcNow;
+            article.Publish(updatedByUserId);
         }
-        article.Status = dto.Status;
+        else if (dto.Status == ArticleStatus.Draft)
+        {
+            article.RevertToDraft(updatedByUserId);
+        }
 
         _articleRepository.Update(article);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -341,11 +309,7 @@ public class ArticleService : BaseCachedService
 
     public async Task<bool> DeleteArticleAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var exists = await _articleRepository.ExistsAsync(a => a.Id == id, cancellationToken);
-        if (!exists)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bài viết với ID: {id}");
-        }
+        await _validator.ValidateDeleteAsync(id, cancellationToken);
 
         var result = await _articleRepository.RemoveByIdAsync(id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -359,14 +323,9 @@ public class ArticleService : BaseCachedService
     public async Task<ArticleDto> PublishArticleAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var article = await _articleRepository.GetByIdAsync(id, cancellationToken);
-        if (article == null)
-        {
-            throw new KeyNotFoundException($"Không tìm thấy bài viết với ID: {id}");
-        }
+        _validator.ValidatePublish(article, id);
 
-        article.Status = ArticleStatus.Published;
-        article.PublishedAt = DateTime.UtcNow;
-        article.UpdatedAt = DateTime.UtcNow;
+        article.Publish();
 
         _articleRepository.Update(article);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

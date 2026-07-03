@@ -1,62 +1,60 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AgriLink_DH.Domain.Common;
-using Microsoft.EntityFrameworkCore;
-
+using AgriLink_DH.Domain.Models.Base;
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Lịch sử thanh toán lương qua MoMo
 /// </summary>
-[Table("salary_payments")]
-public class SalaryPayment
+public class SalaryPayment : BaseEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid WorkerId { get; private set; }
+    public DateTime PeriodStart { get; private set; }
+    public DateTime PeriodEnd { get; private set; }
+    public decimal GrossSalary { get; private set; }
+    public decimal TotalAdvance { get; private set; }
+    public decimal NetSalary { get; private set; }
 
-    [Column("worker_id")]
-    [Required]
-    public Guid WorkerId { get; set; }
+    public string? MomoOrderId { get; private set; }
+    public string? MomoTransId { get; private set; }
+    public int? MomoResultCode { get; private set; }
+    public SalaryPaymentStatus Status { get; private set; } = SalaryPaymentStatus.Pending;
 
-    [Column("period_start")]
-    public DateTime PeriodStart { get; set; }
+    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    [Column("period_end")]
-    public DateTime PeriodEnd { get; set; }
+    public virtual Worker Worker { get; private set; } = null!;
 
-    [Column("gross_salary")]
-    [Precision(15, 2)]
-    public decimal GrossSalary { get; set; }
+    protected SalaryPayment() { }
 
-    [Column("total_advance")]
-    [Precision(15, 2)]
-    public decimal TotalAdvance { get; set; }
+    public SalaryPayment(Guid workerId, DateTime periodStart, DateTime periodEnd, decimal grossSalary, decimal totalAdvance, decimal netSalary, string momoOrderId)
+    {
+        WorkerId = workerId;
+        PeriodStart = periodStart;
+        PeriodEnd = periodEnd;
+        GrossSalary = grossSalary;
+        TotalAdvance = totalAdvance;
+        NetSalary = netSalary;
+        Status = SalaryPaymentStatus.Pending;
+        MomoOrderId = momoOrderId;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    [Column("net_salary")]
-    [Precision(15, 2)]
-    public decimal NetSalary { get; set; }
+    public void UpdateMomoResult(string? transId, int? resultCode)
+    {
+        MomoTransId = transId;
+        MomoResultCode = resultCode;
+        
+        Status = resultCode == 0 
+            ? SalaryPaymentStatus.Processing 
+            : SalaryPaymentStatus.Failed;
+            
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    [Column("momo_order_id")]
-    [MaxLength(100)]
-    public string? MomoOrderId { get; set; }
-
-    [Column("momo_trans_id")]
-    [MaxLength(100)]
-    public string? MomoTransId { get; set; }
-
-    [Column("momo_result_code")]
-    public int? MomoResultCode { get; set; }
-
-    [Column("status")]
-    public SalaryPaymentStatus Status { get; set; } = SalaryPaymentStatus.Pending;
-
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    [Column("updated_at")]
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    [ForeignKey(nameof(WorkerId))]
-    public virtual Worker Worker { get; set; } = null!;
+    public void MarkAsSuccess()
+    {
+        Status = SalaryPaymentStatus.Success;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

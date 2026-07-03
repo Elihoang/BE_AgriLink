@@ -143,12 +143,11 @@ public class MomoCallbackController : ControllerBase
             return payment.Status.ToString();
         }
 
-        payment.MomoTransId    = transId ?? payment.MomoTransId;
-        payment.MomoResultCode = resultCode;
-        payment.Status         = resultCode == 0
-            ? SalaryPaymentStatus.Success
-            : SalaryPaymentStatus.Failed;
-        payment.UpdatedAt = DateTime.UtcNow;
+        payment.UpdateMomoResult(transId ?? payment.MomoTransId, resultCode);
+        if (resultCode == 0)
+        {
+            payment.MarkAsSuccess();
+        }
 
         if (payment.Status == SalaryPaymentStatus.Success)
         {
@@ -157,7 +156,7 @@ public class MomoCallbackController : ControllerBase
                 .Where(a => a.WorkerId == payment.WorkerId && !a.IsDeducted)
                 .ToList();
             foreach (var adv in toDeduct)
-                adv.IsDeducted = true;
+                adv.MarkAsDeducted();
 
             _logger.LogInformation("[MOMO] Deducted {Count} advances for WorkerId={WorkerId}",
                 toDeduct.Count, payment.WorkerId);

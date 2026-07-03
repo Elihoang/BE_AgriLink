@@ -2,6 +2,7 @@ using AgriLink_DH.Share.DTOs.MarketPrice;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using Microsoft.Extensions.Logging;
 
 namespace AgriLink_DH.Core.Services;
@@ -15,17 +16,20 @@ public class MarketPriceDbService
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<MarketPriceDbService> _logger;
+    private readonly MarketPriceDbValidator _validator;
 
     public MarketPriceDbService(
         IMarketPriceRepository marketPriceRepository,
         IProductRepository productRepository,
         IUnitOfWork unitOfWork,
-        ILogger<MarketPriceDbService> logger)
+        ILogger<MarketPriceDbService> logger,
+        MarketPriceDbValidator validator)
     {
         _marketPriceRepository = marketPriceRepository;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _validator = validator;
     }
 
     /// <summary>
@@ -275,10 +279,8 @@ public class MarketPriceDbService
     /// <exception cref="KeyNotFoundException">Khi không tìm thấy sản phẩm với code đó.</exception>
     public async Task<Guid> GetProductIdByCodeAsync(string code)
     {
-        var product = await _productRepository.GetByCodeAsync(code);
-
-        if (product == null)
-            throw new KeyNotFoundException($"Không tìm thấy sản phẩm với code: '{code}'.");
+        await _validator.ValidateGetProductIdByCodeAsync(code);
+        var product = (await _productRepository.GetByCodeAsync(code))!;
 
         return product.Id;
     }

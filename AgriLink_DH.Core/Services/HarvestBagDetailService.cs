@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.HarvestBagDetail;
 
@@ -11,6 +12,7 @@ public class HarvestBagDetailService : BaseCachedService
     private readonly IHarvestSessionRepository _harvestSessionRepository;
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly HarvestBagDetailValidator _validator;
 
     private const string CACHE_KEY_USER_PREFIX = "harvest_sessions:user:";
 
@@ -19,13 +21,15 @@ public class HarvestBagDetailService : BaseCachedService
         IHarvestSessionRepository harvestSessionRepository,
         ICropSeasonRepository cropSeasonRepository,
         ICacheService cacheService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        HarvestBagDetailValidator validator)
         : base(cacheService)
     {
         _bagDetailRepository = bagDetailRepository;
         _harvestSessionRepository = harvestSessionRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<HarvestBagDetailDto>> GetBySessionAsync(Guid sessionId)
@@ -36,29 +40,25 @@ public class HarvestBagDetailService : BaseCachedService
 
     public async Task<HarvestBagDetailDto> AddBagAsync(CreateHarvestBagDetailDto dto)
     {
-        var session = await _harvestSessionRepository.GetWithDetailsAsync(dto.SessionId);
-        if (session == null)
-            throw new InvalidOperationException($"Không tìm thấy phiếu thu hoạch với ID: {dto.SessionId}");
+        await _validator.ValidateAddBagAsync(dto.SessionId);
+        var session = (await _harvestSessionRepository.GetWithDetailsAsync(dto.SessionId))!;
 
         var netWeight = dto.GrossWeight - dto.Deduction;
 
-        var bag = new HarvestBagDetail
-        {
-            SessionId = dto.SessionId,
-            BagIndex = dto.BagIndex,
-            GrossWeight = dto.GrossWeight,
-            Deduction = dto.Deduction,
-            NetWeight = netWeight,
-            IsAutoWeighed = dto.IsAutoWeighed,
-            ScaleDeviceId = dto.ScaleDeviceId,
-            IsDraft = false
-        };
+        var bag = new HarvestBagDetail(
+            dto.SessionId,
+            dto.BagIndex,
+            dto.GrossWeight,
+            dto.Deduction,
+            dto.IsAutoWeighed,
+            dto.ScaleDeviceId,
+            false
+        );
 
         await _bagDetailRepository.AddAsync(bag);
 
         // Tự động cập nhật tổng của Session
-        session.TotalBags += 1;
-        session.TotalWeight += netWeight;
+        session.AddBag(bag.NetWeight);
         _harvestSessionRepository.Update(session);
 
         await _unitOfWork.SaveChangesAsync();
@@ -76,23 +76,20 @@ public class HarvestBagDetailService : BaseCachedService
     /// </summary>
     public async Task<HarvestBagDetailDto> AddDraftBagAsync(CreateHarvestBagDetailDto dto)
     {
-        var session = await _harvestSessionRepository.GetByIdAsync(dto.SessionId);
-        if (session == null)
-            throw new InvalidOperationException($"Không tìm thấy phiếu thu hoạch với ID: {dto.SessionId}");
+        await _validator.ValidateAddDraftBagAsync(dto.SessionId);
+        var session = (await _harvestSessionRepository.GetByIdAsync(dto.SessionId))!;
 
         var netWeight = dto.GrossWeight - dto.Deduction;
 
-        var bag = new HarvestBagDetail
-        {
-            SessionId = dto.SessionId,
-            BagIndex = dto.BagIndex,
-            GrossWeight = dto.GrossWeight,
-            Deduction = dto.Deduction,
-            NetWeight = netWeight,
-            IsAutoWeighed = dto.IsAutoWeighed,
-            ScaleDeviceId = dto.ScaleDeviceId,
-            IsDraft = true   // <-- chưa xác nhận
-        };
+        var bag = new HarvestBagDetail(
+            dto.SessionId,
+            dto.BagIndex,
+            dto.GrossWeight,
+            dto.Deduction,
+            dto.IsAutoWeighed,
+            dto.ScaleDeviceId,
+            true // <-- chưa xác nhận
+        );
 
         await _bagDetailRepository.AddAsync(bag);
         await _unitOfWork.SaveChangesAsync();
@@ -110,9 +107,8 @@ public class HarvestBagDetailService : BaseCachedService
     /// </summary>
     public async Task<int> ConfirmDraftsAsync(Guid sessionId)
     {
-        var session = await _harvestSessionRepository.GetWithDetailsAsync(sessionId);
-        if (session == null)
-            throw new InvalidOperationException($"Không tìm thấy phiếu thu hoạch với ID: {sessionId}");
+        await _validator.ValidateConfirmDraftsAsync(sessionId);
+        var session = (await _harvestSessionRepository.GetWithDetailsAsync(sessionId))!;
 
         var draftBags = await _bagDetailRepository.GetDraftsBySessionIdAsync(sessionId);
         var list = draftBags.ToList();
@@ -120,10 +116,9 @@ public class HarvestBagDetailService : BaseCachedService
 
         foreach (var bag in list)
         {
-            bag.IsDraft = false;
+            bag.ConfirmDraft();
             _bagDetailRepository.Update(bag);
-            session.TotalBags += 1;
-            session.TotalWeight += bag.NetWeight;
+            session.AddBag(bag.NetWeight);
         }
 
         _harvestSessionRepository.Update(session);
@@ -137,15 +132,13 @@ public class HarvestBagDetailService : BaseCachedService
     public async Task<bool> DeleteBagAsync(Guid id)
     {
         var bag = await _bagDetailRepository.GetByIdAsync(id);
-        if (bag == null)
-            throw new KeyNotFoundException($"Không tìm thấy bao với ID: {id}");
+        _validator.ValidateDeleteBag(bag, id);
 
-        var session = await _harvestSessionRepository.GetByIdAsync(bag.SessionId);
+        var session = await _harvestSessionRepository.GetByIdAsync(bag!.SessionId);
         if (session != null)
         {
             // Trừ ra khỏi tổng
-            session.TotalBags -= 1;
-            session.TotalWeight -= bag.NetWeight;
+            session.RemoveBag(bag.NetWeight);
             _harvestSessionRepository.Update(session);
         }
 
@@ -164,11 +157,9 @@ public class HarvestBagDetailService : BaseCachedService
     public async Task<bool> SoftDeleteBagAsync(Guid id)
     {
         var bag = await _bagDetailRepository.GetByIdAsync(id);
-        if (bag == null)
-            throw new KeyNotFoundException($"Không tìm thấy bao với ID: {id}");
+        _validator.ValidateDeleteBag(bag, id);
 
-        bag.IsDeleted = true;
-        bag.DeletedAt = DateTime.UtcNow;
+        bag!.SoftDelete();
 
         _bagDetailRepository.Update(bag);
         await _unitOfWork.SaveChangesAsync();
@@ -179,11 +170,9 @@ public class HarvestBagDetailService : BaseCachedService
     public async Task<bool> RestoreBagAsync(Guid id)
     {
         var bag = await _bagDetailRepository.GetByIdAsync(id);
-        if (bag == null)
-            throw new KeyNotFoundException($"Không tìm thấy bao với ID: {id}");
+        _validator.ValidateDeleteBag(bag, id);
 
-        bag.IsDeleted = false;
-        bag.DeletedAt = null;
+        bag!.Restore();
 
         _bagDetailRepository.Update(bag);
         await _unitOfWork.SaveChangesAsync();

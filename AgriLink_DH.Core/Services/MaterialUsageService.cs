@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.MaterialUsage;
 
@@ -11,17 +12,20 @@ public class MaterialUsageService
     private readonly ICropSeasonRepository _cropSeasonRepository;
     private readonly IMaterialRepository _materialRepository; // Added
     private readonly IUnitOfWork _unitOfWork;
+    private readonly MaterialUsageValidator _validator;
 
     public MaterialUsageService(
         IMaterialUsageRepository materialUsageRepository,
         ICropSeasonRepository cropSeasonRepository,
         IMaterialRepository materialRepository, // Added
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        MaterialUsageValidator validator)
     {
         _materialUsageRepository = materialUsageRepository;
         _cropSeasonRepository = cropSeasonRepository;
         _materialRepository = materialRepository; // Added
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<MaterialUsageDto>> GetBySeasonAsync(Guid seasonId)
@@ -59,28 +63,20 @@ public class MaterialUsageService
 
     public async Task<MaterialUsageDto> CreateUsageAsync(CreateMaterialUsageDto dto)
     {
+        await _validator.ValidateCreateUsageAsync(dto);
+
         var season = await _cropSeasonRepository.GetByIdAsync(dto.SeasonId);
-        if (season == null)
-            throw new InvalidOperationException($"Không tìm thấy vụ mùa với ID: {dto.SeasonId}");
 
         string materialName = dto.MaterialName ?? string.Empty;
         string unit = dto.Unit ?? string.Empty;
 
-        // Validation
-        if (string.IsNullOrEmpty(materialName) && !dto.MaterialId.HasValue)
-        {
-             throw new ArgumentException("Vui lòng chọn vật tư từ kho hoặc nhập tên vật tư.");
-        }
-
         // Inventory Logic
         if (dto.MaterialId.HasValue)
         {
-            var material = await _materialRepository.GetByIdAsync(dto.MaterialId.Value);
-            if (material == null)
-                throw new KeyNotFoundException($"Không tìm thấy vật tư trong kho với ID: {dto.MaterialId}");
+            var material = (await _materialRepository.GetByIdAsync(dto.MaterialId.Value))!;
             
             // Deduct stock
-            material.QuantityInStock -= dto.Quantity;
+            material.Consume(dto.Quantity);
             _materialRepository.Update(material);
 
             // Fill info if missing
@@ -90,42 +86,32 @@ public class MaterialUsageService
 
         var totalCost = dto.Quantity * dto.UnitPrice;
 
-        var usage = new MaterialUsage
-        {
-            SeasonId = dto.SeasonId,
-            UsageDate = dto.UsageDate.ToUniversalTime(),
-            MaterialId = dto.MaterialId,
-            MaterialName = materialName,
-            Quantity = dto.Quantity,
-            Unit = unit,
-            UnitPrice = dto.UnitPrice,
-            TotalCost = totalCost,
-            Note = dto.Note
-        };
+        var usage = new MaterialUsage(dto.SeasonId, dto.UsageDate.ToUniversalTime(), dto.Quantity, dto.UnitPrice, dto.MaterialId, materialName, unit, dto.Note);
 
         await _materialUsageRepository.AddAsync(usage);
         await _unitOfWork.SaveChangesAsync();
 
-        usage.CropSeason = season;
+        // usage.CropSeason = season; // Cannot assign navigation property directly
         // If material exists, we should try to reload it or set it if we have it, 
         // but for now MapToDto handles null safely. 
         // Note: Create endpoint usually returns immediately, might not include Material relation unless re-fetched.
-        return MapToDto(usage);
+        var dtoResult = MapToDto(usage);
+        dtoResult.SeasonName = season.Name;
+        return dtoResult;
     }
 
     public async Task<MaterialUsageDto> UpdateUsageAsync(Guid id, UpdateMaterialUsageDto dto)
     {
         var usage = await _materialUsageRepository.GetByIdAsync(id);
-        if (usage == null)
-            throw new KeyNotFoundException($"Không tìm thấy vật tư với ID: {id}");
+        await _validator.ValidateUpdateUsageAsync(usage, dto, id);
 
         // 1. Revert stock for old usage
-        if (usage.MaterialId.HasValue)
+        if (usage!.MaterialId.HasValue)
         {
             var oldMaterial = await _materialRepository.GetByIdAsync(usage.MaterialId.Value);
             if (oldMaterial != null)
             {
-                oldMaterial.QuantityInStock += usage.Quantity;
+                oldMaterial.Import(usage.Quantity);
                 _materialRepository.Update(oldMaterial);
             }
         }
@@ -134,34 +120,19 @@ public class MaterialUsageService
         string materialName = dto.MaterialName ?? string.Empty;
         string unit = dto.Unit ?? string.Empty;
 
-        // Validation
-        if (string.IsNullOrEmpty(materialName) && !dto.MaterialId.HasValue)
-        {
-             throw new ArgumentException("Vui lòng chọn vật tư từ kho hoặc nhập tên vật tư.");
-        }
-
         // 3. Deduct stock for new usage
         if (dto.MaterialId.HasValue)
         {
-            var newMaterial = await _materialRepository.GetByIdAsync(dto.MaterialId.Value);
-            if (newMaterial == null)
-                throw new KeyNotFoundException($"Không tìm thấy vật tư trong kho với ID: {dto.MaterialId}");
+            var newMaterial = (await _materialRepository.GetByIdAsync(dto.MaterialId.Value))!;
             
-            newMaterial.QuantityInStock -= dto.Quantity;
+            newMaterial.Consume(dto.Quantity);
             _materialRepository.Update(newMaterial);
 
             if (string.IsNullOrEmpty(materialName)) materialName = newMaterial.Name;
             if (string.IsNullOrEmpty(unit)) unit = newMaterial.Unit;
         }
 
-        usage.UsageDate = dto.UsageDate.ToUniversalTime();
-        usage.MaterialId = dto.MaterialId;
-        usage.MaterialName = materialName;
-        usage.Quantity = dto.Quantity;
-        usage.Unit = unit;
-        usage.UnitPrice = dto.UnitPrice;
-        usage.TotalCost = dto.Quantity * dto.UnitPrice;
-        usage.Note = dto.Note;
+        usage.UpdateDetails(dto.UsageDate.ToUniversalTime(), dto.Quantity, dto.UnitPrice, dto.MaterialId, materialName, unit, dto.Note);
 
         _materialUsageRepository.Update(usage);
         await _unitOfWork.SaveChangesAsync();
@@ -172,16 +143,15 @@ public class MaterialUsageService
     public async Task<bool> DeleteUsageAsync(Guid id)
     {
         var usage = await _materialUsageRepository.GetByIdAsync(id);
-        if (usage == null)
-            throw new KeyNotFoundException($"Không tìm thấy vật tư với ID: {id}");
+        _validator.ValidateDeleteUsage(usage, id);
 
         // Refund stock logic
-        if (usage.MaterialId.HasValue)
+        if (usage!.MaterialId.HasValue)
         {
             var material = await _materialRepository.GetByIdAsync(usage.MaterialId.Value);
             if (material != null)
             {
-                material.QuantityInStock += usage.Quantity;
+                material.Import(usage.Quantity);
                 _materialRepository.Update(material);
             }
         }
@@ -195,11 +165,9 @@ public class MaterialUsageService
     public async Task<bool> SoftDeleteUsageAsync(Guid id)
     {
         var usage = await _materialUsageRepository.GetByIdAsync(id);
-        if (usage == null)
-            throw new KeyNotFoundException($"Không tìm thấy vật tư với ID: {id}");
+        _validator.ValidateDeleteUsage(usage, id);
 
-        usage.IsDeleted = true;
-        usage.DeletedAt = DateTime.UtcNow;
+        usage!.SoftDelete();
 
         _materialUsageRepository.Update(usage);
         await _unitOfWork.SaveChangesAsync();
@@ -210,11 +178,9 @@ public class MaterialUsageService
     public async Task<bool> RestoreUsageAsync(Guid id)
     {
         var usage = await _materialUsageRepository.GetByIdAsync(id);
-        if (usage == null)
-            throw new KeyNotFoundException($"Không tìm thấy vật tư với ID: {id}");
+        _validator.ValidateDeleteUsage(usage, id);
 
-        usage.IsDeleted = false;
-        usage.DeletedAt = null;
+        usage!.Restore();
 
         _materialUsageRepository.Update(usage);
         await _unitOfWork.SaveChangesAsync();

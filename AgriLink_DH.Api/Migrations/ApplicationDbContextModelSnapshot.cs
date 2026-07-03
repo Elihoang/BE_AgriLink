@@ -162,7 +162,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("Status", "PublishedAt");
 
-                    b.ToTable("articles");
+                    b.ToTable("articles", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.ArticleAuthor", b =>
@@ -240,7 +240,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("IsVerified");
 
-                    b.ToTable("article_authors");
+                    b.ToTable("article_authors", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.ArticleCategory", b =>
@@ -301,7 +301,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.ToTable("article_categories");
+                    b.ToTable("article_categories", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.ArticleComment", b =>
@@ -358,7 +358,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("ArticleId", "CreatedAt");
 
-                    b.ToTable("article_comments");
+                    b.ToTable("article_comments", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.ArticleLike", b =>
@@ -387,7 +387,7 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("ArticleId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("article_likes");
+                    b.ToTable("article_likes", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.CropSeason", b =>
@@ -460,7 +460,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("FarmId", "ProductId");
 
-                    b.ToTable("crop_seasons");
+                    b.ToTable("crop_seasons", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.DailyWorkLog", b =>
@@ -507,7 +507,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("SeasonId", "WorkDate");
 
-                    b.ToTable("daily_work_logs");
+                    b.ToTable("daily_work_logs", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Farm", b =>
@@ -575,7 +575,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("OwnerUserId");
 
-                    b.ToTable("farms");
+                    b.ToTable("farms", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.FarmSale", b =>
@@ -629,7 +629,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("SeasonId", "SaleDate");
 
-                    b.ToTable("farm_sales");
+                    b.ToTable("farm_sales", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.HarvestBagDetail", b =>
@@ -687,7 +687,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("harvest_bag_details");
+                    b.ToTable("harvest_bag_details", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.HarvestSession", b =>
@@ -731,7 +731,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("SeasonId", "HarvestDate");
 
-                    b.ToTable("harvest_sessions");
+                    b.ToTable("harvest_sessions", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.MarketPriceHistory", b =>
@@ -804,7 +804,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("ProductId", "RegionCode", "RecordedDate");
 
-                    b.ToTable("market_price_history");
+                    b.ToTable("market_price_history", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Material", b =>
@@ -869,7 +869,7 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("OwnerUserId", "Name")
                         .IsUnique();
 
-                    b.ToTable("materials");
+                    b.ToTable("materials", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.MaterialUsage", b =>
@@ -938,7 +938,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("SeasonId", "UsageDate");
 
-                    b.ToTable("material_usages");
+                    b.ToTable("material_usages", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.PlantPosition", b =>
@@ -994,7 +994,7 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("SeasonId", "RowNumber", "ColumnNumber")
                         .IsUnique();
 
-                    b.ToTable("plant_positions");
+                    b.ToTable("plant_positions", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Product", b =>
@@ -1031,7 +1031,7 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("products");
+                    b.ToTable("products", (string)null);
 
                     b.HasData(
                         new
@@ -1122,7 +1122,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("salary_payments");
+                    b.ToTable("salary_payments", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.TaskType", b =>
@@ -1160,7 +1160,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("FarmId");
 
-                    b.ToTable("task_types");
+                    b.ToTable("task_types", (string)null);
 
                     b.HasData(
                         new
@@ -1298,7 +1298,7 @@ namespace AgriLink_DH.Api.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.UserLoginLog", b =>
@@ -1344,7 +1344,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("UserId", "LoginTime");
 
-                    b.ToTable("user_login_logs");
+                    b.ToTable("user_login_logs", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.WeatherLog", b =>
@@ -1383,7 +1383,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("FarmId", "LogDate");
 
-                    b.ToTable("weather_logs");
+                    b.ToTable("weather_logs", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.WorkAssignment", b =>
@@ -1432,7 +1432,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("work_assignments");
+                    b.ToTable("work_assignments", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Worker", b =>
@@ -1496,7 +1496,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.ToTable("workers");
+                    b.ToTable("workers", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.WorkerAdvance", b =>
@@ -1541,7 +1541,7 @@ namespace AgriLink_DH.Api.Migrations
 
                     b.HasIndex("WorkerId", "SeasonId");
 
-                    b.ToTable("worker_advances");
+                    b.ToTable("worker_advances", (string)null);
                 });
 
             modelBuilder.Entity("AgriLink_DH.Domain.Models.Article", b =>

@@ -55,6 +55,9 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Tự động quét và áp dụng tất cả các class kế thừa IEntityTypeConfiguration trong Assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
         // ========================================
         // UNIQUE CONSTRAINTS & INDEXES
         // ========================================
@@ -71,11 +74,6 @@ public class ApplicationDbContext : DbContext
         // UserLoginLog: Index on user_id + login_time for login history queries
         modelBuilder.Entity<UserLoginLog>()
             .HasIndex(ul => new { ul.UserId, ul.LoginTime });
-
-        // Product: Unique code
-        modelBuilder.Entity<Product>()
-            .HasIndex(p => p.Code)
-            .IsUnique();
 
         // Farm: Index on owner_user_id for faster lookup
         modelBuilder.Entity<Farm>()
@@ -259,40 +257,16 @@ public class ApplicationDbContext : DbContext
         // SEED DATA (Optional - Admin tạo sẵn Products)
         // ========================================
 
-        modelBuilder.Entity<Product>().HasData(
-            new Product
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Name = "Cà phê Robusta",
-                Unit = "kg",
-                Code = "CF_ROBUSTA"
-            },
-            new Product
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                Name = "Hồ Tiêu",
-                Unit = "kg",
-                Code = "PEPPER"
-            },
-            new Product
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                Name = "Sầu Riêng",
-                Unit = "kg",
-                Code = "DURIAN"
-            }
-        );
-
         // SEED DATA: TaskType (System Templates)
         modelBuilder.Entity<TaskType>().HasData(
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000001"), Name = "Làm đất", DefaultUnit = "Ngày công", DefaultPrice = 250000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000002"), Name = "Xuống giống / Gieo hạt", DefaultUnit = "Lần", DefaultPrice = 100000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000003"), Name = "Tưới nước", DefaultUnit = "Giờ", DefaultPrice = 50000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000004"), Name = "Bón phân", DefaultUnit = "Lần", DefaultPrice = 150000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000005"), Name = "Làm cỏ", DefaultUnit = "Ngày công", DefaultPrice = 200000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000006"), Name = "Phun thuốc (BVTV)", DefaultUnit = "Bình", DefaultPrice = 80000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000007"), Name = "Cắt tỉa cành / Tạo tán", DefaultUnit = "Ngày công", DefaultPrice = 300000, IsSystem = true },
-            new TaskType { Id = Guid.Parse("11111111-1111-1111-1111-000000000008"), Name = "Thu hoạch", DefaultUnit = "Ngày công", DefaultPrice = 300000, IsSystem = true }
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000001"), Name = "Làm đất", DefaultUnit = "Ngày công", DefaultPrice = (decimal?)250000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000002"), Name = "Xuống giống / Gieo hạt", DefaultUnit = "Lần", DefaultPrice = (decimal?)100000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000003"), Name = "Tưới nước", DefaultUnit = "Giờ", DefaultPrice = (decimal?)50000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000004"), Name = "Bón phân", DefaultUnit = "Lần", DefaultPrice = (decimal?)150000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000005"), Name = "Làm cỏ", DefaultUnit = "Ngày công", DefaultPrice = (decimal?)200000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000006"), Name = "Phun thuốc (BVTV)", DefaultUnit = "Bình", DefaultPrice = (decimal?)80000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000007"), Name = "Cắt tỉa cành / Tạo tán", DefaultUnit = "Ngày công", DefaultPrice = (decimal?)300000, IsSystem = true },
+            new { Id = Guid.Parse("11111111-1111-1111-1111-000000000008"), Name = "Thu hoạch", DefaultUnit = "Ngày công", DefaultPrice = (decimal?)300000, IsSystem = true }
         );
         
         // Material: Index on owner_user_id + name (Unique per user)

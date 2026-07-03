@@ -1,5 +1,6 @@
 using System.Text;
 using AgriLink_DH.Api.Extensions;
+using AgriLink_DH.Api.Middlewares;
 using AgriLink_DH.Core.Configurations;
 using AgriLink_DH.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -214,6 +215,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure Forwarded Headers for Reverse Proxy support
 // Để lấy đúng IP từ X-Forwarded-For, X-Real-IP headers

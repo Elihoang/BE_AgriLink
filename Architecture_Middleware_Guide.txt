@@ -1,0 +1,50 @@
+=== TÀI LIỆU HƯỚNG DẪN KIẾN TRÚC: GLOBAL EXCEPTION MIDDLEWARE PIPELINE ===
+
+1. MIDDLEWARE LÀ GÌ? ĐỊNH NGHĨA PIPELINE LÀ GÌ?
+- Middleware: Là các phần mềm trung gian (đoạn code) được "cắm" vào luồng xử lý Request/Response của ứng dụng. Mỗi request từ người dùng gửi tới API sẽ đi qua một chuỗi các Middleware này trước khi tới được Controller.
+- Pipeline (Đường ống xử lý): Trong ASP.NET Core, Pipeline là chuỗi các Middleware được xếp nối tiếp nhau (theo thứ tự khai báo trong file Program.cs). 
+Ví dụ luồng đi của 1 Request:
+[Client] -> [CORS Middleware] -> [Authentication Middleware] -> [Global Exception Middleware] -> [Controllers] -> [Service]
+Sau khi Service và Controller xử lý xong, Response sẽ đi ngược lại đường ống này về phía Client.
+
+2. CÁCH HOẠT ĐỘNG CỦA GLOBAL EXCEPTION MIDDLEWARE
+Thay vì mỗi phương thức (API) trong Controller phải tự viết thẻ try-catch để bắt lỗi (rất dài dòng và lặp lại), chúng ta đặt 1 Middleware nằm ngay ở ngoài cùng của luồng xử lý.
+Cách thức hoạt động:
+- Khi có Request đi vào, Middleware này sẽ gọi "next" để cho Request đi sâu vào các Middleware bên trong và đến Controller.
+- Middleware dùng duy nhất 1 khối "try-catch" bao bọc toàn bộ quá trình xử lý của hệ thống.
+- Nếu Controller hoặc Service xảy ra lỗi (quăng Exception như InvalidOperationException, KeyNotFoundException), lỗi đó sẽ bay ngược ra ngoài và bị tóm (catch) tại Middleware này.
+- Tại đây, Middleware phân loại lỗi:
+  + KeyNotFoundException => Trả về HTTP 404 (Not Found).
+  + InvalidOperationException => Trả về HTTP 400 (Bad Request).
+  + Lỗi không xác định (Exception) => Log lỗi lại và trả về HTTP 500 (Internal Server Error).
+
+3. ĐIỀU GÌ ĐÃ THAY ĐỔI TRONG HỆ THỐNG CỦA CHÚNG TA?
+
+[TRƯỚC KHI CÓ MIDDLEWARE]:
+- Code trong Controller rất dài dòng, phình to vì chứa quá nhiều try-catch.
+Ví dụ:
+public async Task<ActionResult> GetById(Guid id) {
+    try {
+        var data = await service.GetById(id);
+        return Ok(data);
+    } catch(KeyNotFoundException ex) {
+        return NotFound(ex.Message);
+    } catch(Exception ex) {
+        return StatusCode(500, "Lỗi Server");
+    }
+}
+
+[SAU KHI CÓ MIDDLEWARE]:
+- Thêm file `AgriLink_DH.Api/Middlewares/GlobalExceptionMiddleware.cs`.
+- Đăng ký `app.UseMiddleware<GlobalExceptionMiddleware>();` vào `Program.cs`.
+- Code trong toàn bộ các Controller được dọn dẹp sạch sẽ, loại bỏ 100% try-catch.
+Ví dụ mới:
+public async Task<ActionResult> GetById(Guid id) {
+    var data = await service.GetById(id); // Nếu không tìm thấy, quăng lỗi, Middleware tự lo.
+    return Ok(data);
+}
+
+4. LỢI ÍCH DÀNH CHO BẢO TRÌ (MAINTENANCE)
+- Tuân thủ nguyên tắc DRY (Don't Repeat Yourself).
+- Tập trung hóa: Giả sử sau này anh muốn mọi lỗi HTTP 500 đều phải gửi tin nhắn cảnh báo qua Telegram/Slack, anh chỉ cần sửa đúng 1 chỗ trong file `GlobalExceptionMiddleware.cs` thay vì phải đi sửa 100 API trong 29 cái Controllers.
+- Code Controller cực kỳ trong suốt, dễ đọc: Chỉ tiếp nhận Request -> Gọi Service -> Trả Response.

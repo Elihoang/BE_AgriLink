@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.Material;
 
@@ -9,11 +10,13 @@ public class MaterialService
 {
     private readonly IMaterialRepository _materialRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly MaterialValidator _validator;
 
-    public MaterialService(IMaterialRepository materialRepository, IUnitOfWork unitOfWork)
+    public MaterialService(IMaterialRepository materialRepository, IUnitOfWork unitOfWork, MaterialValidator validator)
     {
         _materialRepository = materialRepository;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<MaterialDto>> GetMyMaterialsAsync(Guid userId)
@@ -24,25 +27,13 @@ public class MaterialService
 
     public async Task<MaterialDto> CreateMaterialAsync(Guid userId, CreateMaterialDto dto)
     {
-        if (await _materialRepository.ExistsByNameAndUserAsync(dto.Name, userId))
-        {
-            throw new ArgumentException($"Vật tư '{dto.Name}' đã tồn tại trong kho của bạn.");
-        }
+        await _validator.ValidateCreateAsync(userId, dto);
 
-        var material = new Material
+        var material = new Material(userId, dto.Name, dto.Unit, dto.MaterialType, dto.CostPerUnit, dto.Note, dto.ImageUrl, dto.ExpiryDate);
+        if (dto.QuantityInStock > 0)
         {
-            Id = Guid.NewGuid(),
-            OwnerUserId = userId,
-            Name = dto.Name,
-            Unit = dto.Unit,
-            QuantityInStock = dto.QuantityInStock,
-            CostPerUnit = dto.CostPerUnit,
-            Note = dto.Note,
-            ImageUrl = dto.ImageUrl,
-            MaterialType = dto.MaterialType,
-            ExpiryDate = dto.ExpiryDate,
-            CreatedAt = DateTime.UtcNow
-        };
+            material.Import(dto.QuantityInStock, dto.CostPerUnit);
+        }
 
         await _materialRepository.AddAsync(material);
         await _unitOfWork.SaveChangesAsync();
@@ -53,29 +44,14 @@ public class MaterialService
     public async Task<MaterialDto> UpdateMaterialAsync(Guid userId, Guid id, UpdateMaterialDto dto)
     {
         var material = await _materialRepository.GetByIdAsync(id);
-        if (material == null || material.OwnerUserId != userId)
-        {
-            throw new KeyNotFoundException("Không tìm thấy vật tư.");
-        }
+        await _validator.ValidateUpdateAsync(userId, material, dto);
 
-        // Check duplicate name if name changed
-        if (material.Name.ToLower() != dto.Name.ToLower())
+        material.UpdateDetails(dto.Name, dto.Unit, dto.MaterialType, dto.CostPerUnit, dto.Note, dto.ImageUrl, dto.ExpiryDate);
+        
+        if (material.QuantityInStock != dto.QuantityInStock)
         {
-            if (await _materialRepository.ExistsByNameAndUserAsync(dto.Name, userId))
-            {
-                throw new ArgumentException($"Vật tư '{dto.Name}' đã tồn tại.");
-            }
+            material.AdjustStock(dto.QuantityInStock);
         }
-
-        material.Name = dto.Name;
-        material.Unit = dto.Unit;
-        material.QuantityInStock = dto.QuantityInStock; // Cho phép sửa trực tiếp tồn kho (kiểm kê)
-        material.CostPerUnit = dto.CostPerUnit;
-        material.Note = dto.Note;
-        material.ImageUrl = dto.ImageUrl;
-        material.MaterialType = dto.MaterialType;
-        material.ExpiryDate = dto.ExpiryDate;
-        material.UpdatedAt = DateTime.UtcNow;
 
         _materialRepository.Update(material);
         await _unitOfWork.SaveChangesAsync();
@@ -86,10 +62,7 @@ public class MaterialService
     public async Task DeleteMaterialAsync(Guid userId, Guid id)
     {
         var material = await _materialRepository.GetByIdAsync(id);
-        if (material == null || material.OwnerUserId != userId)
-        {
-            throw new KeyNotFoundException("Không tìm thấy vật tư.");
-        }
+        _validator.ValidateDelete(userId, material);
 
         // TODO: Check if material is used in any Usage log? (Later)
 

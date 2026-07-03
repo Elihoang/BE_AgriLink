@@ -1,49 +1,68 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using AgriLink_DH.Domain.Models.Base;
 
 namespace AgriLink_DH.Domain.Models;
 
 /// <summary>
 /// Nhật ký công việc tại Vườn - Header (Ghi nhận: Hôm nay tại Vườn A có hoạt động gì?)
 /// </summary>
-[Table("daily_work_logs")]
-public class DailyWorkLog
+public class DailyWorkLog : SoftDeletableEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Column("season_id")]
-    [Required]
-    public Guid SeasonId { get; set; } // Gắn việc vào Vụ/Vườn cụ thể
+    public Guid SeasonId { get; private set; } // Gắn việc vào Vụ/Vườn cụ thể
 
-    [Column("work_date")]
-    public DateTime WorkDate { get; set; } = DateTime.UtcNow.Date;
+    public DateTime WorkDate { get; private set; } = DateTime.UtcNow.Date;
 
-    [Column("task_type_id")]
-    public Guid? TaskTypeId { get; set; } // Link tới loại công việc
+    public Guid? TaskTypeId { get; private set; } // Link tới loại công việc
 
-    [Column("note")]
-    public string? Note { get; set; }
-
-    [Column("total_cost")]
-    [Precision(15, 2)]
-    public decimal TotalCost { get; set; } = 0; // Tổng chi phí trong ngày cho đầu việc này (Tự động cộng dồn)
+    public string? Note { get; private set; }
+    public decimal TotalCost { get; private set; } = 0; // Tổng chi phí trong ngày cho đầu việc này (Tự động cộng dồn)
 
     // Navigation Properties
-    [ForeignKey(nameof(SeasonId))]
-    public virtual CropSeason CropSeason { get; set; } = null!;
+    public virtual CropSeason CropSeason { get; private set; } = null!;
 
-    [ForeignKey(nameof(TaskTypeId))]
-    public virtual TaskType? TaskType { get; set; }
+    public virtual TaskType? TaskType { get; private set; }
 
-    public virtual ICollection<WorkAssignment> WorkAssignments { get; set; } = new List<WorkAssignment>();
+    public virtual ICollection<WorkAssignment> WorkAssignments { get; private set; } = new List<WorkAssignment>();
 
-    // Soft Delete
-    [Column("is_deleted")]
-    public bool IsDeleted { get; set; } = false;
+    // Soft Delete inherited from SoftDeletableEntity
 
-    [Column("deleted_at")]
-    public DateTime? DeletedAt { get; set; }
+    protected DailyWorkLog() { }
+
+    public DailyWorkLog(Guid seasonId, DateTime workDate, Guid? taskTypeId = null, string? note = null)
+    {
+        if (seasonId == Guid.Empty) throw new ArgumentException("SeasonId không hợp lệ", nameof(seasonId));
+
+        SeasonId = seasonId;
+        WorkDate = workDate.Date;
+        TaskTypeId = taskTypeId;
+        Note = note?.Trim();
+        TotalCost = 0;
+    }
+
+    public void UpdateDetails(DateTime workDate, Guid? taskTypeId, string? note)
+    {
+        WorkDate = workDate.Date;
+        TaskTypeId = taskTypeId;
+        Note = note?.Trim();
+    }
+
+    public void CalculateTotalCost()
+    {
+        TotalCost = WorkAssignments.Sum(wa => wa.TotalAmount);
+    }
+
+    public void AddCost(decimal amount)
+    {
+        if (amount < 0) throw new ArgumentException("Số tiền không được âm", nameof(amount));
+        TotalCost += amount;
+    }
+
+    public void SubtractCost(decimal amount)
+    {
+        if (amount < 0) throw new ArgumentException("Số tiền không được âm", nameof(amount));
+        TotalCost -= amount;
+        if (TotalCost < 0) TotalCost = 0;
+    }
+
+    // SoftDelete and Restore are inherited
 }

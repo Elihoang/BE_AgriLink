@@ -104,7 +104,7 @@ public class ArticleRepository : BaseRepository<Article>, IArticleRepository
         var article = await _dbSet.FindAsync(new object[] { articleId }, cancellationToken);
         if (article != null)
         {
-            article.ViewCount++;
+            article.IncrementViewCount();
             _dbSet.Update(article);
         }
     }

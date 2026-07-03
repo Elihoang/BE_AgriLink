@@ -1,5 +1,6 @@
 using AgriLink_DH.Domain.Interface;
 using AgriLink_DH.Domain.Interface.IRepositories;
+using AgriLink_DH.Core.Validations;
 using AgriLink_DH.Domain.Models;
 using AgriLink_DH.Share.DTOs.SalaryPayment;
 using AgriLink_DH.Domain.Common;
@@ -15,6 +16,7 @@ public class SalaryPaymentService
     private readonly IWorkAssignmentRepository _workAssignmentRepository;
     private readonly IMomoService _momoService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly SalaryPaymentValidator _validator;
 
     public SalaryPaymentService(
         ISalaryPaymentRepository salaryPaymentRepository,
@@ -22,7 +24,8 @@ public class SalaryPaymentService
         IWorkerAdvanceRepository workerAdvanceRepository,
         IWorkAssignmentRepository workAssignmentRepository,
         IMomoService momoService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        SalaryPaymentValidator validator)
     {
         _salaryPaymentRepository = salaryPaymentRepository;
         _workerRepository = workerRepository;
@@ -30,6 +33,7 @@ public class SalaryPaymentService
         _workAssignmentRepository = workAssignmentRepository;
         _momoService = momoService;
         _unitOfWork = unitOfWork;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<SalaryPaymentDto>> GetAllAsync()
@@ -40,8 +44,8 @@ public class SalaryPaymentService
 
     public async Task<SalaryCalculationResultDto> CalculateSalaryAsync(CalculateSalaryRequestDto request)
     {
-        var worker = await _workerRepository.GetByIdAsync(request.WorkerId);
-        if (worker == null) throw new KeyNotFoundException("Không tìm thấy nhân công.");
+        await _validator.ValidateCalculateSalaryAsync(request.WorkerId);
+        var worker = (await _workerRepository.GetByIdAsync(request.WorkerId))!;
 
         // Lấy tất cả các ngày công trong khoảng thời gian
         var assignmentsForWorker = await _workAssignmentRepository.GetByWorkerIdAsync(request.WorkerId, request.PeriodStart, request.PeriodEnd);
@@ -71,21 +75,20 @@ public class SalaryPaymentService
 
     public async Task<SalaryPaymentDto> ExecutePaymentAsync(ExecutePaymentRequestDto request)
     {
-        var worker = await _workerRepository.GetByIdAsync(request.WorkerId);
-        if (worker == null) throw new KeyNotFoundException("Không tìm thấy nhân công.");
+        await _validator.ValidateExecutePaymentAsync(request.WorkerId);
+        var worker = (await _workerRepository.GetByIdAsync(request.WorkerId))!;
 
         // 1. Tạo bản ghi SalaryPayment (Pending)
-        var payment = new SalaryPayment
-        {
-            WorkerId = request.WorkerId,
-            PeriodStart = request.PeriodStart,
-            PeriodEnd = request.PeriodEnd,
-            GrossSalary = request.GrossSalary,
-            TotalAdvance = request.TotalAdvance,
-            NetSalary = request.NetSalary,
-            Status = SalaryPaymentStatus.Pending,
-            MomoOrderId = $"SALARY_{DateTime.UtcNow:yyyyMMddHHmmss}_{request.WorkerId.ToString().Substring(0, 8)}"
-        };
+        var momoOrderId = $"SALARY_{DateTime.UtcNow:yyyyMMddHHmmss}_{request.WorkerId.ToString().Substring(0, 8)}";
+        var payment = new SalaryPayment(
+            request.WorkerId,
+            request.PeriodStart,
+            request.PeriodEnd,
+            request.GrossSalary,
+            request.TotalAdvance,
+            request.NetSalary,
+            momoOrderId
+        );
 
         await _salaryPaymentRepository.AddAsync(payment);
         await _unitOfWork.SaveChangesAsync();
@@ -99,16 +102,7 @@ public class SalaryPaymentService
         );
 
         // 3. Update kết quả tạo payment URL
-        payment.MomoTransId = momoResponse.TransId;
-        payment.MomoResultCode = momoResponse.ResultCode;
-
-        // resultCode==0 từ /create = "URL tạo thành công, đang chờ user thanh toán"
-        // Advance chỉ deduct khi IPN callback về với resultCode==0
-        payment.Status = momoResponse.ResultCode == 0
-            ? SalaryPaymentStatus.Processing
-            : SalaryPaymentStatus.Failed;
-
-        payment.UpdatedAt = DateTime.UtcNow;
+        payment.UpdateMomoResult(momoResponse.TransId, momoResponse.ResultCode);
 
         _salaryPaymentRepository.Update(payment);
         await _unitOfWork.SaveChangesAsync();
